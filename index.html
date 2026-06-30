@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CCRN Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{ --ink:#1b2128; --soft:#566070; --paper:#fbfbfc; --card:#fff; --line:#e1e5ea; --teal:#0e7b63; --teal-wash:#e3f1ec; }
+  @media (prefers-color-scheme: dark){
+    :root{ --ink:#e7e9ec; --soft:#a6adb8; --paper:#15171a; --card:#1d2024; --line:#2c3036; --teal:#3aa888; --teal-wash:#12302a; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; min-height:100vh; background:var(--paper); color:var(--ink); font-family:"Inter",system-ui,sans-serif; display:flex; align-items:center; justify-content:center; padding:24px}
+  .wrap{max-width:520px; width:100%}
+  h1{font-family:"Newsreader",serif; font-weight:500; font-size:32px; margin:0 0 6px}
+  .lead{color:var(--soft); font-size:15px; margin:0 0 28px}
+  a.card{display:block; text-decoration:none; color:inherit; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px 22px; margin-bottom:14px; transition:border-color .15s, transform .15s}
+  a.card:hover{border-color:var(--teal); transform:translateY(-1px)}
+  .title{font-family:"Newsreader",serif; font-size:21px; font-weight:500; margin:0 0 4px; display:flex; align-items:center; gap:10px}
+  .desc{color:var(--soft); font-size:14px; margin:0; line-height:1.5}
+  .dot{font-size:13px; color:var(--teal)}
+  .foot{color:var(--soft); font-size:12.5px; margin-top:22px; line-height:1.6; opacity:.85}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>CCRN Study</h1>
+    <p class="lead">Adult CCRN prep — built from your notes and the AACN blueprint.</p>
+
+    <a class="card" href="ccrn-recall.html">
+      <p class="title"><span class="dot">◆</span> Adaptive Recall</p>
+      <p class="desc">Spaced-repetition quiz. Concepts climb to mastery and retire from your queue. Tracks per-domain progress.</p>
+    </a>
+
+    <a class="card" href="ccrn-practice-exam.html">
+      <p class="title"><span class="dot">◆</span> Practice Exam</p>
+      <p class="desc">Full timed-style run-through with scoring, domain breakdown, miss review, and saved score history.</p>
+    </a>
+
+    <a class="card" href="ccrn-drills.html">
+      <p class="title"><span class="dot">◆</span> Rapid Drills</p>
+      <p class="desc">Fast tap-to-match drills for the easy-to-forget facts — drugs, antidotes, shock profiles, murmurs, acid–base. Active reps that track what you miss.</p>
+    </a>
+
+    <a class="card" href="ccrn-mock.html">
+      <p class="title"><span class="dot">◆</span> Mock Exams</p>
+      <p class="desc">Three full-length practice exams across the whole blueprint, with a timer, end scoring, pass/fail, domain breakdown, and a complete review with rationales.</p>
+    </a>
+
+    <p class="foot">Open ☁ Cloud sync in each app to save and sync across your devices. Bookmark this page or Add to Home Screen for quick access.</p>
+  </div>
+</body>
+</html>

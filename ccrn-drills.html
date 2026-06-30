@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CCRN Rapid Drills</title>
+<script>(function(){try{var t=localStorage.getItem('ccrn-theme'); if(t==='dark'||t==='light') document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<style>
+  :root:not([data-theme="light"]){}
+  :root{
+    --ink:#1b2128; --ink-soft:#566070; --ink-faint:#8a93a1;
+    --paper:#fbfbfc; --panel:#f1f3f5; --panel-2:#e8ebef; --line:#dfe3e8;
+    --teal:#0e7b63; --teal-deep:#0a5b49; --teal-wash:#e3f1ec;
+    --amber:#b8730c; --amber-wash:#fbf0dd;
+    --red:#b23a36; --red-wash:#f8e7e6;
+    --green:#1d7a4d; --green-wash:#e4f3ea;
+    --radius:12px;
+    --shadow:0 1px 2px rgba(20,30,45,.04), 0 8px 28px rgba(20,30,45,.06);
+  }
+  :root[data-theme="dark"]{
+    --ink:#e7e9ec; --ink-soft:#a6adb8; --ink-faint:#7b828d;
+    --paper:#15171a; --panel:#1f2227; --panel-2:#262a30; --line:#2c3036;
+    --teal:#3aa888; --teal-deep:#5dcaa5; --teal-wash:#10302a;
+    --amber:#d59433; --amber-wash:#2e2412;
+    --red:#e07a76; --red-wash:#2e1414;
+    --green:#4fb07a; --green-wash:#10301f;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 28px rgba(0,0,0,.4);
+  }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+    --ink:#e7e9ec; --ink-soft:#a6adb8; --ink-faint:#7b828d;
+    --paper:#15171a; --panel:#1f2227; --panel-2:#262a30; --line:#2c3036;
+    --teal:#3aa888; --teal-deep:#5dcaa5; --teal-wash:#10302a;
+    --amber:#d59433; --amber-wash:#2e2412;
+    --red:#e07a76; --red-wash:#2e1414;
+    --green:#4fb07a; --green-wash:#10301f;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 28px rgba(0,0,0,.4);
+  }}
+  *{box-sizing:border-box}
+  html,body{margin:0; background:var(--paper); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:760px; margin:0 auto; padding:18px 16px 60px}
+  .toprow{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px}
+  .toprow a{font-size:13px; font-weight:500; text-decoration:none; color:var(--teal)}
+  .themetoggle{font-family:inherit; font-size:12.5px; font-weight:500; cursor:pointer; background:var(--panel); color:var(--ink-soft); border:1px solid var(--line); border-radius:999px; padding:6px 12px}
+  .themetoggle:hover{color:var(--ink)}
+  .syncbadge{display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:500; padding:5px 11px; border-radius:999px; border:1px solid var(--line); background:var(--panel); color:var(--ink-soft); transition:color .2s, background .2s, border-color .2s}
+  .syncbadge .sb-dot{width:7px; height:7px; border-radius:50%; background:currentColor; flex:0 0 auto}
+  .syncbadge.saved{color:var(--green); border-color:var(--green); background:var(--green-wash)}
+  .syncbadge.saving{color:var(--amber); border-color:var(--amber); background:var(--amber-wash)}
+  .syncbadge.saving .sb-dot{animation:sbpulse 1s ease-in-out infinite}
+  .syncbadge.error{color:var(--red); border-color:var(--red); background:var(--red-wash)}
+  .syncbadge.off{color:var(--ink-faint)}
+  @keyframes sbpulse{0%,100%{opacity:1}50%{opacity:.25}}
+  .cloudlink{font-family:inherit; font-size:12.5px; font-weight:500; cursor:pointer; background:none; border:none; color:var(--teal); padding:0}
+  .modal{position:fixed; inset:0; background:rgba(20,30,45,.45); display:flex; align-items:center; justify-content:center; padding:20px; z-index:50}
+  .modal input{width:100%; font-family:ui-monospace,Menlo,monospace; font-size:12px; border:1px solid var(--line); border-radius:9px; padding:9px; background:var(--paper); color:var(--ink)}
+  h1{font-size:21px; margin:0 0 2px}
+  .sub{color:var(--ink-soft); font-size:13.5px; margin:0 0 18px}
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow)}
+  .hide{display:none}
+
+  /* Home set list */
+  .setbtn{display:flex; align-items:center; gap:12px; width:100%; text-align:left; cursor:pointer;
+    background:var(--paper); border:1px solid var(--line); border-radius:11px; padding:14px 15px; margin-bottom:10px;
+    font-family:inherit; color:var(--ink); transition:transform .1s, border-color .15s}
+  .setbtn:hover{transform:translateY(-1px); border-color:var(--teal)}
+  .setbtn .swatch{width:14px; height:14px; border-radius:4px; flex:0 0 auto}
+  .setbtn .sname{font-size:15.5px; font-weight:600}
+  .setbtn .smeta{font-size:12.5px; color:var(--ink-faint); margin-top:2px}
+  .setbtn .right{margin-left:auto; font-size:12.5px; color:var(--ink-faint); text-align:right}
+  .missed-chip{display:inline-block; background:var(--amber-wash); color:var(--amber); border-radius:999px; padding:2px 9px; font-size:12px; font-weight:600}
+
+  /* Drill */
+  .pbar{height:6px; background:var(--panel-2); border-radius:999px; overflow:hidden; margin-bottom:14px}
+  .pfill{height:100%; background:var(--teal); width:0; transition:width .3s}
+  .drillhead{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; gap:10px}
+  .drillhead .name{font-size:15px; font-weight:600}
+  .matchcount{font-size:13px; color:var(--ink-soft)}
+  .cols{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  .col{display:flex; flex-direction:column; gap:10px}
+  .mcard{position:relative; cursor:pointer; background:var(--paper); border:1.5px solid var(--line); border-radius:11px;
+    padding:13px 13px; font-size:14px; line-height:1.4; color:var(--ink); min-height:58px;
+    display:flex; align-items:center; transition:transform .08s, border-color .12s, background .12s, opacity .25s}
+  .mcard:active{transform:scale(.98)}
+  .mcard.sel{border-color:var(--teal); background:var(--teal-wash); box-shadow:0 0 0 2px var(--teal-wash)}
+  .mcard.good{border-color:var(--green); background:var(--green-wash); color:var(--green); cursor:default; animation:pop .3s ease}
+  .mcard.bad{border-color:var(--red); background:var(--red-wash); color:var(--red); animation:shake .3s}
+  .mcard.done{opacity:.45; pointer-events:none}
+  @keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.05)}100%{transform:scale(1)}}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+  .colhead{font-size:11.5px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:2px; text-align:center}
+
+  .btn{font-family:inherit; font-size:15px; font-weight:600; cursor:pointer; border-radius:10px; padding:12px 18px; border:1px solid transparent}
+  .btn-primary{background:var(--teal); color:#fff}
+  .btn-ghost{background:transparent; color:var(--ink-soft); border-color:var(--line)}
+  .btn-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:16px}
+  .tip{font-size:12.5px; color:var(--ink-faint); margin-top:14px; line-height:1.5}
+
+  /* Results */
+  .bigscore{font-size:44px; font-weight:700; letter-spacing:-.02em}
+  .missrow{border:1px solid var(--line); border-radius:10px; padding:11px 13px; margin-bottom:9px; background:var(--paper)}
+  .missrow .p{font-weight:600; font-size:14px}
+  .missrow .a{font-size:13px; color:var(--ink-soft); margin-top:3px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="toprow">
+    <a href="index.html">← All apps</a>
+    <span style="display:flex; align-items:center; gap:10px">
+      <span class="syncbadge off" id="syncBadge"><span class="sb-dot"></span><span id="syncBadgeTxt">Cloud off</span></span>
+      <button id="themeBtn" class="themetoggle" type="button" aria-label="Toggle dark mode">🌙 Dark</button>
+    </span>
+  </div>
+
+  <!-- HOME -->
+  <div id="home">
+    <h1>CCRN Rapid Drills</h1>
+    <p class="sub">Tap-to-match drills for the facts that are easiest to forget — drugs, antidotes, profiles, sounds. Built for fast, active reps.</p>
+    <div class="card">
+      <div id="setList"></div>
+    </div>
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-top:14px">
+      <span id="storeStatus" style="font-size:12.5px; color:var(--ink-faint)">Checking storage…</span>
+      <button class="cloudlink" id="cloudBtn" type="button">☁ Cloud sync</button>
+    </div>
+    <p class="tip" id="homeTip"></p>
+  </div>
+
+  <!-- CLOUD MODAL -->
+  <div id="cloudModal" class="modal hide">
+    <div class="card" style="max-width:480px; width:100%; max-height:90vh; overflow:auto">
+      <p style="font-weight:600; font-size:15px; margin:0 0 8px">☁ Cloud sync</p>
+      <p style="font-size:13px; color:var(--ink-soft); margin-top:0; line-height:1.55">
+        Saves your drill review data to the same <b>jsonbin.io</b> account as your other CCRN apps so it syncs across devices.
+        Use the <i>same Master Key</i> you used there. First device: paste the key, leave Bin ID blank, tap Connect — you'll get a Bin ID. Other device: paste the same key <i>and</i> that Bin ID.
+      </p>
+      <label style="font-size:12px; color:var(--ink-faint); display:block; margin:10px 0 3px">jsonbin Master Key</label>
+      <input id="cloudKey" type="password" autocomplete="off" placeholder="$2a$10$…">
+      <label style="font-size:12px; color:var(--ink-faint); display:block; margin:10px 0 3px">Bin ID <span style="opacity:.7">(blank on first device)</span></label>
+      <input id="cloudBin" type="text" autocomplete="off" placeholder="e.g. 6650a1b2ac…">
+      <p id="cloudStatus" style="font-size:12.5px; color:var(--ink-soft); margin:12px 0 0; min-height:18px"></p>
+      <div class="btn-row" style="margin-top:14px; flex-wrap:wrap">
+        <button class="btn btn-primary" id="cloudConnect" type="button">Connect</button>
+        <button class="btn btn-ghost" id="cloudSyncNow" type="button">Sync now</button>
+        <button class="btn btn-ghost" id="cloudDisconnect" type="button">Disconnect</button>
+        <button class="btn btn-ghost" id="cloudClose" type="button">Close</button>
+      </div>
+      <p style="font-size:11.5px; color:var(--ink-faint); margin:14px 0 0; line-height:1.5">This drill data uses its own bin, separate from your recall and exam bins, but the same Master Key.</p>
+    </div>
+  </div>
+
+  <!-- DRILL -->
+  <div id="drill" class="hide">
+    <div class="pbar"><div class="pfill" id="pfill"></div></div>
+    <div class="drillhead">
+      <span class="name" id="drillName">Drill</span>
+      <span class="matchcount" id="matchCount">0 / 0 matched</span>
+    </div>
+    <div class="cols">
+      <div><div class="colhead" id="leftHead">Term</div><div class="col" id="colL"></div></div>
+      <div><div class="colhead" id="rightHead">Match</div><div class="col" id="colR"></div></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" id="exitBtn" type="button">Exit drill</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results" class="hide">
+    <div class="card">
+      <div class="bigscore" id="resScore">—</div>
+      <div class="sub" id="resSub" style="margin-top:4px"></div>
+      <div id="resMisses"></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="againBtn" type="button">Again</button>
+        <button class="btn btn-ghost" id="nextBtn" type="button">Next set ▸</button>
+        <button class="btn btn-ghost" id="homeBtn" type="button">Home</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------------- Verified content (sourced from Barron's CCRN) ---------------- */
+const SETS = [
+ { id:"vaso", name:"Vasoactive drugs", color:"#0e7b63", pairs:[
+   ["Nitroprusside","Preload + afterload reducer (watch for cyanide toxicity)"],
+   ["Nitroglycerin","Venodilation → lowers preload & myocardial O₂ demand"],
+   ["Dobutamine","Beta-1 inotrope (↑ contractility & O₂ demand)"],
+   ["Norepinephrine","Vasopressor — first-line in septic shock"],
+   ["Vasopressin","Non-adrenergic vasoconstrictor; restores vascular tone"],
+   ["Milrinone","Inodilator (↑ contractility + vasodilation)"],
+ ]},
+ { id:"anti", name:"Antidotes & reversal agents", color:"#b23a36", pairs:[
+   ["Heparin","Protamine"],
+   ["Warfarin","Vitamin K"],
+   ["Benzodiazepines","Flumazenil"],
+   ["Opioids","Naloxone"],
+   ["Digoxin toxicity","Digoxin immune Fab"],
+   ["Magnesium toxicity","Calcium gluconate"],
+ ]},
+ { id:"arr", name:"Antiarrhythmic / ACLS use", color:"#7a4fb0", pairs:[
+   ["Stable narrow-complex SVT","Adenosine"],
+   ["Pre-excited AF (WPW)","Amiodarone or procainamide — NOT adenosine"],
+   ["Torsades de pointes","IV magnesium"],
+   ["Symptomatic bradycardia","Atropine, then pacing"],
+   ["AFib with RVR (rate control)","Diltiazem (avoid in WPW)"],
+ ]},
+ { id:"gineuro", name:"GI / Neuro / metabolic drugs", color:"#b8730c", pairs:[
+   ["Octreotide","↓ Splanchnic flow — variceal/GI bleed"],
+   ["Lactulose","Removes gut ammonia — hepatic encephalopathy"],
+   ["Mannitol","Osmotic diuretic — lowers ICP"],
+   ["Clonidine","Alpha-2 agonist — opioid withdrawal"],
+   ["Insulin + D50","Shifts K⁺ into cells — hyperkalemia"],
+ ]},
+ { id:"shock", name:"Shock hemodynamic profiles", color:"#0a7ab0", pairs:[
+   ["Septic / distributive","↓CVP  ↓PAOP  ↓SVR,  ↑/normal SvO₂"],
+   ["Cardiogenic","↑CVP  ↑PAOP  ↑SVR"],
+   ["Hypovolemic","↓CVP  ↓PAOP  ↑SVR"],
+   ["RV infarction","↑CVP,  low/normal PAOP,  clear lungs"],
+ ]},
+ { id:"murmur", name:"Murmurs & heart sounds", color:"#0e7b63", pairs:[
+   ["Mitral regurgitation","Systolic murmur + giant V waves on PAOP"],
+   ["Aortic stenosis","Systolic crescendo–decrescendo murmur"],
+   ["Mitral stenosis","Diastolic murmur at the apex"],
+   ["S3 gallop","Heart failure (volume overload)"],
+   ["S4 gallop","Stiff ventricle; absent in atrial fibrillation"],
+   ["VSD","Holosystolic murmur, left sternal border, 5th ICS"],
+ ]},
+ { id:"acid", name:"Acid–base (ABG → disorder)", color:"#7a4fb0", pairs:[
+   ["↓ pH,  ↑ PaCO₂","Respiratory acidosis"],
+   ["↑ pH,  ↓ PaCO₂","Respiratory alkalosis"],
+   ["↓ pH,  ↓ HCO₃⁻","Metabolic acidosis"],
+   ["↑ pH,  ↑ HCO₃⁻","Metabolic alkalosis"],
+ ]},
+];
+const ROUND = 6;            // max pairs per round
+const MISS_KEY = "ccrn-drill-misses";
+
+/* ---------------- Miss tracking ---------------- */
+let misses = {};
+try{ const r=localStorage.getItem(MISS_KEY); if(r) misses=JSON.parse(r)||{}; }catch(e){}
+let localTs = 0;
+try{ const t=parseInt(localStorage.getItem(MISS_KEY+":ts")||"0",10); if(t) localTs=t; }catch(e){}
+function pkey(setId, prompt){ return setId+"||"+prompt; }
+function saveMisses(){
+  localTs = Date.now();
+  try{ localStorage.setItem(MISS_KEY, JSON.stringify(misses)); localStorage.setItem(MISS_KEY+":ts", String(localTs)); }catch(e){}
+  if(cloud.connected && !adopting && typeof schedulePush==="function") schedulePush();
+}
+function missCountForSet(setId){
+  const s=SETS.find(x=>x.id===setId); if(!s) return 0;
+  return s.pairs.filter(p=>misses[pkey(setId,p[0])]>0).length;
+}
+function totalMissed(){
+  let n=0; SETS.forEach(s=>s.pairs.forEach(p=>{ if(misses[pkey(s.id,p[0])]>0) n++; })); return n;
+}
+
+/* ---------------- View helpers ---------------- */
+const $=s=>document.querySelector(s);
+const V={home:$("#home"),drill:$("#drill"),results:$("#results")};
+function show(v){ Object.values(V).forEach(x=>x.classList.add("hide")); V[v].classList.remove("hide"); window.scrollTo({top:0,behavior:"smooth"}); }
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+/* ---------------- Home ---------------- */
+function renderHome(){
+  const host=$("#setList"); host.innerHTML="";
+  SETS.forEach(s=>{
+    const mc=missCountForSet(s.id);
+    const b=document.createElement("button"); b.className="setbtn"; b.type="button";
+    b.innerHTML=`<span class="swatch" style="background:${s.color}"></span>
+      <span><span class="sname">${s.name}</span><span class="smeta">${s.pairs.length} pairs</span></span>
+      <span class="right">${mc? '<span class="missed-chip">'+mc+' to review</span>' : 'tap to drill'}</span>`;
+    b.onclick=()=>startSet(s.id);
+    host.appendChild(b);
+  });
+  const tm=totalMissed();
+  if(tm>0){
+    const b=document.createElement("button"); b.className="setbtn"; b.type="button";
+    b.style.borderColor="var(--amber)";
+    b.innerHTML=`<span class="swatch" style="background:var(--amber)"></span>
+      <span><span class="sname">★ My missed pairs</span><span class="smeta">everything you've matched wrong, across all sets</span></span>
+      <span class="right"><span class="missed-chip">${tm}</span></span>`;
+    b.onclick=()=>startMissed();
+    host.appendChild(b);
+  }
+  $("#homeTip").textContent = "Tip: do a cold round first, then hit “My missed pairs” to lock in the ones you slipped on. Short, active reps beat re-reading.";
+}
+
+/* ---------------- Drill state ---------------- */
+let cur = { setId:null, name:"", pairs:[], matched:0, sel:null, roundMisses:[], pool:[], poolIx:0, isMissed:false };
+
+function buildRoundFrom(pairsWithMeta, name, setId, isMissed){
+  // pairsWithMeta: [{prompt, answer, setId}]
+  cur.allMeta = pairsWithMeta;
+  cur.name = name; cur.setId = setId; cur.isMissed = !!isMissed;
+  cur.poolIx = 0;
+  cur.pool = pairsWithMeta.slice();
+  // prioritize previously-missed within the pool
+  cur.pool.sort((a,b)=>(misses[pkey(b.setId,b.prompt)]||0)-(misses[pkey(a.setId,a.prompt)]||0));
+  nextRound();
+}
+function nextRound(){
+  const slice = cur.pool.slice(cur.poolIx, cur.poolIx+ROUND);
+  cur.poolIx += slice.length;
+  cur.round = slice.map((m,i)=>({i, prompt:m.prompt, answer:m.answer, setId:m.setId}));
+  cur.matched=0; cur.sel=null; cur.roundMisses=[];
+  renderDrill();
+}
+function renderDrill(){
+  $("#drillName").textContent = cur.name;
+  const lefts = shuffle(cur.round.map(r=>({i:r.i, text:r.prompt})));
+  const rights = shuffle(cur.round.map(r=>({i:r.i, text:r.answer})));
+  const cL=$("#colL"), cR=$("#colR"); cL.innerHTML=""; cR.innerHTML="";
+  lefts.forEach(o=>cL.appendChild(mkCard(o.text,o.i,"L")));
+  rights.forEach(o=>cR.appendChild(mkCard(o.text,o.i,"R")));
+  updateCount();
+  show("drill");
+}
+function mkCard(text, pairIx, side){
+  const d=document.createElement("button"); d.className="mcard"; d.type="button";
+  d.dataset.i=pairIx; d.dataset.side=side; d.textContent=text;
+  d.onclick=()=>onPick(d);
+  return d;
+}
+function updateCount(){
+  $("#matchCount").textContent = cur.matched+" / "+cur.round.length+" matched";
+  $("#pfill").style.width = (cur.round.length? (cur.matched/cur.round.length*100):0)+"%";
+}
+function clearSel(){ if(cur.sel){ cur.sel.classList.remove("sel"); cur.sel=null; } }
+
+function onPick(card){
+  if(card.classList.contains("good")||card.classList.contains("done")) return;
+  if(!cur.sel){ card.classList.add("sel"); cur.sel=card; return; }
+  if(card===cur.sel){ clearSel(); return; }
+  if(card.dataset.side===cur.sel.dataset.side){ // switch selection within same column
+    clearSel(); card.classList.add("sel"); cur.sel=card; return;
+  }
+  // evaluate pair across columns
+  const a=cur.sel, b=card;
+  const correct = a.dataset.i===b.dataset.i;
+  if(correct){
+    [a,b].forEach(x=>{ x.classList.remove("sel"); x.classList.add("good");
+      setTimeout(()=>x.classList.add("done"),350); });
+    cur.sel=null; cur.matched++; updateCount();
+    if(cur.matched>=cur.round.length) setTimeout(finishRound, 480);
+  } else {
+    // record miss against the PROMPT (left) card involved
+    const promptCard = a.dataset.side==="L"? a : b;
+    const pIx = parseInt(promptCard.dataset.i,10);
+    const meta = cur.round[ cur.round.findIndex(r=>r.i===pIx) ];
+    if(meta){ const k=pkey(meta.setId, meta.prompt); misses[k]=(misses[k]||0)+1; saveMisses();
+      if(!cur.roundMisses.find(m=>m.prompt===meta.prompt)) cur.roundMisses.push(meta); }
+    [a,b].forEach(x=>{ x.classList.add("bad"); });
+    setTimeout(()=>{ a.classList.remove("bad","sel"); b.classList.remove("bad"); }, 360);
+    cur.sel=null;
+  }
+}
+
+function finishRound(){
+  // if the round was perfect, clear those prompts from the missed list
+  cur.round.forEach(r=>{
+    const k=pkey(r.setId, r.prompt);
+    if(misses[k] && !cur.roundMisses.find(m=>m.prompt===r.prompt)){
+      // matched correctly this round with no error → consider it reviewed, decrement
+      misses[k]=Math.max(0, misses[k]-1); if(misses[k]===0) delete misses[k];
+    }
+  });
+  saveMisses();
+  renderResults();
+}
+
+/* ---------------- Start helpers ---------------- */
+function startSet(id){
+  const s=SETS.find(x=>x.id===id);
+  const meta = s.pairs.map(p=>({prompt:p[0], answer:p[1], setId:s.id}));
+  shuffle(meta);
+  buildRoundFrom(meta, s.name, s.id, false);
+}
+function startMissed(){
+  const meta=[];
+  SETS.forEach(s=>s.pairs.forEach(p=>{ if(misses[pkey(s.id,p[0])]>0) meta.push({prompt:p[0],answer:p[1],setId:s.id}); }));
+  if(meta.length===0){ renderHome(); show("home"); return; }
+  shuffle(meta);
+  buildRoundFrom(meta, "★ My missed pairs", "__missed__", true);
+}
+
+/* ---------------- Results ---------------- */
+function renderResults(){
+  const total=cur.round.length, missed=cur.roundMisses.length, clean=total-missed;
+  $("#resScore").textContent = clean+" / "+total;
+  $("#resSub").textContent = missed===0
+    ? "Perfect round — every pair on the first try."
+    : missed+" pair"+(missed===1?"":"s")+" tripped you up. They're saved to review.";
+  const host=$("#resMisses"); host.innerHTML="";
+  cur.roundMisses.forEach(m=>{
+    const el=document.createElement("div"); el.className="missrow";
+    el.innerHTML=`<div class="p">${m.prompt}</div><div class="a">→ ${m.answer}</div>`;
+    host.appendChild(el);
+  });
+  // Next-set button only meaningful if more pairs remain in current pool
+  $("#nextBtn").style.display = (cur.poolIx < cur.pool.length) ? "" : "none";
+  $("#nextBtn").textContent = "Next " + Math.min(ROUND, cur.pool.length-cur.poolIx) + " ▸";
+  show("results");
+}
+
+/* ---------------- Wire-up ---------------- */
+$("#exitBtn").onclick=()=>{ renderHome(); show("home"); };
+$("#homeBtn").onclick=()=>{ renderHome(); show("home"); };
+$("#againBtn").onclick=()=>{
+  if(cur.isMissed){ startMissed(); }
+  else { startSet(cur.setId); }
+};
+$("#nextBtn").onclick=()=>{ nextRound(); };
+
+/* ---------------- Cloud sync (jsonbin, shared key, own bin) ---------------- */
+const CLOUD_KEY_LS = "ccrn-sync-key";        // shared with the other CCRN apps on this browser
+const CLOUD_BIN_LS = "ccrn-sync-drills-bin"; // separate bin for drill data
+const JB_BASE = "https://api.jsonbin.io/v3/b";
+let cloud = { key:"", bin:"", connected:false };
+let pushTimer=null, adopting=false, cloudSaveState="", savedRevertTimer=null;
+
+function loadCloudCfg(){
+  try{ cloud.key=localStorage.getItem(CLOUD_KEY_LS)||""; cloud.bin=localStorage.getItem(CLOUD_BIN_LS)||""; }catch(e){}
+  cloud.connected = !!(cloud.key && cloud.bin);
+}
+function saveCloudCfg(){
+  try{
+    if(cloud.key) localStorage.setItem(CLOUD_KEY_LS, cloud.key); else localStorage.removeItem(CLOUD_KEY_LS);
+    if(cloud.bin) localStorage.setItem(CLOUD_BIN_LS, cloud.bin); else localStorage.removeItem(CLOUD_BIN_LS);
+  }catch(e){}
+  cloud.connected = !!(cloud.key && cloud.bin);
+}
+function cstat(msg){ const el=$("#cloudStatus"); if(el) el.textContent=msg; }
+function footerStatus(){
+  const st=$("#storeStatus");
+  if(st){ st.textContent = "Saved on this device" + (cloud.connected ? " · ☁ " + (cloudSaveState==="saving"?"saving…":cloudSaveState==="error"?"save failed — will retry":cloudSaveState==="saved"?"saved ✓":"cloud on") : ""); }
+  const b=$("#syncBadge"), t=$("#syncBadgeTxt");
+  if(b&&t){
+    b.classList.remove("off","saved","saving","error");
+    if(!cloud.connected){ b.classList.add("off"); t.textContent="Cloud off"; }
+    else if(cloudSaveState==="saving"){ b.classList.add("saving"); t.textContent="Saving…"; }
+    else if(cloudSaveState==="error"){ b.classList.add("error"); t.textContent="Save failed"; }
+    else if(cloudSaveState==="saved"){ b.classList.add("saved"); t.textContent="Saved"; }
+    else { b.classList.add("saved"); t.textContent="Synced"; }
+  }
+}
+function jbHeaders(){ return { "Content-Type":"application/json", "X-Master-Key":cloud.key, "X-Bin-Versioning":"false" }; }
+async function cloudCreateBin(){
+  const body=JSON.stringify({ misses, updatedAt: localTs||Date.now() });
+  const r=await fetch(JB_BASE,{ method:"POST", headers:{...jbHeaders(),"X-Bin-Name":"ccrn-drills","X-Bin-Private":"true"}, body });
+  if(!r.ok) throw new Error("HTTP "+r.status);
+  const j=await r.json(); const id=j&&j.metadata&&j.metadata.id; if(!id) throw new Error("no bin id returned"); return id;
+}
+async function cloudPull(){
+  const r=await fetch(JB_BASE+"/"+encodeURIComponent(cloud.bin)+"/latest",{ method:"GET", headers:jbHeaders() });
+  if(!r.ok) throw new Error("HTTP "+r.status);
+  const j=await r.json(); return (j&&j.record)?j.record:null;
+}
+async function cloudPush(opts){
+  opts=opts||{};
+  cloudSaveState="saving"; footerStatus();
+  const body=JSON.stringify({ misses, updatedAt: localTs||Date.now() });
+  const init={ method:"PUT", headers:jbHeaders(), body };
+  if(opts.keepalive) init.keepalive=true;
+  try{
+    const r=await fetch(JB_BASE+"/"+encodeURIComponent(cloud.bin), init);
+    if(!r.ok) throw new Error("HTTP "+r.status);
+  }catch(e){ cloudSaveState="error"; footerStatus(); throw e; }
+  cloudSaveState="saved"; footerStatus();
+  if(savedRevertTimer) clearTimeout(savedRevertTimer);
+  savedRevertTimer=setTimeout(()=>{ cloudSaveState=""; footerStatus(); }, 2500);
+  return true;
+}
+/* Union-merge misses: keep the higher count per item so a miss flagged on
+   either device is never lost when syncing (matches the other apps). */
+function mergeMisses(local, remote){
+  const out={}, keys=new Set();
+  Object.keys(local||{}).forEach(k=>keys.add(k));
+  Object.keys(remote||{}).forEach(k=>keys.add(k));
+  keys.forEach(k=>{ const v=Math.max((local&&local[k])||0,(remote&&remote[k])||0); if(v>0) out[k]=v; });
+  return out;
+}
+async function cloudSync(){
+  if(!cloud.connected) return;
+  cstat("Syncing…");
+  try{
+    const rec=await cloudPull();
+    const before=JSON.stringify(misses);
+    if(rec && rec.misses && typeof rec.misses==="object"){
+      adopting=true;
+      misses=mergeMisses(misses, rec.misses);
+      localTs=Date.now();
+      try{ localStorage.setItem(MISS_KEY, JSON.stringify(misses)); localStorage.setItem(MISS_KEY+":ts", String(localTs)); }catch(e){}
+      adopting=false;
+      await cloudPush();
+      cstat(before!==JSON.stringify(misses) ? "Synced ✓ review data merged across your devices." : "Already up to date ✓");
+    } else {
+      await cloudPush();
+      cstat("Pushed this device's drill data to the cloud ✓");
+    }
+    renderHome(); footerStatus();
+  }catch(e){ cstat("Sync failed: "+friendlyErr(e)); }
+}
+function schedulePush(){ if(pushTimer) clearTimeout(pushTimer); pushTimer=setTimeout(()=>{ pushTimer=null; cloudPush().catch(()=>{}); }, 1200); }
+function flushPush(){ if(pushTimer){ clearTimeout(pushTimer); pushTimer=null; } if(cloud.connected) cloudPush({keepalive:true}).catch(()=>{}); }
+function friendlyErr(e){
+  const m=(e&&e.message)||"";
+  if(m.indexOf("401")>-1||m.indexOf("403")>-1) return "key not accepted — check the Master Key.";
+  if(m.indexOf("404")>-1) return "bin not found — check the Bin ID.";
+  if(m.indexOf("429")>-1) return "rate limited — wait a few seconds and try again.";
+  if(m.toLowerCase().indexOf("failed to fetch")>-1||m.toLowerCase().indexOf("networkerror")>-1)
+    return "couldn't reach the network. If you're in the Claude viewer, open the file in your browser instead.";
+  return m||"unknown error.";
+}
+function openCloud(){
+  $("#cloudKey").value=cloud.key||""; $("#cloudBin").value=cloud.bin||"";
+  cstat(cloud.connected ? "Connected. Bin ID: "+cloud.bin : "Not connected yet.");
+  $("#cloudModal").classList.remove("hide");
+}
+$("#cloudBtn").onclick=openCloud;
+$("#cloudClose").onclick=()=>$("#cloudModal").classList.add("hide");
+$("#cloudModal").onclick=(e)=>{ if(e.target===$("#cloudModal")) $("#cloudModal").classList.add("hide"); };
+$("#cloudConnect").onclick=async()=>{
+  const key=$("#cloudKey").value.trim(), bin=$("#cloudBin").value.trim();
+  if(!key){ cstat("Paste your jsonbin Master Key first."); return; }
+  cloud.key=key;
+  if(bin){ cloud.bin=bin; cloud.connected=true; saveCloudCfg(); cstat("Connecting…"); await cloudSync(); footerStatus(); }
+  else{
+    cstat("Creating a new cloud bin…");
+    try{ const id=await cloudCreateBin(); cloud.bin=id; cloud.connected=true; saveCloudCfg(); $("#cloudBin").value=id;
+      cstat("Connected ✓  Your Bin ID is: "+id+"  — paste this (with your key) on your other device."); footerStatus();
+    }catch(e){ cloud.connected=false; cstat("Couldn't connect: "+friendlyErr(e)); }
+  }
+};
+$("#cloudSyncNow").onclick=async()=>{ if(!cloud.connected){ cstat("Connect first."); return; } await cloudSync(); };
+$("#cloudDisconnect").onclick=()=>{ cloud.key=""; cloud.bin=""; cloud.connected=false; saveCloudCfg(); $("#cloudKey").value=""; $("#cloudBin").value=""; cstat("Disconnected. Drill data still saves on this device."); footerStatus(); };
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden"){ flushPush(); } });
+window.addEventListener("pagehide", ()=>{ flushPush(); });
+
+/* ---------------- Theme toggle ---------------- */
+function currentTheme(){ let t=null; try{t=localStorage.getItem('ccrn-theme');}catch(e){} if(t==='dark'||t==='light')return t; return (window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'; }
+function updateThemeBtn(){ $("#themeBtn").textContent = currentTheme()==='dark' ? '☀️ Light' : '🌙 Dark'; }
+function applyTheme(t){ try{localStorage.setItem('ccrn-theme',t);}catch(e){} if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t); else document.documentElement.removeAttribute('data-theme'); updateThemeBtn(); }
+$("#themeBtn").onclick=()=>applyTheme(currentTheme()==='dark'?'light':'dark');
+updateThemeBtn();
+
+/* ---------------- Init ---------------- */
+loadCloudCfg();
+footerStatus();
+renderHome(); show("home");
+if(cloud.connected){ cloudSync(); }
+</script>
+</body>
+</html>

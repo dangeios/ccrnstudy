@@ -1,0 +1,3492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CCRN Mock Exams</title>
+<script>(function(){try{var t=localStorage.getItem('ccrn-theme'); if(t==='dark'||t==='light') document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<style>
+  :root{
+    --ink:#1b2128; --ink-soft:#566070; --ink-faint:#8a93a1;
+    --paper:#fbfbfc; --panel:#f1f3f5; --panel-2:#e8ebef; --line:#dfe3e8;
+    --teal:#0e7b63; --teal-deep:#0a5b49; --teal-wash:#e3f1ec;
+    --amber:#b8730c; --amber-wash:#fbf0dd;
+    --red:#b23a36; --red-wash:#f8e7e6;
+    --green:#1d7a4d; --green-wash:#e4f3ea;
+    --radius:12px; --shadow:0 1px 2px rgba(20,30,45,.04), 0 8px 28px rgba(20,30,45,.06);
+  }
+  :root[data-theme="dark"]{
+    --ink:#e7e9ec; --ink-soft:#a6adb8; --ink-faint:#7b828d;
+    --paper:#15171a; --panel:#1f2227; --panel-2:#262a30; --line:#2c3036;
+    --teal:#3aa888; --teal-deep:#5dcaa5; --teal-wash:#10302a;
+    --amber:#d59433; --amber-wash:#2e2412;
+    --red:#e07a76; --red-wash:#2e1414;
+    --green:#4fb07a; --green-wash:#10301f;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 28px rgba(0,0,0,.4);
+  }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+    --ink:#e7e9ec; --ink-soft:#a6adb8; --ink-faint:#7b828d;
+    --paper:#15171a; --panel:#1f2227; --panel-2:#262a30; --line:#2c3036;
+    --teal:#3aa888; --teal-deep:#5dcaa5; --teal-wash:#10302a;
+    --amber:#d59433; --amber-wash:#2e2412;
+    --red:#e07a76; --red-wash:#2e1414;
+    --green:#4fb07a; --green-wash:#10301f;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 28px rgba(0,0,0,.4);
+  }}
+  *{box-sizing:border-box}
+  html,body{margin:0; background:var(--paper); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:760px; margin:0 auto; padding:18px 16px 70px}
+  .toprow{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px}
+  .toprow a{font-size:13px; font-weight:500; text-decoration:none; color:var(--teal)}
+  .themetoggle{font-family:inherit; font-size:12.5px; font-weight:500; cursor:pointer; background:var(--panel); color:var(--ink-soft); border:1px solid var(--line); border-radius:999px; padding:6px 12px}
+  .syncbadge{display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:500; padding:5px 11px; border-radius:999px; border:1px solid var(--line); background:var(--panel); color:var(--ink-soft); transition:.2s}
+  .syncbadge .sb-dot{width:7px; height:7px; border-radius:50%; background:currentColor}
+  .syncbadge.saved{color:var(--green); border-color:var(--green); background:var(--green-wash)}
+  .syncbadge.saving{color:var(--amber); border-color:var(--amber); background:var(--amber-wash)}
+  .syncbadge.saving .sb-dot{animation:sbpulse 1s ease-in-out infinite}
+  .syncbadge.error{color:var(--red); border-color:var(--red); background:var(--red-wash)}
+  .syncbadge.off{color:var(--ink-faint)}
+  @keyframes sbpulse{0%,100%{opacity:1}50%{opacity:.25}}
+  h1{font-size:22px; margin:0 0 2px}
+  .sub{color:var(--ink-soft); font-size:13.5px; margin:0 0 18px; line-height:1.5}
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow)}
+  .hide{display:none}
+  .cloudlink{font-family:inherit; font-size:12.5px; font-weight:500; cursor:pointer; background:none; border:none; color:var(--teal); padding:0}
+  .modal{position:fixed; inset:0; background:rgba(20,30,45,.45); display:flex; align-items:center; justify-content:center; padding:20px; z-index:50}
+  .modal.hide{display:none}
+  .modal input{width:100%; font-family:ui-monospace,Menlo,monospace; font-size:12px; border:1px solid var(--line); border-radius:9px; padding:9px; background:var(--paper); color:var(--ink)}
+
+  .mockbtn{display:flex; align-items:center; gap:13px; width:100%; text-align:left; cursor:pointer; background:var(--paper); border:1px solid var(--line); border-radius:11px; padding:15px 16px; margin-bottom:11px; font-family:inherit; color:var(--ink); transition:transform .1s, border-color .15s}
+  .mockbtn:hover{transform:translateY(-1px); border-color:var(--teal)}
+  .mockbtn .badge{width:38px; height:38px; flex:0 0 auto; border-radius:10px; background:var(--teal-wash); color:var(--teal); font-weight:700; font-size:16px; display:flex; align-items:center; justify-content:center}
+  .mockbtn .mname{font-size:15.5px; font-weight:600}
+  .mockbtn .mmeta{font-size:12.5px; color:var(--ink-faint); margin-top:2px}
+  .mockbtn .right{margin-left:auto; text-align:right; font-size:12px; color:var(--ink-faint)}
+  .best{display:inline-block; background:var(--green-wash); color:var(--green); border-radius:999px; padding:2px 9px; font-size:12px; font-weight:600}
+
+  .btn{font-family:inherit; font-size:15px; font-weight:600; cursor:pointer; border-radius:10px; padding:12px 18px; border:1px solid transparent}
+  .btn-primary{background:var(--teal); color:#fff}
+  .btn-ghost{background:transparent; color:var(--ink-soft); border-color:var(--line)}
+  .btn-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:16px}
+  .tip{font-size:12.5px; color:var(--ink-faint); margin-top:14px; line-height:1.55}
+
+  .pbar{height:6px; background:var(--panel-2); border-radius:999px; overflow:hidden; margin-bottom:12px}
+  .pfill{height:100%; background:var(--teal); width:0; transition:width .3s}
+  .meta{display:flex; justify-content:space-between; align-items:center; font-size:13px; color:var(--ink-soft); margin-bottom:12px}
+  .chip{display:inline-block; font-size:11.5px; font-weight:600; color:var(--teal); background:var(--teal-wash); border-radius:999px; padding:3px 10px; letter-spacing:.02em}
+  .stem{font-size:16px; line-height:1.5; margin:10px 0 16px}
+  .opt{display:block; width:100%; text-align:left; cursor:pointer; background:var(--paper); border:1.5px solid var(--line); border-radius:11px; padding:13px 15px; margin-bottom:9px; font-size:14.5px; line-height:1.45; color:var(--ink); font-family:inherit; transition:border-color .12s, background .12s}
+  .opt:hover{border-color:var(--teal)}
+  .opt.sel{border-color:var(--teal); background:var(--teal-wash)}
+  .opt .ltr{display:inline-block; width:22px; font-weight:700; color:var(--ink-faint)}
+  .opt.sel .ltr{color:var(--teal)}
+
+  .bigscore{font-size:46px; font-weight:700; letter-spacing:-.02em}
+  .passpill{display:inline-block; font-size:13px; font-weight:700; border-radius:999px; padding:4px 13px; margin-left:10px; vertical-align:middle}
+  .passpill.pass{background:var(--green-wash); color:var(--green)}
+  .passpill.fail{background:var(--red-wash); color:var(--red)}
+  .dbars{margin-top:10px}
+  .dbar{margin-bottom:9px}
+  .dbar .lab{display:flex; justify-content:space-between; font-size:12.5px; color:var(--ink-soft); margin-bottom:3px}
+  .dbar .track{height:8px; background:var(--panel-2); border-radius:999px; overflow:hidden}
+  .dbar .fill{height:100%; border-radius:999px}
+
+  .rev{border:1px solid var(--line); border-radius:11px; padding:14px; margin-bottom:11px; background:var(--paper)}
+  .rev.ok{border-left:4px solid var(--green)}
+  .rev.no{border-left:4px solid var(--red)}
+  .rev .rq{font-size:14.5px; line-height:1.5; font-weight:500}
+  .rev .ro{font-size:13.5px; margin-top:8px; line-height:1.5}
+  .rev .ro .you{color:var(--red); font-weight:600}
+  .rev .ro .corr{color:var(--green); font-weight:600}
+  .rev .rr{font-size:13px; color:var(--ink-soft); margin-top:9px; line-height:1.55; padding-top:9px; border-top:1px solid var(--line)}
+  .rev .bookref{font-size:12.5px; color:var(--ink-faint); font-style:italic; margin-top:6px}
+  .filterrow{display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap}
+  .filt{font-family:inherit; font-size:13px; font-weight:500; cursor:pointer; background:var(--panel); color:var(--ink-soft); border:1px solid var(--line); border-radius:999px; padding:6px 13px}
+  .filt.sel{background:var(--teal); color:#fff; border-color:var(--teal)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="toprow">
+    <a href="index.html">← All apps</a>
+    <span style="display:flex; align-items:center; gap:10px">
+      <span class="syncbadge off" id="syncBadge"><span class="sb-dot"></span><span id="syncBadgeTxt">Cloud off</span></span>
+      <button id="themeBtn" class="themetoggle" type="button">🌙 Dark</button>
+    </span>
+  </div>
+
+  <!-- HOME -->
+  <div id="home">
+    <h1>CCRN Mock Exams</h1>
+    <p class="sub">Three full-length practice exams spanning the entire Adult CCRN blueprint — answer all, then get a score, a pass/fail read, a domain breakdown, and a full review with rationales.</p>
+    <div class="card"><div id="mockList"></div></div>
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-top:14px">
+      <span id="storeStatus" style="font-size:12.5px; color:var(--ink-faint)"></span>
+      <button class="cloudlink" id="cloudBtn" type="button">☁ Cloud sync</button>
+    </div>
+    <p class="tip">Passing on the real exam is roughly 70%. These mocks mirror the blueprint weighting (cardiovascular and professional caring are the heaviest). Your best score per exam is saved and synced.</p>
+  </div>
+
+  <!-- EXAM -->
+  <div id="exam" class="hide">
+    <div class="pbar"><div class="pfill" id="pfill"></div></div>
+    <div class="meta">
+      <span id="counter">Question 1</span>
+      <span><span id="answered">0 answered</span> · <span id="timer">00:00</span></span>
+    </div>
+    <div class="card">
+      <span class="chip" id="chip">Domain</span>
+      <p class="stem" id="stem"></p>
+      <div id="opts"></div>
+      <div class="btn-row" style="justify-content:space-between">
+        <button class="btn btn-ghost" id="prevBtn" type="button">← Back</button>
+        <button class="btn btn-primary" id="nextBtn" type="button">Next →</button>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" id="quitBtn" type="button">Save &amp; quit</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results" class="hide">
+    <div class="card">
+      <div><span class="bigscore" id="resScore">—</span><span class="passpill" id="passPill"></span></div>
+      <div class="sub" id="resSub" style="margin-top:6px"></div>
+      <p style="font-weight:600; font-size:13.5px; margin:16px 0 6px">By domain</p>
+      <div class="dbars" id="dbars"></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="reviewBtn" type="button">Review answers</button>
+        <button class="btn btn-ghost" id="retakeBtn" type="button">Retake</button>
+        <button class="btn btn-ghost" id="homeBtn" type="button">Home</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REVIEW -->
+  <div id="review" class="hide">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
+      <h1 style="font-size:18px; margin:0" id="revTitle">Review</h1>
+      <button class="btn btn-ghost" id="revBack" type="button" style="padding:8px 14px">← Score</button>
+    </div>
+    <div class="filterrow">
+      <button class="filt sel" data-f="all" type="button">All</button>
+      <button class="filt" data-f="wrong" type="button">Missed only</button>
+    </div>
+    <div id="revList"></div>
+    <div class="btn-row"><button class="btn btn-ghost" id="revHome" type="button">Home</button></div>
+  </div>
+
+  <!-- CLOUD MODAL -->
+  <div id="cloudModal" class="modal hide">
+    <div class="card" style="max-width:480px; width:100%; max-height:90vh; overflow:auto">
+      <p style="font-weight:600; font-size:15px; margin:0 0 8px">☁ Cloud sync</p>
+      <p style="font-size:13px; color:var(--ink-soft); margin-top:0; line-height:1.55">
+        Saves your mock-exam scores to the same <b>jsonbin.io</b> account as your other CCRN apps. Use the <i>same Master Key</i>. First device: paste the key, leave Bin ID blank, Connect — you'll get a Bin ID. Other device: paste the same key <i>and</i> that Bin ID.
+      </p>
+      <label style="font-size:12px; color:var(--ink-faint); display:block; margin:10px 0 3px">jsonbin Master Key</label>
+      <input id="cloudKey" type="password" autocomplete="off" placeholder="$2a$10$…">
+      <label style="font-size:12px; color:var(--ink-faint); display:block; margin:10px 0 3px">Bin ID <span style="opacity:.7">(blank on first device)</span></label>
+      <input id="cloudBin" type="text" autocomplete="off" placeholder="e.g. 6650a1b2ac…">
+      <p id="cloudStatus" style="font-size:12.5px; color:var(--ink-soft); margin:12px 0 0; min-height:18px"></p>
+      <div class="btn-row" style="margin-top:14px; flex-wrap:wrap">
+        <button class="btn btn-primary" id="cloudConnect" type="button">Connect</button>
+        <button class="btn btn-ghost" id="cloudSyncNow" type="button">Sync now</button>
+        <button class="btn btn-ghost" id="cloudDisconnect" type="button">Disconnect</button>
+        <button class="btn btn-ghost" id="cloudClose" type="button">Close</button>
+      </div>
+      <p style="font-size:11.5px; color:var(--ink-faint); margin:14px 0 0; line-height:1.5">Mock scores use their own bin, separate from your other apps, but the same Master Key.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== Mock exam data: 3 variations, blueprint-weighted, grounded in Barron's ===== */
+const EXAMS = [
+ {
+  "id": "A",
+  "name": "Mock A",
+  "questions": [
+   {
+    "d": "Cardiovascular",
+    "c": "Anterior STEMI leads",
+    "s": "A patient has ST elevation in V2–V4 with reciprocal changes. Which coronary artery is MOST likely occluded?",
+    "o": [
+     "Right coronary artery",
+     "Posterior descending",
+     "Left circumflex",
+     "Left anterior descending"
+    ],
+    "a": 3,
+    "r": "V2–V4 are the anterior/septal leads supplied by the LAD. Inferior MI (II, III, aVF) = RCA; lateral (I, aVL, V5–V6) = circumflex."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "RV infarction is preload-dependent",
+    "s": "An inferior STEMI patient is hypotensive with clear lungs, JVD, high CVP, and low-normal PAOP. Which is MOST appropriate first?",
+    "o": [
+     "A fluid bolus",
+     "IV nitroglycerin",
+     "IV morphine",
+     "IV furosemide"
+    ],
+    "a": 0,
+    "r": "Clear lungs + high CVP/JVD + low PAOP after inferior STEMI = RV infarction. The RV is preload-dependent — give fluid; avoid nitrates, diuretics, and morphine, which drop preload."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Cardiac tamponade — Beck's triad",
+    "s": "A post-cardiac-surgery patient has a sudden fall in chest-tube output, hypotension with narrow pulse pressure, JVD, and muffled heart sounds. MOST appropriate action?",
+    "o": [
+     "Increase PEEP",
+     "Start nitroglycerin",
+     "Prepare for pericardiocentesis / surgical re-exploration",
+     "Administer a diuretic"
+    ],
+    "a": 2,
+    "r": "Falling chest-tube output with Beck's triad (hypotension, JVD, muffled sounds) and pulsus paradoxus indicates tamponade; treat by relieving the effusion."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Pre-excited AF — avoid AV nodal blockers",
+    "s": "A patient with WPW develops atrial fibrillation with a rapid, irregular wide-complex rhythm. Which drug should be AVOIDED?",
+    "o": [
+     "Procainamide",
+     "Adenosine",
+     "Amiodarone",
+     "A beta-blocker is the agent of choice here"
+    ],
+    "a": 1,
+    "r": "In pre-excited AF, AV nodal blockers (adenosine, diltiazem, digoxin) can accelerate conduction down the accessory pathway and precipitate VF. Use procainamide or amiodarone."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Symptomatic third-degree AV block",
+    "s": "A patient has complete heart block at a rate of 32 with hypotension and confusion. Which is the PRIORITY intervention?",
+    "o": [
+     "IV adenosine",
+     "Vagal maneuvers",
+     "Synchronized cardioversion",
+     "Transcutaneous pacing"
+    ],
+    "a": 3,
+    "r": "Symptomatic complete heart block needs immediate transcutaneous pacing (and prep for transvenous), with atropine as a temporizing measure that is often ineffective in high-grade block."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "ARDS — low tidal volume",
+    "s": "A patient with ARDS is ventilated. Which strategy is MOST appropriate to limit ventilator-induced lung injury?",
+    "o": [
+     "High tidal volume to recruit alveoli",
+     "Permissive hyperoxia",
+     "Low tidal volume (~6 mL/kg ideal body weight)",
+     "Zero PEEP"
+    ],
+    "a": 2,
+    "r": "Lung-protective ventilation uses ~6 mL/kg IBW with plateau pressure <30 and adequate PEEP. Permissive hypercapnia is accepted to protect the lungs."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "Auto-PEEP in status asthmaticus",
+    "s": "An intubated status asthmaticus patient develops rising peak pressures and hypotension. Which ventilator change is MOST appropriate?",
+    "o": [
+     "Add high PEEP",
+     "Increase tidal volume",
+     "Lengthen expiratory time (lower rate, shorter inspiratory time)",
+     "Increase the respiratory rate"
+    ],
+    "a": 2,
+    "r": "Air trapping/auto-PEEP is from inadequate exhalation. Allow more expiratory time (lower rate, shorter inspiratory time); disconnecting to let air out relieves acute hypotension."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "Good lung down",
+    "s": "A patient with right lower-lobe pneumonia and marginal oxygenation is repositioned. Which position should be AVOIDED?",
+    "o": [
+     "High Fowler's",
+     "Semi-Fowler's",
+     "Left lateral (good lung down)",
+     "Right lateral (affected lung down)"
+    ],
+    "a": 3,
+    "r": "Gravity favors perfusion to the dependent lung; placing the diseased lung down worsens V/Q mismatch. Keep the good lung down."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "Tension pneumothorax",
+    "s": "A ventilated trauma patient suddenly has absent left breath sounds, tracheal deviation to the right, JVD, and hypotension. PRIORITY action?",
+    "o": [
+     "Lower the PEEP",
+     "Immediate needle decompression",
+     "Increase sedation",
+     "Obtain a stat chest x-ray first"
+    ],
+    "a": 1,
+    "r": "This is tension pneumothorax — a clinical diagnosis requiring immediate needle decompression followed by chest tube. Don't wait for imaging."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Septic shock — early bundle",
+    "s": "A patient with suspected sepsis has a lactate of 4.2 mmol/L and MAP 58 after culture draw. Which is MOST appropriate?",
+    "o": [
+     "Diuresis for the elevated lactate",
+     "Broad-spectrum antibiotics and a 30 mL/kg crystalloid bolus",
+     "Restrict fluids until cultures result",
+     "Vasopressin as the first agent"
+    ],
+    "a": 1,
+    "r": "Early sepsis care: obtain cultures/lactate, give broad-spectrum antibiotics promptly, and resuscitate with ~30 mL/kg crystalloid; norepinephrine is added if hypotension persists."
+   },
+   {
+    "d": "Multisystem",
+    "c": "HIT — stop heparin",
+    "s": "On day 6 of heparin, platelets drop from 250k to 85k and a new DVT appears. MOST appropriate action?",
+    "o": [
+     "Transfuse platelets",
+     "Stop all heparin and start a non-heparin anticoagulant",
+     "Give vitamin K",
+     "Continue heparin and recheck"
+    ],
+    "a": 1,
+    "r": "Heparin-induced thrombocytopenia is prothrombotic; stop all heparin (including flushes) and anticoagulate with a non-heparin agent. Avoid platelet transfusion."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Hyperkalemia — membrane stabilization",
+    "s": "A patient has K+ 7.1 with peaked T waves and a widening QRS. Which is the PRIORITY intervention?",
+    "o": [
+     "IV insulin with dextrose",
+     "IV calcium gluconate",
+     "Sodium polystyrene sulfonate",
+     "Albuterol nebulizer"
+    ],
+    "a": 1,
+    "r": "With ECG changes, IV calcium is first to stabilize the myocardium. Insulin/dextrose and albuterol then shift K+ intracellularly; dialysis/binders remove it."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Compartment syndrome",
+    "s": "After tibial fracture repair, a patient reports pain out of proportion with a tense calf; pulses are present. MOST appropriate next step?",
+    "o": [
+     "Apply a tighter wrap",
+     "Measure compartment pressure; fasciotomy if elevated",
+     "Reassure since pulses are intact",
+     "Elevate above the heart and recheck in 4 hours"
+    ],
+    "a": 1,
+    "r": "Pain out of proportion and a tense compartment are early signs; pulselessness is late. Measure pressure — >30 mmHg warrants emergent fasciotomy."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Acute pancreatitis — hypocalcemia",
+    "s": "A patient with severe pancreatitis has perioral tingling and a positive Chvostek sign. Which electrolyte disturbance is MOST likely?",
+    "o": [
+     "Hyperkalemia",
+     "Hypermagnesemia",
+     "Hypernatremia",
+     "Hypocalcemia"
+    ],
+    "a": 3,
+    "r": "Calcium is consumed in fat saponification, producing hypocalcemia and neuromuscular irritability (Chvostek/Trousseau, tetany)."
+   },
+   {
+    "d": "Neurology",
+    "c": "SAH presentation",
+    "s": "A patient reports a sudden 'worst headache of my life' with neck stiffness and photophobia. Which is the MOST likely diagnosis?",
+    "o": [
+     "Migraine",
+     "Subarachnoid hemorrhage",
+     "Pontine infarct with pinpoint pupils",
+     "Tension headache"
+    ],
+    "a": 1,
+    "r": "Thunderclap headache with meningismus suggests SAH (usually aneurysmal). Pinpoint pupils point to a pontine lesion, not SAH."
+   },
+   {
+    "d": "Neurology",
+    "c": "Increased ICP — CPP",
+    "s": "A head-injured patient has ICP 25 mmHg and MAP 80 mmHg. What is the cerebral perfusion pressure, and is it adequate?",
+    "o": [
+     "80 mmHg — adequate",
+     "25 mmHg — adequate",
+     "55 mmHg — borderline low",
+     "105 mmHg — high"
+    ],
+    "a": 2,
+    "r": "CPP = MAP − ICP = 80 − 25 = 55 mmHg, which is below the usual 60–70 target — interventions to lower ICP or support MAP are needed."
+   },
+   {
+    "d": "Neurology",
+    "c": "Ischemic stroke — tPA window",
+    "s": "A patient has acute stroke symptoms with a clearly documented last-known-well 2 hours ago and no hemorrhage on CT. Which is MOST appropriate?",
+    "o": [
+     "Withhold all treatment for 24 hours",
+     "Lower the blood pressure aggressively to normal",
+     "Evaluate for IV thrombolysis",
+     "Give aspirin and discharge"
+    ],
+    "a": 2,
+    "r": "Within the window and without contraindications, IV thrombolysis is indicated for ischemic stroke. BP is permitted to run higher (permissive hypertension) unless thrombolysis criteria require modest lowering."
+   },
+   {
+    "d": "Endocrine",
+    "c": "DKA — fluids first, then insulin/K+",
+    "s": "A DKA patient has glucose 540, K+ 3.2, and is dehydrated. Which is MOST appropriate before starting an insulin infusion?",
+    "o": [
+     "Restrict fluids",
+     "Replace potassium and give IV fluids",
+     "Give IV bicarbonate",
+     "Start insulin immediately regardless of K+"
+    ],
+    "a": 1,
+    "r": "Insulin drives K+ into cells; with K+ <3.3, replace potassium and rehydrate first to avoid life-threatening hypokalemia, then start insulin."
+   },
+   {
+    "d": "Endocrine",
+    "c": "Beta-blocker masks hypoglycemia",
+    "s": "A diabetic on metoprolol becomes hypoglycemic. Which presentation should the nurse MOST expect?",
+    "o": [
+     "Confusion/altered mental status with few adrenergic signs",
+     "No symptoms at all",
+     "Marked tachycardia and tremor",
+     "Bounding pulses and hypertension"
+    ],
+    "a": 0,
+    "r": "Beta-blockers blunt the early adrenergic warning signs, so hypoglycemia may present first with neuroglycopenic signs — confusion, slurred speech, seizure."
+   },
+   {
+    "d": "Renal / Multisystem",
+    "c": "Intrarenal AKI (ATN) labs",
+    "s": "After prolonged hypotension a patient is oliguric with urine sodium 65 mEq/L and low urine osmolality. Which AKI type is MOST likely?",
+    "o": [
+     "Normal kidneys",
+     "Postrenal obstruction",
+     "Prerenal azotemia",
+     "Intrarenal (acute tubular necrosis)"
+    ],
+    "a": 3,
+    "r": "Damaged tubules cannot reabsorb sodium or concentrate urine, so ATN shows high urine Na (>40) and low osmolality. Prerenal shows the opposite."
+   },
+   {
+    "d": "Renal / Multisystem",
+    "c": "Contrast-induced nephropathy prevention",
+    "s": "A patient with CKD needs a contrast CT. Which intervention BEST reduces the risk of contrast-induced nephropathy?",
+    "o": [
+     "Fluid restriction",
+     "A loop diuretic before the scan",
+     "A nephrotoxic antibiotic for prophylaxis",
+     "Isotonic IV fluid hydration before and after"
+    ],
+    "a": 3,
+    "r": "Isotonic volume expansion is the mainstay of prevention; hold other nephrotoxins and use the lowest contrast volume. Diuresis and fluid restriction worsen risk."
+   },
+   {
+    "d": "Behavioral / Psychosocial",
+    "c": "Alcohol withdrawal — benzodiazepines",
+    "s": "Forty-eight hours after admission a patient develops tremor, tachycardia, hypertension, and visual hallucinations. Which is the MOST appropriate treatment?",
+    "o": [
+     "IV fluids alone",
+     "Symptom-triggered benzodiazepines",
+     "Physical restraint only",
+     "An antipsychotic alone"
+    ],
+    "a": 1,
+    "r": "Alcohol withdrawal is treated with symptom-triggered benzodiazepines (e.g., CIWA-guided) to prevent seizures and delirium tremens, plus supportive care and thiamine."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Family presence during resuscitation",
+    "s": "A patient's family asks to be present during resuscitation. Which response BEST reflects AACN-endorsed practice?",
+    "o": [
+     "Offer presence with a dedicated support staff member",
+     "Allow it only if they don't react",
+     "Have security remove them",
+     "Tell them it isn't allowed at a code"
+    ],
+    "a": 0,
+    "r": "An AACN Practice Alert supports family presence during resuscitation, which benefits patient and family; facilitate it with an assigned support person."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Just culture / error disclosure",
+    "s": "A nurse discovers she gave a medication at the wrong rate; the patient is unharmed. MOST appropriate action?",
+    "o": [
+     "Notify the provider, disclose to the patient, and file a safety report",
+     "Document only if the patient deteriorates",
+     "Say nothing since no harm occurred",
+     "Tell the provider but not the patient"
+    ],
+    "a": 0,
+    "r": "Ethical practice and a just culture require honest disclosure and a safety report even without harm, so the system can learn and improve."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Advocacy / surrogate decisions",
+    "s": "An unconscious patient's spouse (legal surrogate) requests care that conflicts with the nurse's personal values but is within the patient's known wishes. The nurse should:",
+    "o": [
+     "Support the surrogate's decision consistent with the patient's wishes",
+     "Override the surrogate based on personal values",
+     "Refuse to participate and abandon care",
+     "Ask the patient's coworker to decide"
+    ],
+    "a": 0,
+    "r": "Advocacy/moral agency honors the patient's known wishes through the legal surrogate, even when they differ from the nurse's values; conscientious objection never means abandoning the patient."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Clinical inquiry — evidence-based practice",
+    "s": "A nurse confirms feeding-tube placement by auscultating air. Best practice is to:",
+    "o": [
+     "Continue auscultation as the unit norm",
+     "Trust the prior nurse's note",
+     "Feed without confirming",
+     "Use radiographic confirmation and update the outdated method"
+    ],
+    "a": 3,
+    "r": "Air auscultation is unreliable; radiographic confirmation is standard. Clinical inquiry means questioning and updating outdated practice with evidence."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Synergy Model — patient characteristic",
+    "s": "In the AACN Synergy Model, a patient's susceptibility to actual or potential stressors is termed:",
+    "o": [
+     "Vulnerability",
+     "Resiliency",
+     "Predictability",
+     "Participation in care"
+    ],
+    "a": 0,
+    "r": "Vulnerability is susceptibility to stressors. Resiliency is the capacity to bounce back; predictability is how expected the course is."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Informed consent",
+    "s": "A patient is scheduled for an invasive procedure but cannot describe its risks or alternatives. The nurse's BEST action is to:",
+    "o": [
+     "Explain the full procedure herself and proceed",
+     "Cancel the procedure unilaterally",
+     "Witness the signature anyway",
+     "Notify the provider to revisit the consent discussion before proceeding"
+    ],
+    "a": 3,
+    "r": "Valid informed consent requires the patient understand the procedure, risks, benefits, and alternatives; the nurse advocates by having the provider complete the discussion before it proceeds."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Systems thinking — resources",
+    "s": "A newly stented patient who needs clopidogrel cannot afford it and has no insurance. The nurse BEST demonstrates systems thinking by:",
+    "o": [
+     "Telling the patient to ask the physician",
+     "Documenting that the patient declines",
+     "Assuming the patient will manage",
+     "Consulting case management and pharmacy assistance programs"
+    ],
+    "a": 3,
+    "r": "Systems thinking mobilizes resources beyond the unit — case management, social work, assistance programs — to remove barriers to essential therapy."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Posterior MI",
+    "s": "A patient has tall R waves and ST depression in V1–V2 with inferior changes. Which territory is MOST likely involved?",
+    "o": [
+     "Posterior wall",
+     "High lateral wall",
+     "Anteroseptal wall",
+     "Apex only"
+    ],
+    "a": 0,
+    "r": "Tall R waves and ST depression in V1–V2 are the mirror image of posterior injury; posterior leads (V7–V9) confirm it."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Pulseless electrical activity",
+    "s": "A monitored patient loses pulses but the monitor shows an organized rhythm. Besides high-quality CPR, the priority is to:",
+    "o": [
+     "Search for and treat a reversible cause (H's and T's)",
+     "Give adenosine",
+     "Cardiovert synchronously",
+     "Defibrillate immediately"
+    ],
+    "a": 0,
+    "r": "PEA is treated with CPR, epinephrine, and a focused hunt for reversible causes (hypovolemia, hypoxia, tamponade, tension pneumothorax, etc.); it is not a shockable rhythm."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Ventricular fibrillation",
+    "s": "A patient collapses; the monitor shows a chaotic, irregular waveform with no pulse. PRIORITY action?",
+    "o": [
+     "Vagal maneuvers",
+     "Synchronized cardioversion",
+     "Immediate defibrillation",
+     "IV amiodarone first"
+    ],
+    "a": 2,
+    "r": "Pulseless VF requires immediate unsynchronized defibrillation and CPR; antiarrhythmics are adjuncts after shocks."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Unstable SVT",
+    "s": "A patient with a regular narrow-complex tachycardia at 200 is hypotensive and diaphoretic. MOST appropriate action?",
+    "o": [
+     "A fluid bolus alone",
+     "Observe and recheck",
+     "IV metoprolol",
+     "Synchronized cardioversion"
+    ],
+    "a": 3,
+    "r": "Unstable tachyarrhythmia with a pulse calls for synchronized cardioversion; adenosine may be tried only if it doesn't delay cardioversion."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Acute decompensated heart failure",
+    "s": "A patient with flash pulmonary edema, BP 190/110, and severe dyspnea is treated. Besides oxygen, which combination is MOST appropriate?",
+    "o": [
+     "Aggressive fluids",
+     "A beta-blocker bolus",
+     "A negative inotrope",
+     "Vasodilator (e.g., nitroglycerin) and a loop diuretic"
+    ],
+    "a": 3,
+    "r": "Hypertensive acute heart failure is treated with afterload/preload reduction (nitroglycerin) and diuresis; rapid fluids and negative inotropes worsen it."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Infective endocarditis",
+    "s": "An IV-drug-use patient has fever, a new regurgitant murmur, splinter hemorrhages, and embolic phenomena. Which is the MOST likely diagnosis?",
+    "o": [
+     "Costochondritis",
+     "Infective endocarditis",
+     "Stable angina",
+     "Acute pericarditis"
+    ],
+    "a": 1,
+    "r": "Fever, a new murmur, and peripheral embolic/immunologic signs suggest endocarditis; blood cultures and echocardiography confirm valvular vegetations."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Digoxin toxicity",
+    "s": "A patient on digoxin reports nausea, yellow-green visual halos, and has a new bradyarrhythmia. Which is MOST likely?",
+    "o": [
+     "Anemia",
+     "Digoxin toxicity",
+     "Beta-blocker overdose",
+     "Hyperthyroidism"
+    ],
+    "a": 1,
+    "r": "Nausea, visual disturbances (halos/color changes), and arrhythmias suggest digoxin toxicity, worsened by hypokalemia; severe cases get digoxin immune Fab."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Mixed venous oxygen saturation",
+    "s": "A falling SvO2 in a critically ill patient MOST directly reflects:",
+    "o": [
+     "Improved cardiac output",
+     "Increased oxygen extraction from inadequate delivery",
+     "Hyperoxia",
+     "Decreased oxygen demand"
+    ],
+    "a": 1,
+    "r": "A low SvO2 means tissues are extracting more oxygen because delivery (cardiac output, hemoglobin, or saturation) is inadequate relative to demand."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Hypertrophic cardiomyopathy",
+    "s": "A young patient with HOCM has a murmur that worsens with standing. Which intervention should be AVOIDED?",
+    "o": [
+     "Aggressive preload reduction (nitrates, diuresis)",
+     "Avoiding dehydration",
+     "Treating arrhythmias",
+     "Beta-blockade"
+    ],
+    "a": 0,
+    "r": "In HOCM, reducing preload/afterload increases outflow obstruction; avoid nitrates and aggressive diuresis, and maintain adequate filling."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "Massive PE — thrombolysis",
+    "s": "A patient with a confirmed PE becomes hypotensive with RV strain. Which therapy is MOST appropriate if no contraindication exists?",
+    "o": [
+     "Diuresis",
+     "Continue prophylactic-dose heparin only",
+     "Observation",
+     "Systemic thrombolysis"
+    ],
+    "a": 3,
+    "r": "Hemodynamically unstable (massive) PE warrants thrombolysis or embolectomy; stable PE is treated with therapeutic anticoagulation."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "Carbon monoxide poisoning",
+    "s": "A fire victim has headache, confusion, and a normal pulse oximetry reading despite hypoxic symptoms. MOST appropriate treatment?",
+    "o": [
+     "Diuresis",
+     "Titrate oxygen to a pulse-ox of 94%",
+     "High-flow 100% oxygen",
+     "A bronchodilator alone"
+    ],
+    "a": 2,
+    "r": "Pulse oximetry can't distinguish carboxyhemoglobin, so it reads falsely normal; give 100% oxygen (consider hyperbaric) to displace CO and measure co-oximetry."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "Oxyhemoglobin curve — right shift",
+    "s": "Which condition shifts the oxyhemoglobin curve to the RIGHT, enhancing tissue oxygen unloading?",
+    "o": [
+     "Alkalosis",
+     "Hypothermia",
+     "Low 2,3-DPG",
+     "Fever, acidosis, and high PaCO2"
+    ],
+    "a": 3,
+    "r": "Fever, acidosis, hypercapnia, and high 2,3-DPG shift the curve right, reducing hemoglobin's O2 affinity so more oxygen is released to tissues."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "Weaning readiness",
+    "s": "Which finding BEST indicates readiness for a spontaneous breathing trial?",
+    "o": [
+     "Hemodynamic instability on pressors",
+     "Adequate oxygenation on low support with a low rapid-shallow-breathing index",
+     "Requirement for high PEEP and FiO2",
+     "A high RSBI (>105)"
+    ],
+    "a": 1,
+    "r": "Readiness includes resolving cause, adequate oxygenation on minimal settings, hemodynamic stability, and a low RSBI (<105)."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "ETCO2 in cardiac arrest",
+    "s": "During CPR, a sudden rise in end-tidal CO2 to near-normal MOST likely indicates:",
+    "o": [
+     "Return of spontaneous circulation",
+     "Esophageal intubation",
+     "Worsening acidosis",
+     "Tension pneumothorax"
+    ],
+    "a": 0,
+    "r": "A sharp rise in ETCO2 during resuscitation reflects restored pulmonary blood flow and often signals ROSC; persistently low ETCO2 suggests poor perfusion."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "Aspiration pneumonitis",
+    "s": "After witnessed aspiration of gastric contents, a patient develops acute hypoxemia and bilateral infiltrates. Initial management focuses on:",
+    "o": [
+     "Immediate broad-spectrum antibiotics for everyone",
+     "Airway suctioning and supportive oxygenation/ventilation",
+     "Bronchoscopic lavage in all cases",
+     "Routine corticosteroids"
+    ],
+    "a": 1,
+    "r": "Acid aspiration causes a chemical pneumonitis treated with airway clearance and oxygenation; antibiotics are added if infection develops, not reflexively."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "Massive hemoptysis positioning",
+    "s": "A patient with massive hemoptysis from a known left-lung lesion is positioned to protect the airway by:",
+    "o": [
+     "Sitting fully upright only",
+     "Lying with the bleeding (left) side down",
+     "Lying with the bleeding side up",
+     "Trendelenburg supine"
+    ],
+    "a": 1,
+    "r": "Placing the bleeding lung dependent (bad side down) protects the unaffected lung from blood spillage while suction and definitive control are arranged."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "Silent chest in asthma",
+    "s": "A patient in severe asthma exacerbation now has a 'silent chest' with decreasing wheeze and rising PaCO2. This indicates:",
+    "o": [
+     "Clinical improvement",
+     "Impending respiratory failure",
+     "A normal finding",
+     "Resolved bronchospasm"
+    ],
+    "a": 1,
+    "r": "A silent chest with a rising PaCO2 signals airflow so reduced that little air moves — an ominous sign of impending failure requiring escalation."
+   },
+   {
+    "d": "Multisystem",
+    "c": "SIRS criteria",
+    "s": "Which set of findings meets systemic inflammatory response syndrome (SIRS) criteria?",
+    "o": [
+     "Bradycardia with normal WBC",
+     "Isolated hypertension",
+     "Temp >38°C, HR >90, RR >20, WBC >12k",
+     "A single low-grade fever only"
+    ],
+    "a": 2,
+    "r": "SIRS requires two or more of: temperature abnormality, HR >90, RR >20 (or low PaCO2), and abnormal WBC; with infection it defines sepsis."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Massive transfusion — hypocalcemia",
+    "s": "After massive transfusion a patient develops perioral tingling and a prolonged QT. Which complication is MOST likely?",
+    "o": [
+     "Hyperkalemia from stored blood is impossible",
+     "Hypernatremia",
+     "Citrate-induced hypocalcemia",
+     "Hypermagnesemia"
+    ],
+    "a": 2,
+    "r": "Citrate anticoagulant in stored blood binds calcium, causing hypocalcemia; massive transfusion also risks hypothermia and coagulopathy."
+   },
+   {
+    "d": "Multisystem",
+    "c": "TACO vs TRALI",
+    "s": "An hour into a transfusion a patient develops dyspnea, hypertension, JVD, and pulmonary edema. Which reaction is MOST likely?",
+    "o": [
+     "Transfusion-associated circulatory overload (TACO)",
+     "Febrile nonhemolytic reaction",
+     "Allergic urticaria",
+     "Acute hemolytic reaction"
+    ],
+    "a": 0,
+    "r": "TACO presents with volume-overload signs (hypertension, JVD, edema); TRALI causes hypoxemia with a normal/low filling pressure. Slow/stop the transfusion and treat overload."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Neutropenic fever",
+    "s": "A chemotherapy patient with an absolute neutrophil count of 300 spikes a fever. MOST appropriate action?",
+    "o": [
+     "Obtain cultures and start empiric broad-spectrum antibiotics promptly",
+     "Start antivirals only",
+     "Wait for culture results before any antibiotics",
+     "Give an antipyretic and reassess in the morning"
+    ],
+    "a": 0,
+    "r": "Neutropenic fever is an emergency; draw cultures and begin empiric broad-spectrum antibiotics without delay, as infection can progress rapidly."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Deep tissue pressure injury",
+    "s": "An area of intact skin shows persistent deep red-maroon discoloration that is boggy. How is this BEST classified?",
+    "o": [
+     "Stage 3",
+     "Deep tissue pressure injury",
+     "Unstageable due to eschar",
+     "Stage 2"
+    ],
+    "a": 1,
+    "r": "A deep tissue pressure injury is intact (or blistered) skin with persistent non-blanchable deep red/maroon/purple discoloration from underlying damage."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Bowel ischemia",
+    "s": "An elderly patient with AF off anticoagulation has severe abdominal pain out of proportion to exam and a rising lactate. Which is MOST likely?",
+    "o": [
+     "Gastroenteritis",
+     "Uncomplicated gastritis",
+     "Constipation",
+     "Acute mesenteric ischemia"
+    ],
+    "a": 3,
+    "r": "Pain out of proportion with metabolic acidosis/lactate in an embolic-risk patient suggests mesenteric ischemia — a surgical emergency."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Heat stroke",
+    "s": "A patient has core temp 41.5°C, altered mental status, and hot dry skin after exertion in heat. PRIORITY intervention?",
+    "o": [
+     "Antipyretics as the mainstay",
+     "Rapid active cooling",
+     "Warm blankets",
+     "Fluid restriction"
+    ],
+    "a": 1,
+    "r": "Heat stroke is treated with immediate active cooling (evaporative/ice) and supportive care; antipyretics are ineffective because it isn't a hypothalamic set-point fever."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Hyponatremia correction rate",
+    "s": "A patient with chronic hyponatremia (sodium 116 mEq/L) is being treated. Why must the sodium be corrected slowly rather than rapidly?",
+    "o": [
+     "Sodium cannot be measured accurately",
+     "Slow correction worsens seizures",
+     "Rapid correction causes cerebral edema",
+     "Rapid correction risks osmotic demyelination"
+    ],
+    "a": 3,
+    "r": "Overly rapid sodium correction in chronic hyponatremia can cause osmotic demyelination syndrome; limit the rise to roughly 6–8 mEq/L per 24 hours."
+   },
+   {
+    "d": "Multisystem",
+    "c": "DIC management",
+    "s": "Besides treating the underlying cause, management of bleeding DIC includes:",
+    "o": [
+     "Tranexamic acid as monotherapy",
+     "Heparin in all cases",
+     "Replacing platelets and clotting factors (FFP, cryoprecipitate)",
+     "Withholding all blood products"
+    ],
+    "a": 2,
+    "r": "The cornerstone is treating the trigger; bleeding DIC is supported with platelets, FFP, and cryoprecipitate (fibrinogen), guided by labs."
+   },
+   {
+    "d": "Neurology",
+    "c": "Hemorrhagic stroke BP",
+    "s": "A patient with an acute intracerebral hemorrhage has BP 200/110. Management of blood pressure aims to:",
+    "o": [
+     "Raise the blood pressure",
+     "Allow permissive hypertension as in ischemic stroke",
+     "Carefully lower BP to a target to limit hematoma expansion",
+     "Avoid any BP treatment"
+    ],
+    "a": 2,
+    "r": "Unlike ischemic stroke, intracerebral hemorrhage benefits from controlled BP lowering to a target to reduce hematoma growth, avoiding precipitous drops."
+   },
+   {
+    "d": "Neurology",
+    "c": "Cerebral vasospasm after SAH",
+    "s": "Several days after aneurysmal SAH, a patient develops new focal deficits. Which drug is used to reduce vasospasm-related injury?",
+    "o": [
+     "Labetalol",
+     "Nimodipine",
+     "Phenytoin",
+     "Mannitol"
+    ],
+    "a": 1,
+    "r": "Nimodipine improves outcomes from cerebral vasospasm after SAH; euvolemia and blood-pressure support are also used."
+   },
+   {
+    "d": "Neurology",
+    "c": "Bacterial meningitis precautions",
+    "s": "A patient with suspected bacterial meningitis is admitted. Besides prompt antibiotics, which is MOST appropriate initially?",
+    "o": [
+     "Airborne isolation for the full stay",
+     "Contact precautions only",
+     "Droplet precautions until 24 hours of effective therapy",
+     "No precautions needed"
+    ],
+    "a": 2,
+    "r": "Suspected meningococcal/bacterial meningitis warrants droplet precautions until at least 24 hours of effective antibiotics, plus rapid treatment after cultures/LP."
+   },
+   {
+    "d": "Neurology",
+    "c": "Uncal herniation — CN III",
+    "s": "A head-injured patient develops a unilateral fixed, dilated pupil with contralateral weakness. This MOST suggests:",
+    "o": [
+     "Bell's palsy",
+     "A new ischemic stroke",
+     "Uncal herniation compressing CN III",
+     "A seizure"
+    ],
+    "a": 2,
+    "r": "A blown (fixed, dilated) pupil from third-nerve compression with contralateral weakness indicates uncal herniation — emergently lower ICP."
+   },
+   {
+    "d": "Endocrine",
+    "c": "DKA resolution",
+    "s": "Which finding BEST indicates resolution of DKA and readiness to transition off the insulin infusion?",
+    "o": [
+     "Resolution of thirst",
+     "Glucose <250 alone",
+     "A normal potassium alone",
+     "Closure of the anion gap"
+    ],
+    "a": 3,
+    "r": "DKA resolves when the anion gap normalizes and ketoacidosis clears; glucose often falls before the gap closes, so it isn't the endpoint by itself. Overlap subcutaneous insulin before stopping the drip."
+   },
+   {
+    "d": "Endocrine",
+    "c": "Myxedema coma",
+    "s": "A hypothyroid patient presents with hypothermia, bradycardia, hyponatremia, and depressed mental status. Which is the MOST likely diagnosis?",
+    "o": [
+     "Adrenal excess",
+     "DKA",
+     "Thyroid storm",
+     "Myxedema coma"
+    ],
+    "a": 3,
+    "r": "Myxedema coma is severe decompensated hypothyroidism — hypothermia, bradycardia, hyponatremia, and obtundation; treat with thyroid hormone, steroids, and supportive care."
+   },
+   {
+    "d": "Endocrine",
+    "c": "Diabetes insipidus treatment",
+    "s": "A neurosurgical patient has polyuria with dilute urine and rising serum sodium. Which treatment is MOST appropriate?",
+    "o": [
+     "Fluid restriction",
+     "A loop diuretic",
+     "Desmopressin and fluid replacement",
+     "Insulin infusion"
+    ],
+    "a": 2,
+    "r": "Central DI is treated with desmopressin and replacement of free-water losses; it's the opposite of SIADH (which is treated with fluid restriction)."
+   },
+   {
+    "d": "Renal / Multisystem",
+    "c": "Indications for renal replacement therapy",
+    "s": "A patient with acute kidney injury is oliguric and not responding to medical management. Which finding would MOST clearly indicate a need for urgent renal replacement therapy?",
+    "o": [
+     "Refractory hyperkalemia or severe acidosis",
+     "A creatinine of 1.6",
+     "Isolated nocturia",
+     "Mild proteinuria"
+    ],
+    "a": 0,
+    "r": "Urgent dialysis indications (AEIOU): refractory Acidosis, Electrolyte disturbance (hyperkalemia), Intoxications, Overload, and Uremic complications."
+   },
+   {
+    "d": "Renal / Multisystem",
+    "c": "High anion gap acidosis",
+    "s": "A patient has a metabolic acidosis with an anion gap of 24. Which cause is consistent with a HIGH anion gap?",
+    "o": [
+     "Diarrhea",
+     "Excess normal saline",
+     "Lactic acidosis",
+     "Renal tubular acidosis"
+    ],
+    "a": 2,
+    "r": "High-anion-gap acidosis (MUDPILES) includes lactate, ketoacids, toxins, and uremia; diarrhea and RTA cause a normal-gap (hyperchloremic) acidosis."
+   },
+   {
+    "d": "Renal / Multisystem",
+    "c": "Oliguric phase of AKI",
+    "s": "During the oliguric phase of acute tubular necrosis, which complication requires the MOST vigilant monitoring?",
+    "o": [
+     "Hyperkalemia and fluid overload",
+     "Hypoglycemia",
+     "Hypokalemia",
+     "Dehydration from polyuria"
+    ],
+    "a": 0,
+    "r": "In the oliguric phase, potassium and fluid accumulate, risking hyperkalemia and pulmonary edema; the later diuretic phase risks volume and electrolyte depletion."
+   },
+   {
+    "d": "Behavioral / Psychosocial",
+    "c": "Suicide risk — direct assessment",
+    "s": "A patient hints at 'not wanting to be here anymore.' The MOST appropriate nursing response is to:",
+    "o": [
+     "Change the subject to avoid distress",
+     "Reassure them things will improve and move on",
+     "Document and address it later",
+     "Ask directly about suicidal thoughts and ensure safety"
+    ],
+    "a": 3,
+    "r": "Asking directly about suicidal ideation does not increase risk; it allows assessment and immediate safety measures and connection to mental-health resources."
+   },
+   {
+    "d": "Behavioral / Psychosocial",
+    "c": "Restraint use — least restrictive",
+    "s": "A confused patient is pulling at lines. Which approach is MOST appropriate first?",
+    "o": [
+     "Apply four-point restraints immediately",
+     "Ignore the behavior",
+     "Sedate heavily without evaluation",
+     "Try least-restrictive measures (reorientation, sitter, environment) before restraints"
+    ],
+    "a": 3,
+    "r": "Restraints are a last resort after least-restrictive alternatives fail; if used, they require an order, monitoring, and frequent reassessment for the shortest time necessary."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Ethical principles — nonmaleficence",
+    "s": "A nurse questions an order that could harm the patient with little benefit. Which ethical principle is MOST directly invoked?",
+    "o": [
+     "Veracity",
+     "Fidelity",
+     "Nonmaleficence",
+     "Justice"
+    ],
+    "a": 2,
+    "r": "Nonmaleficence is the duty to avoid harm; beneficence is doing good, autonomy is self-determination, and justice is fairness in distribution of care."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Decision-making capacity",
+    "s": "A patient refusing surgery can describe the risks, benefits, and alternatives and gives consistent reasoning. The nurse recognizes that:",
+    "o": [
+     "The patient demonstrates decision-making capacity and the refusal should be respected",
+     "Refusing recommended care proves incapacity",
+     "Capacity requires a court order to confirm",
+     "The family automatically decides"
+    ],
+    "a": 0,
+    "r": "Capacity is the clinical ability to understand, appreciate, reason, and express a consistent choice; a capable patient may refuse even beneficial care."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Delegation — scope",
+    "s": "Which task is MOST appropriate to delegate to unlicensed assistive personnel?",
+    "o": [
+     "Performing the admission assessment",
+     "Obtaining routine vital signs on a stable patient",
+     "Administering IV medications",
+     "Developing the plan of care"
+    ],
+    "a": 1,
+    "r": "UAP may perform standardized tasks like routine vitals on stable patients; assessment, medication administration, teaching, and care planning require the RN."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Chain of command — unsafe order",
+    "s": "A provider gives an order the nurse believes is unsafe and won't clarify it. The nurse's BEST action is to:",
+    "o": [
+     "Hold the order and escalate up the chain of command",
+     "Have another nurse give it",
+     "Quietly refuse and document nothing",
+     "Carry it out to avoid conflict"
+    ],
+    "a": 0,
+    "r": "When a clarified concern remains unresolved, the nurse withholds the unsafe action and escalates through the chain of command to protect the patient."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Confidentiality",
+    "s": "A patient's coworker calls asking about the patient's condition. The nurse should:",
+    "o": [
+     "Confirm the admission only",
+     "Refer them to the patient's manager",
+     "Share a brief update since they seem concerned",
+     "Decline to confirm or share any information without authorization"
+    ],
+    "a": 3,
+    "r": "Protected health information cannot be disclosed without the patient's authorization; the nurse declines to confirm or share details."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Interpreter use",
+    "s": "A patient with limited English proficiency needs to consent to a procedure. The nurse should:",
+    "o": [
+     "Proceed and document the language barrier",
+     "Use gestures and simple words",
+     "Ask a bilingual family member to interpret",
+     "Use a qualified medical interpreter"
+    ],
+    "a": 3,
+    "r": "A qualified medical interpreter ensures accurate, unbiased communication for consent and teaching; family members risk errors and breaches of privacy."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Teach-back",
+    "s": "To confirm a patient understands new discharge instructions, the MOST effective method is to:",
+    "o": [
+     "Have the patient explain the instructions back in their own words",
+     "Repeat the instructions louder",
+     "Ask 'Do you understand?'",
+     "Provide a detailed pamphlet"
+    ],
+    "a": 0,
+    "r": "Teach-back — having the patient restate the information — verifies understanding and reveals gaps, supporting health literacy far better than yes/no questions."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Advance directives",
+    "s": "A capacitated patient's living will conflicts with what the family now wants. The team should:",
+    "o": [
+     "Honor the patient's expressed wishes in the advance directive",
+     "Defer to the family's current preference",
+     "Average the two positions",
+     "Disregard the directive"
+    ],
+    "a": 0,
+    "r": "A valid advance directive expresses the patient's own wishes and takes precedence over surrogate preferences when the patient can't speak for themselves."
+   }
+  ]
+ },
+ {
+  "id": "B",
+  "name": "Mock B",
+  "questions": [
+   {
+    "d": "Cardiovascular",
+    "c": "Lateral STEMI leads",
+    "s": "A patient has ST elevation in I, aVL, V5, and V6. Which coronary artery is MOST likely involved?",
+    "o": [
+     "Left circumflex",
+     "Left anterior descending",
+     "Right coronary artery",
+     "Posterior descending"
+    ],
+    "a": 0,
+    "r": "I, aVL, V5–V6 are lateral leads supplied by the left circumflex. Anterior (V2–V4) = LAD; inferior (II, III, aVF) = RCA."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Acute mitral regurgitation (papillary muscle rupture)",
+    "s": "Days after an inferior MI, a patient develops sudden dyspnea, a new holosystolic apical murmur, and pulmonary edema. Which complication is MOST likely?",
+    "o": [
+     "Reinfarction of the anterior wall",
+     "Ventricular septal rupture",
+     "Pericarditis",
+     "Papillary muscle rupture causing acute mitral regurgitation"
+    ],
+    "a": 3,
+    "r": "Inferior MI can rupture a papillary muscle, producing acute MR — a new holosystolic apical murmur, giant V waves on the PAOP tracing, and flash pulmonary edema."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Aortic dissection — control rate then pressure",
+    "s": "A patient with a suspected aortic dissection has BP 188/104 and HR 110. Which is the PRIORITY pharmacologic goal?",
+    "o": [
+     "Lower heart rate and shear force (e.g., beta-blocker) before/with vasodilators",
+     "Raise the blood pressure",
+     "Give a vasodilator alone",
+     "Start a positive inotrope"
+    ],
+    "a": 0,
+    "r": "In dissection, reduce shear stress (dP/dt) by lowering heart rate with a beta-blocker first, then add a vasodilator to reach target systolic pressure; a vasodilator alone causes reflex tachycardia that worsens the tear."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Torsades de pointes",
+    "s": "A patient on QT-prolonging drugs develops polymorphic VT with a twisting axis and a pulse. Which is the MOST appropriate treatment?",
+    "o": [
+     "IV diltiazem",
+     "IV magnesium sulfate",
+     "IV adenosine",
+     "Vagal maneuvers"
+    ],
+    "a": 1,
+    "r": "Torsades is treated with IV magnesium; correct the QT-prolonging cause and electrolytes. Unstable/pulseless torsades requires defibrillation."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "IABP — diastolic augmentation",
+    "s": "How does an intra-aortic balloon pump improve myocardial oxygen balance?",
+    "o": [
+     "Inflates in diastole to augment coronary perfusion and deflates in systole to reduce afterload",
+     "Replaces the function of the left ventricle",
+     "Inflates in systole to increase output",
+     "Deflates in diastole to lower preload"
+    ],
+    "a": 0,
+    "r": "The IABP inflates during diastole (boosting coronary perfusion) and deflates just before systole (reducing afterload and myocardial work)."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "Prone positioning in ARDS",
+    "s": "A ventilated ARDS patient remains hypoxemic despite high FiO2 and PEEP. Which intervention is MOST appropriate for refractory hypoxemia?",
+    "o": [
+     "Prone positioning",
+     "Drop PEEP to zero",
+     "Trial of immediate extubation",
+     "Lay supine and flat"
+    ],
+    "a": 0,
+    "r": "Prone positioning recruits and perfuses dorsal lung units collapsed when supine, improving V/Q matching in refractory ARDS hypoxemia."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "Capnography — earliest sign of hypoventilation",
+    "s": "During procedural sedation, which finding is the EARLIEST indicator of respiratory depression?",
+    "o": [
+     "Hypotension",
+     "A rising end-tidal CO2 on capnography",
+     "A falling SpO2",
+     "Bradycardia"
+    ],
+    "a": 1,
+    "r": "Capnography detects hypoventilation almost immediately as EtCO2 rises, well before SpO2 falls — a late sign, especially on supplemental oxygen."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "Hypothermia — left shift",
+    "s": "A profoundly hypothermic patient has an SaO2 that seems high relative to the PaO2. Which change explains this?",
+    "o": [
+     "Rightward shift of the curve",
+     "Leftward shift of the oxyhemoglobin dissociation curve",
+     "A metabolic acidosis",
+     "Increased 2,3-DPG"
+    ],
+    "a": 1,
+    "r": "Hypothermia shifts the curve left, raising hemoglobin's O2 affinity — higher SaO2 at a given PaO2 but impaired O2 release to tissues."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "Pulmonary embolism — sudden hypoxia",
+    "s": "A post-op patient suddenly has dyspnea, tachycardia, hypoxemia, and clear lungs with a normal chest film. Which diagnosis is MOST likely?",
+    "o": [
+     "Pulmonary edema",
+     "Pulmonary embolism",
+     "Pneumonia",
+     "Pneumothorax"
+    ],
+    "a": 1,
+    "r": "Acute dyspnea/hypoxemia with clear lungs and a normal film, especially post-op or post-immobility, suggests PE. CT angiography confirms it."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "ABG — respiratory acidosis",
+    "s": "An ABG shows pH 7.28, PaCO2 58, HCO3 25. Which disorder is present?",
+    "o": [
+     "Metabolic alkalosis",
+     "Metabolic acidosis",
+     "Respiratory alkalosis",
+     "Acute respiratory acidosis"
+    ],
+    "a": 3,
+    "r": "Low pH with high PaCO2 and a near-normal bicarbonate is an acute (uncompensated) respiratory acidosis — typically hypoventilation."
+   },
+   {
+    "d": "Multisystem",
+    "c": "DIC labs",
+    "s": "A septic patient oozes from line sites with petechiae. Which result is MOST specific for DIC?",
+    "o": [
+     "A mildly prolonged PT alone",
+     "An isolated low hemoglobin",
+     "A low reticulocyte count",
+     "Elevated D-dimer and fibrin split products"
+    ],
+    "a": 3,
+    "r": "DIC clots and bleeds simultaneously; clot breakdown raises D-dimer and fibrin split products. Platelets fall and PT/PTT prolong, but elevated split products are most specific."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Anaphylaxis — first-line epinephrine",
+    "s": "Minutes after an antibiotic dose, a patient develops stridor, wheezing, hypotension, and urticaria. Which is the FIRST-line treatment?",
+    "o": [
+     "A bronchodilator alone",
+     "IV diphenhydramine",
+     "IM epinephrine",
+     "IV corticosteroid"
+    ],
+    "a": 2,
+    "r": "Epinephrine is first-line in anaphylaxis — it reverses bronchospasm and vasodilation. Antihistamines and steroids are adjuncts that don't replace epinephrine."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Pressure injury — Stage 4",
+    "s": "A sacral wound shows full-thickness loss with visible bone at the base. Which stage applies?",
+    "o": [
+     "Stage 2",
+     "Unstageable",
+     "Stage 3",
+     "Stage 4"
+    ],
+    "a": 3,
+    "r": "Stage 4 is full-thickness loss with exposed/palpable bone, tendon, or muscle. 'Unstageable' is when slough/eschar obscures the base."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Acute hemolytic transfusion reaction",
+    "s": "Shortly after a transfusion starts, a patient develops fever, flank pain, hypotension, and red-tinged urine. PRIORITY action?",
+    "o": [
+     "Continue and premedicate",
+     "Slow the transfusion and give an antipyretic",
+     "Stop the transfusion immediately and maintain the line with saline",
+     "Give a diuretic and continue"
+    ],
+    "a": 2,
+    "r": "These signs suggest an acute hemolytic (ABO-incompatibility) reaction — stop the transfusion at once, keep the line open with saline, support BP/renal perfusion, and notify the provider and blood bank."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Hepatic encephalopathy — lactulose",
+    "s": "A cirrhotic patient is confused with asterixis and elevated ammonia. Which therapy MOST directly targets the cause?",
+    "o": [
+     "IV calcium gluconate",
+     "Fluid restriction to 1 L/day",
+     "A high-protein formula",
+     "Lactulose to clear gut ammonia"
+    ],
+    "a": 3,
+    "r": "Lactulose traps and evacuates ammonia-producing material from the gut, lowering serum ammonia in hepatic encephalopathy."
+   },
+   {
+    "d": "Neurology",
+    "c": "Status epilepticus — first-line",
+    "s": "A patient has been seizing continuously for 6 minutes. Which medication class is FIRST-line?",
+    "o": [
+     "A neuromuscular blocker without sedation",
+     "A benzodiazepine",
+     "An osmotic diuretic",
+     "A loop diuretic"
+    ],
+    "a": 1,
+    "r": "First-line for status epilepticus is a benzodiazepine (lorazepam/midazolam), followed by a longer-acting antiepileptic (e.g., levetiracetam, fosphenytoin)."
+   },
+   {
+    "d": "Neurology",
+    "c": "Cushing's triad — impending herniation",
+    "s": "A head-injured patient develops hypertension with a widening pulse pressure, bradycardia, and irregular respirations. These findings indicate:",
+    "o": [
+     "Septic shock",
+     "Rising ICP with impending herniation",
+     "Hypovolemic shock",
+     "Spinal shock"
+    ],
+    "a": 1,
+    "r": "Cushing's triad (hypertension/widened pulse pressure, bradycardia, irregular breathing) is a late sign of dangerously elevated ICP — act immediately to lower ICP."
+   },
+   {
+    "d": "Neurology",
+    "c": "ICP management — mannitol",
+    "s": "A patient with elevated ICP and a CPP of 52 is being treated. Which intervention reduces ICP by an osmotic effect?",
+    "o": [
+     "PEEP escalation",
+     "Hypoventilation to raise CO2",
+     "IV mannitol",
+     "Trendelenburg positioning"
+    ],
+    "a": 2,
+    "r": "Mannitol (or hypertonic saline) lowers ICP osmotically. Keep the head midline/elevated, avoid hypercarbia, and maintain CPP — Trendelenburg and high CO2 raise ICP."
+   },
+   {
+    "d": "Endocrine",
+    "c": "HHS vs DKA",
+    "s": "Which lab pattern BEST distinguishes hyperosmolar hyperglycemic state from DKA?",
+    "o": [
+     "Normal glucose with ketones",
+     "Low osmolality with acidosis",
+     "Lower glucose with large ketones",
+     "Much higher serum osmolality with minimal ketosis"
+    ],
+    "a": 3,
+    "r": "HHS develops slowly to very high glucose and osmolality without significant ketosis/acidosis; DKA has ketones and a high-anion-gap acidosis."
+   },
+   {
+    "d": "Endocrine",
+    "c": "Thyroid storm",
+    "s": "A patient with Graves disease develops fever 40°C, AF with RVR, agitation, and hypertension after surgery. Which is the MOST likely diagnosis?",
+    "o": [
+     "Adrenal crisis",
+     "Pheochromocytoma",
+     "Thyroid storm",
+     "Myxedema coma"
+    ],
+    "a": 2,
+    "r": "Thyroid storm presents with hyperthermia, tachyarrhythmia, agitation/delirium, and HTN, often triggered by stress/surgery; treat with beta-blockade, thionamides, iodine, and supportive cooling."
+   },
+   {
+    "d": "Renal / Multisystem",
+    "c": "Hyperkalemia ECG",
+    "s": "Which ECG change is the EARLIEST classic sign of hyperkalemia?",
+    "o": [
+     "Peaked T waves",
+     "ST elevation",
+     "Delta waves",
+     "Prominent U waves"
+    ],
+    "a": 0,
+    "r": "Peaked T waves are the earliest classic change, progressing to a widened QRS and sine wave. U waves suggest hypokalemia."
+   },
+   {
+    "d": "Renal / Multisystem",
+    "c": "Dialysis disequilibrium syndrome",
+    "s": "During a first hemodialysis session a patient develops headache, nausea, and confusion. Which complication is MOST likely?",
+    "o": [
+     "Dialysis disequilibrium syndrome",
+     "Hemolysis",
+     "Air embolism",
+     "Anaphylaxis"
+    ],
+    "a": 0,
+    "r": "Rapid solute clearance creates an osmotic gradient drawing water into the brain (cerebral edema), causing headache, nausea, and confusion; slower/shorter initial runs prevent it."
+   },
+   {
+    "d": "Behavioral / Psychosocial",
+    "c": "Hypoactive delirium",
+    "s": "A mechanically ventilated ICU patient is quietly inattentive, withdrawn, and has fluctuating awareness. Which is MOST accurate?",
+    "o": [
+     "This is hypoactive delirium and is easily missed",
+     "This is simply fatigue requiring no action",
+     "This indicates permanent cognitive decline",
+     "Delirium is always agitated"
+    ],
+    "a": 0,
+    "r": "Delirium is frequently hypoactive (quiet, withdrawn) and often missed; it is associated with worse outcomes, so screen, treat causes, and minimize deliriogenic factors."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Caring practices — palliative options",
+    "s": "The team believes a patient with multiple organ failure is dying. MOST appropriate nursing action?",
+    "o": [
+     "Defer all questions to the physician",
+     "Avoid mentioning death to spare them",
+     "Stress hopelessness so they accept it",
+     "Ensure the family knows palliative options exist to relieve suffering"
+    ],
+    "a": 3,
+    "r": "Caring practices ensure families understand palliative options to relieve end-of-life suffering; communicate honestly and coordinate comfort-focused care."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Collaboration — reconcile discrepant information",
+    "s": "A patient was told he transfers tonight; his wife was told tomorrow. BEST nurse action?",
+    "o": [
+     "Tell them to wait and see",
+     "Tell them plans change all the time",
+     "Send them to the charge nurse",
+     "Clarify the plan with the provider and give consistent information"
+    ],
+    "a": 3,
+    "r": "Collaboration and clear communication require reconciling the discrepancy with the provider so the patient and family get accurate, consistent information."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Response to diversity",
+    "s": "A family's cultural beliefs shape how they want end-of-life care delivered. The nurse BEST responds by:",
+    "o": [
+     "Asking them to set beliefs aside",
+     "Explaining their beliefs are not evidence-based",
+     "Incorporating the family's beliefs into the plan of care",
+     "Following standard protocol regardless"
+    ],
+    "a": 2,
+    "r": "Response to diversity means recognizing and incorporating the patient's and family's values, beliefs, and preferences into individualized care."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Facilitation of learning",
+    "s": "A post-PCI patient has three modifiable risk factors. BEST teaching approach?",
+    "o": [
+     "Defer all teaching to the cardiologist",
+     "Hand him all the pamphlets and refer to rehab",
+     "Focus only on the most dangerous factor",
+     "Ask which factor he's most motivated to change and tailor teaching"
+    ],
+    "a": 3,
+    "r": "Facilitation of learning obtains the patient's input and tailors education to readiness and motivation, which improves behavior change."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Brain death and organ donation",
+    "s": "A patient meets criteria for brain death and was a registered organ donor. The nurse's role includes:",
+    "o": [
+     "Making the donation decision independently",
+     "Discontinuing all support immediately without notification",
+     "Persuading the family to decline",
+     "Supporting the family and collaborating with the organ procurement organization"
+    ],
+    "a": 3,
+    "r": "After brain-death determination, the nurse provides family support and works with the OPO, which handles the donation conversation; the nurse does not pressure or unilaterally decide."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Moral distress",
+    "s": "A nurse repeatedly provides aggressive interventions she believes only prolong suffering, feeling unable to act on what she thinks is right. This experience is BEST described as:",
+    "o": [
+     "Scope-of-practice violation",
+     "Moral distress",
+     "Delegation conflict",
+     "Compassion satisfaction"
+    ],
+    "a": 1,
+    "r": "Moral distress arises when a clinician knows the ethically appropriate action but feels constrained from taking it; addressing it includes ethics consultation and team/system support."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Post-MI ventricular septal rupture",
+    "s": "Days after an anterior MI, a patient develops a harsh new holosystolic murmur at the left sternal border, hypotension, and an oxygen step-up from right atrium to right ventricle. Which complication is MOST likely?",
+    "o": [
+     "Free-wall rupture",
+     "Ventricular septal rupture",
+     "Pericarditis",
+     "Papillary muscle rupture"
+    ],
+    "a": 1,
+    "r": "A post-MI VSD causes a harsh holosystolic LSB murmur and a left-to-right shunt (O2 step-up in the RV); it requires stabilization and surgical repair."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Determinants of cardiac output",
+    "s": "Cardiac output is the product of stroke volume and heart rate; stroke volume depends on preload, afterload, and which third factor?",
+    "o": [
+     "Coronary artery diameter",
+     "Respiratory rate",
+     "Contractility",
+     "Serum sodium"
+    ],
+    "a": 2,
+    "r": "Stroke volume is governed by preload, afterload, and contractility; cardiac output = stroke volume × heart rate."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Elevated SVR",
+    "s": "A patient in cardiogenic shock has a high calculated systemic vascular resistance. This MOST reflects:",
+    "o": [
+     "Vasodilation from sepsis",
+     "Anaphylaxis",
+     "Compensatory vasoconstriction to maintain pressure",
+     "Normal vascular tone"
+    ],
+    "a": 2,
+    "r": "A failing pump triggers compensatory vasoconstriction, raising SVR; distributive (septic/anaphylactic) shock instead lowers SVR."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Dobutamine indication",
+    "s": "Which patient is the BEST candidate for a dobutamine infusion?",
+    "o": [
+     "Low cardiac output from decompensated heart failure with adequate BP",
+     "Septic shock needing vasoconstriction",
+     "Hypertensive emergency",
+     "Hypovolemic shock before fluids"
+    ],
+    "a": 0,
+    "r": "Dobutamine is a beta-1 inotrope that raises contractility and cardiac output in low-output heart failure when blood pressure can tolerate its mild vasodilation."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Septic shock vasopressor",
+    "s": "After adequate fluid resuscitation, a septic patient remains hypotensive. Which vasopressor is FIRST-line?",
+    "o": [
+     "Dobutamine",
+     "Norepinephrine",
+     "Nitroglycerin",
+     "Esmolol"
+    ],
+    "a": 1,
+    "r": "Norepinephrine is the first-line vasopressor in septic shock; vasopressin may be added, and an inotrope is considered if cardiac output remains low."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Acute aortic regurgitation",
+    "s": "A patient with endocarditis suddenly develops a wide pulse pressure, a diastolic murmur, and pulmonary edema. Which lesion is MOST likely?",
+    "o": [
+     "Aortic stenosis",
+     "Mitral stenosis",
+     "Tricuspid regurgitation",
+     "Acute aortic regurgitation"
+    ],
+    "a": 3,
+    "r": "Acute aortic regurgitation causes a wide pulse pressure, an early diastolic murmur, and rapid pulmonary edema; it often needs urgent surgical correction."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Troponin timing",
+    "s": "A patient with chest pain has a normal troponin 1 hour after symptom onset. The MOST appropriate action is to:",
+    "o": [
+     "Repeat the troponin on a serial schedule",
+     "Start thrombolytics empirically",
+     "Rule out MI based on the single value",
+     "Discharge immediately"
+    ],
+    "a": 0,
+    "r": "Troponin rises over hours, so a single early value can't exclude MI; serial troponins with ECG and clinical assessment are required."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Coronary perfusion in diastole",
+    "s": "Why do sustained tachyarrhythmias predispose to myocardial ischemia?",
+    "o": [
+     "Shortened diastole reduces coronary perfusion and filling",
+     "Lengthened diastole overfills the ventricle",
+     "Prolonged systole improves coronary flow",
+     "Increased afterload blocks ejection"
+    ],
+    "a": 0,
+    "r": "The coronary arteries fill mainly during diastole; fast rates shorten diastole, cutting both ventricular filling and coronary perfusion."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "ARDS — Berlin P/F ratio",
+    "s": "A ventilated patient with bilateral infiltrates and refractory hypoxemia is being classified for ARDS severity. Severity is graded primarily by which parameter?",
+    "o": [
+     "The respiratory rate alone",
+     "The tidal volume",
+     "The peak airway pressure",
+     "The PaO2/FiO2 ratio"
+    ],
+    "a": 3,
+    "r": "The Berlin definition grades ARDS by the PaO2/FiO2 ratio (mild ≤300, moderate ≤200, severe ≤100) with bilateral infiltrates not fully explained by cardiac failure."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "Permissive hypercapnia",
+    "s": "During lung-protective ventilation for ARDS, a rising PaCO2 with a pH around 7.25 is generally:",
+    "o": [
+     "Always corrected with bicarbonate",
+     "A reason to stop PEEP",
+     "Accepted (permissive hypercapnia) to protect the lungs",
+     "An indication to greatly increase tidal volume"
+    ],
+    "a": 2,
+    "r": "Permissive hypercapnia tolerates higher CO2 and mild acidosis to keep tidal volumes/pressures low and avoid ventilator-induced lung injury."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "Flail chest",
+    "s": "A trauma patient has paradoxical movement of a chest segment and worsening hypoxemia. Which injury is MOST likely?",
+    "o": [
+     "Pneumonia",
+     "Flail chest with underlying pulmonary contusion",
+     "Simple rib fracture",
+     "Pleural effusion"
+    ],
+    "a": 1,
+    "r": "Flail chest (≥2 ribs fractured in ≥2 places) moves paradoxically; the underlying pulmonary contusion drives hypoxemia, and care centers on analgesia and oxygenation/ventilation support."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "Hemothorax — chest tube output",
+    "s": "After chest-tube placement for trauma, immediate drainage of 1,500 mL of blood with ongoing brisk output suggests the need for:",
+    "o": [
+     "Clamping the tube",
+     "Removing the tube",
+     "Routine observation only",
+     "Surgical evaluation (thoracotomy)"
+    ],
+    "a": 3,
+    "r": "Large immediate (≥1,500 mL) or persistent high hourly bloody output indicates a massive hemothorax that may require operative control."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "VAP prevention bundle",
+    "s": "Which intervention is part of the ventilator-associated pneumonia prevention bundle?",
+    "o": [
+     "Avoiding oral care",
+     "Routine deep sedation without trials",
+     "Elevating the head of bed 30–45 degrees",
+     "Keeping the patient supine and flat"
+    ],
+    "a": 2,
+    "r": "The VAP bundle includes head-of-bed elevation, daily sedation interruption/SBT assessment, oral care with chlorhexidine, and DVT/peptic ulcer prophylaxis."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "High-flow nasal cannula",
+    "s": "A hypoxemic but alert patient who is not retaining CO2 may benefit from high-flow nasal cannula because it:",
+    "o": [
+     "Replaces the need for monitoring",
+     "Guarantees full ventilatory support",
+     "Delivers heated, humidified high-flow oxygen with some PEEP effect",
+     "Is only for hypercapnic failure"
+    ],
+    "a": 2,
+    "r": "HFNC provides warmed, humidified oxygen at high flow with a modest positive airway pressure effect, improving oxygenation and comfort in hypoxemic respiratory failure."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "Type II respiratory failure",
+    "s": "An ABG shows a high PaCO2 with hypoxemia in a drowsy patient. This is BEST classified as:",
+    "o": [
+     "Metabolic alkalosis",
+     "Hypoxemic (type I) respiratory failure",
+     "A normal variant",
+     "Hypercapnic (type II) respiratory failure"
+    ],
+    "a": 3,
+    "r": "Type II (hypercapnic) failure is a ventilation problem with elevated CO2; type I (hypoxemic) failure is an oxygenation problem with a normal/low CO2."
+   },
+   {
+    "d": "Multisystem",
+    "c": "MODS",
+    "s": "A septic patient develops progressive failure of the lungs, kidneys, and liver. This is BEST described as:",
+    "o": [
+     "Simple dehydration",
+     "A drug reaction",
+     "Isolated acute kidney injury",
+     "Multiple organ dysfunction syndrome"
+    ],
+    "a": 3,
+    "r": "MODS is the progressive, potentially reversible dysfunction of two or more organ systems, often following sepsis or a major insult; supportive care and source control are key."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Lactate clearance",
+    "s": "In sepsis resuscitation, a falling serial lactate MOST likely indicates:",
+    "o": [
+     "Improving tissue perfusion",
+     "Worsening shock",
+     "A lab error",
+     "Resolving infection definitively"
+    ],
+    "a": 0,
+    "r": "Lactate clearance is a marker of improving perfusion and resuscitation adequacy; a persistently high or rising lactate signals ongoing hypoperfusion."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Spontaneous bacterial peritonitis",
+    "s": "A cirrhotic patient with ascites develops fever, abdominal pain, and worsening encephalopathy. Which complication should be suspected?",
+    "o": [
+     "Spontaneous bacterial peritonitis",
+     "Diverticulitis",
+     "Acute appendicitis",
+     "Cholelithiasis"
+    ],
+    "a": 0,
+    "r": "SBP presents in cirrhotic ascites with fever, abdominal pain, and encephalopathy; diagnostic paracentesis (PMN count) confirms it and antibiotics are started promptly."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Sickle cell crisis",
+    "s": "A patient in vaso-occlusive sickle cell crisis is managed with which combination?",
+    "o": [
+     "A tourniquet to the affected limb",
+     "Fluid restriction and no opioids",
+     "Hydration, oxygen, and aggressive analgesia",
+     "Cooling and vasoconstrictors"
+    ],
+    "a": 2,
+    "r": "Vaso-occlusive crisis is treated with IV hydration, oxygen as needed, and adequate (often opioid) analgesia, plus treatment of any precipitant such as infection."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Necrotizing fasciitis",
+    "s": "A patient has rapidly spreading erythema, pain out of proportion, crepitus, and systemic toxicity. Which is the MOST appropriate management?",
+    "o": [
+     "Elevation and warm compresses only",
+     "Topical antibiotics and observation",
+     "Urgent surgical debridement and broad-spectrum antibiotics",
+     "Routine wound care on the floor"
+    ],
+    "a": 2,
+    "r": "Necrotizing fasciitis is a surgical emergency requiring rapid, aggressive debridement plus broad-spectrum antibiotics and hemodynamic support."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Serotonin syndrome",
+    "s": "A patient on multiple serotonergic drugs develops agitation, hyperthermia, clonus, and hyperreflexia. Which is the MOST likely diagnosis?",
+    "o": [
+     "Anticholinergic toxicity",
+     "Serotonin syndrome",
+     "Neuroleptic malignant syndrome",
+     "Alcohol withdrawal"
+    ],
+    "a": 1,
+    "r": "Serotonin syndrome features neuromuscular hyperactivity (clonus, hyperreflexia), autonomic instability, and altered mental status; stop the agents and give supportive care (cyproheptadine if severe)."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Hypomagnesemia",
+    "s": "A patient with refractory torsades and a low magnesium level needs which correction first?",
+    "o": [
+     "Fluid restriction",
+     "Potassium binders",
+     "IV magnesium replacement",
+     "IV calcium only"
+    ],
+    "a": 2,
+    "r": "Hypomagnesemia prolongs the QT and precipitates torsades; replacing magnesium is essential and also helps correct refractory hypokalemia."
+   },
+   {
+    "d": "Neurology",
+    "c": "Glasgow Coma Scale",
+    "s": "A patient opens eyes to pain, makes incomprehensible sounds, and withdraws from pain. What is the approximate GCS?",
+    "o": [
+     "About 3",
+     "About 12",
+     "About 15",
+     "About 8"
+    ],
+    "a": 3,
+    "r": "Eye opening to pain (2) + incomprehensible sounds (2) + withdrawal to pain (4) = 8; a GCS ≤8 generally signals the need to secure the airway."
+   },
+   {
+    "d": "Neurology",
+    "c": "Brain death — apnea test",
+    "s": "During brain-death determination, the apnea test confirms absence of respiratory drive when:",
+    "o": [
+     "The heart rate increases",
+     "The pupils constrict",
+     "PaCO2 rises substantially without any respiratory effort",
+     "SpO2 falls during the test"
+    ],
+    "a": 2,
+    "r": "A positive apnea test shows no respiratory effort despite a significant rise in PaCO2 (a strong stimulus to breathe), supporting brain-death determination."
+   },
+   {
+    "d": "Neurology",
+    "c": "Cerebral salt wasting vs SIADH",
+    "s": "A neuro patient with hyponatremia is hypovolemic with high urine output and high urine sodium. Which is MOST likely?",
+    "o": [
+     "Diabetes insipidus",
+     "SIADH",
+     "Cerebral salt wasting",
+     "Adrenal excess"
+    ],
+    "a": 2,
+    "r": "Cerebral salt wasting causes hyponatremia with volume depletion (treat with salt and volume), whereas SIADH is euvolemic/hypervolemic and treated with fluid restriction."
+   },
+   {
+    "d": "Neurology",
+    "c": "Seizure precautions",
+    "s": "Which action is appropriate during a patient's generalized tonic-clonic seizure?",
+    "o": [
+     "Protect the head, turn the patient to the side, and do not restrain",
+     "Insert a bite block between the teeth",
+     "Give oral medication immediately",
+     "Hold the limbs still firmly"
+    ],
+    "a": 0,
+    "r": "During a seizure, protect from injury, position to maintain the airway (side-lying), time it, and avoid restraints or placing objects in the mouth."
+   },
+   {
+    "d": "Endocrine",
+    "c": "Pheochromocytoma — alpha before beta",
+    "s": "Before beta-blockade in a patient with pheochromocytoma, which must be established FIRST?",
+    "o": [
+     "Beta blockade alone",
+     "Diuresis",
+     "Alpha-adrenergic blockade",
+     "Insulin therapy"
+    ],
+    "a": 2,
+    "r": "Alpha-blockade must precede beta-blockade; unopposed alpha stimulation from early beta-blockade can precipitate a hypertensive crisis."
+   },
+   {
+    "d": "Endocrine",
+    "c": "SIADH treatment",
+    "s": "A euvolemic patient with symptomatic hyponatremia from SIADH is MOST appropriately managed with:",
+    "o": [
+     "Fluid restriction (hypertonic saline if severe symptoms)",
+     "Desmopressin",
+     "Aggressive free-water administration",
+     "A thiazide diuretic"
+    ],
+    "a": 0,
+    "r": "SIADH retains water, so treatment is fluid restriction; severe neurologic symptoms warrant cautious hypertonic saline with careful sodium-correction limits."
+   },
+   {
+    "d": "Endocrine",
+    "c": "Steroid-induced hyperglycemia",
+    "s": "A patient started on high-dose corticosteroids develops persistent hyperglycemia. The MOST appropriate response is to:",
+    "o": [
+     "Monitor glucose and treat with insulin as needed",
+     "Stop the steroids abruptly",
+     "Restrict all carbohydrates to zero",
+     "Ignore it as expected and untreatable"
+    ],
+    "a": 0,
+    "r": "Glucocorticoids raise blood glucose; manage with monitoring and insulin rather than abruptly stopping a medically necessary steroid."
+   },
+   {
+    "d": "Renal / Multisystem",
+    "c": "Hypokalemia and digoxin",
+    "s": "A patient taking digoxin has a serum potassium of 2.9 mEq/L. Why is this combination dangerous?",
+    "o": [
+     "It blocks digoxin absorption",
+     "It raises the seizure threshold",
+     "It has no interaction",
+     "It potentiates digoxin toxicity and arrhythmias"
+    ],
+    "a": 3,
+    "r": "Low potassium increases myocardial sensitivity to digoxin, predisposing to dangerous arrhythmias; potassium should be kept in the normal range."
+   },
+   {
+    "d": "Renal / Multisystem",
+    "c": "CRRT for fluid overload",
+    "s": "A hemodynamically unstable patient with severe fluid overload and AKI is BEST managed with:",
+    "o": [
+     "Observation",
+     "Continuous renal replacement therapy",
+     "Rapid intermittent hemodialysis",
+     "Fluid bolus therapy"
+    ],
+    "a": 1,
+    "r": "CRRT removes fluid and solutes gradually, which is better tolerated than intermittent hemodialysis in hemodynamically unstable patients."
+   },
+   {
+    "d": "Renal / Multisystem",
+    "c": "Rhabdomyolysis — AKI mechanism",
+    "s": "A patient with crush injuries has tea-colored urine, a CK of 40,000 U/L, and a rising creatinine. By which mechanism is rhabdomyolysis injuring the kidneys?",
+    "o": [
+     "It causes postrenal obstruction by stones",
+     "Myoglobin precipitates and obstructs renal tubules",
+     "It directly raises blood pressure",
+     "It only affects the liver"
+    ],
+    "a": 1,
+    "r": "Released myoglobin is nephrotoxic and obstructs tubules; aggressive isotonic fluids (and sometimes alkalinization) maintain urine flow to protect the kidneys."
+   },
+   {
+    "d": "Behavioral / Psychosocial",
+    "c": "Delirium vs dementia",
+    "s": "An older ICU patient develops new confusion that fluctuates over hours with poor attention. Which feature BEST distinguishes delirium from dementia?",
+    "o": [
+     "Stable cognition without fluctuation",
+     "Acute onset with a fluctuating, inattentive course",
+     "Absence of any reversible cause",
+     "Gradual, progressive memory loss over years"
+    ],
+    "a": 1,
+    "r": "Delirium is acute, fluctuating, and inattentive with an identifiable cause and is often reversible; dementia is chronic and progressive."
+   },
+   {
+    "d": "Behavioral / Psychosocial",
+    "c": "Supporting a grieving family",
+    "s": "A family member becomes tearful and withdrawn after hearing a poor prognosis. The MOST therapeutic nursing response is to:",
+    "o": [
+     "Reassure them not to be upset",
+     "Leave them alone to avoid intruding",
+     "Provide detailed statistics immediately",
+     "Provide presence, listen, and acknowledge their feelings"
+    ],
+    "a": 3,
+    "r": "Therapeutic communication during grief centers on presence, active listening, and validating emotions, while offering support resources."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Ethical principle — justice",
+    "s": "Allocating a limited ICU bed fairly among patients reflects which ethical principle?",
+    "o": [
+     "Justice",
+     "Fidelity",
+     "Veracity",
+     "Autonomy"
+    ],
+    "a": 0,
+    "r": "Justice concerns the fair distribution of benefits, risks, and resources; autonomy is self-determination, veracity is truthfulness, and fidelity is keeping commitments."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Veracity — truth-telling",
+    "s": "A family asks the nurse to withhold a serious diagnosis from a competent patient. The nurse should:",
+    "o": [
+     "Disclose only to the family",
+     "Avoid the patient to sidestep the issue",
+     "Support honest disclosure to the patient while addressing the family's concerns",
+     "Agree to withhold the information"
+    ],
+    "a": 2,
+    "r": "Veracity supports truthful disclosure to the competent patient; the nurse collaborates with the team and family on a compassionate approach rather than deceiving the patient."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Ethics committee consultation",
+    "s": "When a persistent, unresolved conflict arises about goals of care among the team and family, an appropriate resource is:",
+    "o": [
+     "A coin toss",
+     "Avoiding the topic until discharge",
+     "Letting the most senior nurse decide",
+     "An ethics committee consultation"
+    ],
+    "a": 3,
+    "r": "Ethics consultation provides structured, multidisciplinary support for unresolved value conflicts and complex decisions about care."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Medical futility / withdrawal",
+    "s": "When interventions can no longer achieve a meaningful benefit, ethical practice supports:",
+    "o": [
+     "Continuing all interventions indefinitely",
+     "Shifting to comfort-focused care aligned with the patient's goals",
+     "Withholding pain control",
+     "Making the decision without the family"
+    ],
+    "a": 1,
+    "r": "When treatment is futile, care is realigned to the patient's goals and comfort; withdrawing non-beneficial interventions while ensuring symptom relief is ethically appropriate."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Health care proxy",
+    "s": "An incapacitated patient has no advance directive but named a health care proxy. Decisions should be guided by:",
+    "o": [
+     "Whatever the majority of family wants",
+     "The provider alone",
+     "The proxy applying the patient's known wishes (substituted judgment)",
+     "The proxy's own preferences regardless of the patient"
+    ],
+    "a": 2,
+    "r": "A health care proxy makes decisions using substituted judgment — what the patient would have wanted — or the patient's best interest when wishes are unknown."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Near-miss reporting",
+    "s": "A nurse catches and corrects a wrong-dose order before it reaches the patient. The BEST action is to:",
+    "o": [
+     "Do nothing since no harm occurred",
+     "Quietly fix it and move on",
+     "Blame the ordering provider publicly",
+     "Report the near-miss so the system can be improved"
+    ],
+    "a": 3,
+    "r": "Reporting near-misses in a just culture surfaces system weaknesses before harm occurs and drives improvement, without individual blame."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "SBAR handoff",
+    "s": "Which communication tool standardizes a clear, complete patient handoff?",
+    "o": [
+     "ABCDE only",
+     "SBAR (Situation, Background, Assessment, Recommendation)",
+     "FIFO",
+     "RICE"
+    ],
+    "a": 1,
+    "r": "SBAR provides a structured handoff — situation, background, assessment, recommendation — that reduces communication errors during transitions of care."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Rapid response activation",
+    "s": "A floor patient shows early deterioration (rising RR, falling SpO2, new confusion) before arrest. The BEST action is to:",
+    "o": [
+     "Activate the rapid response team",
+     "Wait for the next scheduled rounds",
+     "Document and continue routine care",
+     "Increase oxygen and reassess in 2 hours"
+    ],
+    "a": 0,
+    "r": "Rapid response teams intervene at early signs of deterioration to prevent arrest; activating them promptly is a core systems-thinking safety behavior."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Quality improvement — PDSA",
+    "s": "A unit wants to test a small change to reduce CLABSI. Which framework is MOST appropriate?",
+    "o": [
+     "Waiting for an annual review",
+     "A single retrospective chart audit only",
+     "Plan-Do-Study-Act rapid-cycle improvement",
+     "Disciplinary action for past cases"
+    ],
+    "a": 2,
+    "r": "PDSA cycles test small changes iteratively, measure results, and refine — a core continuous quality-improvement method for clinical inquiry and systems thinking."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Shared decision-making",
+    "s": "For a major treatment choice with significant trade-offs, the BEST approach is to:",
+    "o": [
+     "Let the family decide without the patient",
+     "Defer entirely to the patient without guidance",
+     "Engage the patient in shared decision-making about goals and options",
+     "Choose the option the team prefers and inform the patient"
+    ],
+    "a": 2,
+    "r": "Shared decision-making combines clinical evidence with the patient's values and goals, honoring autonomy while providing professional guidance."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Stable wide-complex tachycardia",
+    "s": "A hemodynamically stable patient has a regular wide-complex tachycardia at 160. Until proven otherwise, it should be treated as:",
+    "o": [
+     "Ventricular tachycardia",
+     "A benign supraventricular rhythm",
+     "Sinus tachycardia",
+     "An artifact"
+    ],
+    "a": 0,
+    "r": "A wide-complex tachycardia is assumed to be VT until proven otherwise; stable patients may receive antiarrhythmics (e.g., amiodarone), while unstable patients are cardioverted."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Hypocalcemia — Chvostek/Trousseau",
+    "s": "A patient has perioral numbness, carpopedal spasm, a positive Chvostek sign, and a prolonged QT. Which electrolyte disturbance is MOST likely?",
+    "o": [
+     "Hyperkalemia",
+     "Hypermagnesemia",
+     "Hypernatremia",
+     "Hypocalcemia"
+    ],
+    "a": 3,
+    "r": "Hypocalcemia causes neuromuscular irritability (Chvostek/Trousseau, tetany) and QT prolongation; treat symptomatic cases with IV calcium."
+   }
+  ]
+ },
+ {
+  "id": "C",
+  "name": "Mock C",
+  "questions": [
+   {
+    "d": "Cardiovascular",
+    "c": "Inferior STEMI with bradycardia",
+    "s": "A patient with ST elevation in II, III, and aVF develops symptomatic bradycardia at 40. Besides the RCA territory, which is the MOST appropriate initial drug?",
+    "o": [
+     "Nitroglycerin",
+     "Atropine",
+     "Metoprolol",
+     "Furosemide"
+    ],
+    "a": 1,
+    "r": "Inferior MI (RCA) often causes bradycardia/AV block from SA/AV nodal ischemia; atropine is first-line for symptomatic bradycardia, with pacing if it fails. Nitrates/beta-blockers can worsen hypotension."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Cardiogenic shock hemodynamics",
+    "s": "A patient after a large anterior MI has cool extremities, BP 82/60, high PAOP, high SVR, and low cardiac output. Which shock state is present?",
+    "o": [
+     "Distributive (septic) shock",
+     "Obstructive shock from tamponade",
+     "Cardiogenic shock",
+     "Hypovolemic shock"
+    ],
+    "a": 2,
+    "r": "Cardiogenic shock shows high filling pressures (PAOP), high SVR, and low cardiac output — a failing pump. Hypovolemic and septic states show low filling pressures."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Acute pericarditis",
+    "s": "A patient has sharp pleuritic chest pain relieved by leaning forward, a friction rub, and diffuse ST elevation with PR depression. Which is the MOST likely diagnosis?",
+    "o": [
+     "Pulmonary embolism",
+     "Acute pericarditis",
+     "Aortic dissection",
+     "Anterior STEMI"
+    ],
+    "a": 1,
+    "r": "Positional pleuritic pain, a friction rub, and diffuse ST elevation with PR depression point to pericarditis rather than a focal STEMI."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Hypertensive emergency — nitroprusside/cyanide",
+    "s": "A patient on a nitroprusside infusion for hypertensive emergency develops altered mental status, lactic acidosis, and tachycardia. Which complication should be suspected?",
+    "o": [
+     "Cyanide/thiocyanate toxicity",
+     "Serotonin syndrome",
+     "Hypoglycemia",
+     "Contrast nephropathy"
+    ],
+    "a": 0,
+    "r": "Prolonged or high-dose nitroprusside can produce cyanide toxicity (a metabolite), causing altered mental status, lactic acidosis, and a rising drug requirement; stop the drug and treat."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Narrow pulse pressure",
+    "s": "A patient's BP shifts from 120/76 to 96/82. Which interpretation is MOST accurate?",
+    "o": [
+     "Widening pulse pressure from vasodilation",
+     "A normal compensatory change",
+     "Improved stroke volume",
+     "Narrowing pulse pressure suggesting low cardiac output/hypovolemia"
+    ],
+    "a": 3,
+    "r": "A falling systolic with a rising/unchanged diastolic narrows the pulse pressure, suggesting reduced stroke volume/output or hypovolemia."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "COPD exacerbation — NIV",
+    "s": "A COPD patient has an exacerbation with pH 7.30, PaCO2 64, and increased work of breathing but is awake and protecting the airway. Which is MOST appropriate first?",
+    "o": [
+     "High-flow oxygen to a SpO2 of 100%",
+     "Noninvasive positive-pressure ventilation (BiPAP)",
+     "Sedation to reduce work of breathing",
+     "Immediate intubation"
+    ],
+    "a": 1,
+    "r": "NIV (BiPAP) is first-line for an awake, airway-protecting COPD patient with hypercapnic respiratory acidosis; it reduces work of breathing and the need for intubation. Avoid over-oxygenation."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "COPD air trapping",
+    "s": "Which findings BEST reflect the air trapping of severe COPD?",
+    "o": [
+     "Elevated diaphragm and increased inspiratory flow",
+     "Tracheal deviation with absent breath sounds",
+     "Normal film with high diffusing capacity",
+     "Flattened diaphragm and decreased expiratory flow"
+    ],
+    "a": 3,
+    "r": "COPD is a problem of getting air out; chronic air trapping hyperinflates the lungs and flattens the diaphragm with reduced expiratory flow."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "Status asthmaticus arrest mechanism",
+    "s": "A patient in status asthmaticus deteriorates toward arrest. Which mechanism is MOST responsible?",
+    "o": [
+     "Tension hydrothorax",
+     "Progressive air trapping with breath stacking",
+     "Acute pulmonary embolism",
+     "Flash pulmonary edema"
+    ],
+    "a": 1,
+    "r": "Severe obstruction causes air trapping/auto-PEEP, raising intrathoracic pressure, impairing venous return, and precipitating collapse; management prioritizes prolonged exhalation."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "Chest tube — continuous bubbling",
+    "s": "Continuous bubbling in the water-seal chamber of a chest drainage system MOST likely indicates:",
+    "o": [
+     "Normal tidaling",
+     "Suction that is too low",
+     "An air leak in the system or the patient",
+     "Full lung re-expansion"
+    ],
+    "a": 2,
+    "r": "Continuous bubbling in the water-seal chamber signals an air leak (system connection or patient); intermittent bubbling with respiration (tidaling) is expected."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "ARDS — PEEP role",
+    "s": "A ventilated ARDS patient remains hypoxemic, so the team increases PEEP. Why is PEEP central to improving oxygenation in ARDS?",
+    "o": [
+     "It reduces preload to improve output",
+     "It directly lowers PaCO2",
+     "It dries secretions",
+     "It recruits and keeps alveoli open, improving oxygenation"
+    ],
+    "a": 3,
+    "r": "PEEP recruits collapsed alveoli and prevents end-expiratory collapse, improving oxygenation and allowing a lower FiO2 in ARDS."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Abdominal compartment syndrome",
+    "s": "After massive resuscitation a patient has a tense abdomen, rising peak airway pressures, and oliguria. Which complication is MOST likely?",
+    "o": [
+     "Abdominal compartment syndrome",
+     "Acute pancreatitis",
+     "C. difficile colitis",
+     "Small-bowel obstruction"
+    ],
+    "a": 0,
+    "r": "Intra-abdominal hypertension from massive resuscitation impairs organ perfusion — tense abdomen, high airway pressures, falling urine output; bladder pressure monitoring confirms it."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Fat embolism syndrome",
+    "s": "A day after a femur fracture, a patient develops hypoxemia, confusion, and a petechial rash over the chest. Which complication is MOST likely?",
+    "o": [
+     "Hypovolemic shock",
+     "Acute MI",
+     "Fat embolism syndrome",
+     "Anaphylaxis"
+    ],
+    "a": 2,
+    "r": "The triad of hypoxemia, neurologic change, and petechiae 24–72 hours after a long-bone fracture is fat embolism syndrome; care is supportive."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Rhabdomyolysis — fluids",
+    "s": "A patient found down has tea-colored urine and CK 30,000. Which intervention MOST protects the kidneys?",
+    "o": [
+     "Urgent dialysis to prevent injury",
+     "IV potassium replacement",
+     "Early loop diuretics",
+     "Aggressive isotonic fluids to maintain high urine output"
+    ],
+    "a": 3,
+    "r": "Myoglobin obstructs tubules; high-volume isotonic fluids (often with urine alkalinization) protect the kidneys. Potassium is typically already high; diuretics/dialysis don't prevent the injury."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Septic shock — SvO2 with resuscitation",
+    "s": "In early septic (distributive) shock, which mixed venous oxygen saturation pattern is typical before/with resuscitation?",
+    "o": [
+     "No relationship to perfusion",
+     "Undetectable SvO2",
+     "Normal or high SvO2 due to impaired tissue oxygen extraction",
+     "Very low SvO2 from a failing pump"
+    ],
+    "a": 2,
+    "r": "In distributive shock, microcirculatory shunting and impaired extraction keep SvO2 normal or high despite tissue hypoxia; a low SvO2 is more typical of cardiogenic/hypovolemic states."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Esophageal varices — octreotide",
+    "s": "A cirrhotic patient has massive variceal hematemesis. Which medication reduces portal/splanchnic pressure as part of management?",
+    "o": [
+     "Albuterol",
+     "Dobutamine",
+     "Octreotide",
+     "Mannitol"
+    ],
+    "a": 2,
+    "r": "Octreotide reduces splanchnic blood flow and portal pressure, helping control variceal bleeding alongside endoscopic banding and resuscitation."
+   },
+   {
+    "d": "Neurology",
+    "c": "Guillain-Barré — monitor ventilation",
+    "s": "A patient with ascending weakness from Guillain-Barré syndrome is admitted. Which assessment is the PRIORITY?",
+    "o": [
+     "Serial bedside vital capacity and respiratory effort",
+     "Pupillary reflexes",
+     "Bowel sounds",
+     "Daily weight"
+    ],
+    "a": 0,
+    "r": "GBS can ascend to the diaphragm and cause respiratory failure; serial vital capacity/negative inspiratory force detect decline early so intubation can be planned."
+   },
+   {
+    "d": "Neurology",
+    "c": "Autonomic dysreflexia",
+    "s": "A patient with a T4 spinal cord injury suddenly has severe headache, BP 210/110, and flushing above the lesion. Which is the FIRST action?",
+    "o": [
+     "Apply a cooling blanket",
+     "Give IV fluids rapidly",
+     "Sit the patient upright and find/remove the noxious trigger (e.g., distended bladder)",
+     "Lay the patient flat and elevate the legs"
+    ],
+    "a": 2,
+    "r": "Autonomic dysreflexia is a hypertensive emergency from a noxious stimulus below the injury (often bladder distension). Sit the patient up, loosen constrictions, and remove the trigger; treat persistent severe BP pharmacologically."
+   },
+   {
+    "d": "Neurology",
+    "c": "Myasthenic vs cholinergic crisis",
+    "s": "A myasthenia gravis patient on pyridostigmine develops worsening weakness with excessive salivation, lacrimation, and fasciculations. Which is MOST likely?",
+    "o": [
+     "Myasthenic crisis from too little medication",
+     "A simple medication interaction with no risk",
+     "Cholinergic crisis from too much medication",
+     "An unrelated viral illness"
+    ],
+    "a": 2,
+    "r": "Muscarinic excess (salivation, lacrimation, GI symptoms, fasciculations) with weakness suggests cholinergic crisis from overmedication; both crises can compromise respiration and need airway/ventilation support."
+   },
+   {
+    "d": "Endocrine",
+    "c": "Adrenal (Addisonian) crisis",
+    "s": "A patient on chronic steroids who stopped them develops hypotension, hyponatremia, hyperkalemia, and hypoglycemia. Which is MOST appropriate?",
+    "o": [
+     "IV hydrocortisone and fluid/glucose resuscitation",
+     "Fluid restriction",
+     "A beta-blocker",
+     "Insulin infusion"
+    ],
+    "a": 0,
+    "r": "Abrupt steroid withdrawal or stress can precipitate adrenal crisis; treat with stress-dose hydrocortisone, IV fluids, and glucose, correcting electrolytes."
+   },
+   {
+    "d": "Endocrine",
+    "c": "SIADH vs DI",
+    "s": "A neurosurgical patient develops hyponatremia, concentrated urine, and low serum osmolality with euvolemia. Which disorder is MOST likely?",
+    "o": [
+     "SIADH",
+     "Hyperaldosteronism",
+     "DKA",
+     "Diabetes insipidus"
+    ],
+    "a": 0,
+    "r": "SIADH retains water: dilutional hyponatremia, low serum osmolality, and inappropriately concentrated urine. DI is the opposite — dilute urine with hypernatremia."
+   },
+   {
+    "d": "Renal / Multisystem",
+    "c": "Prerenal azotemia",
+    "s": "A dehydrated patient is oliguric with a BUN:creatinine ratio of 28:1 and urine sodium of 12 mEq/L. Which is MOST likely?",
+    "o": [
+     "Postrenal obstruction",
+     "Prerenal azotemia",
+     "Acute tubular necrosis",
+     "Glomerulonephritis"
+    ],
+    "a": 1,
+    "r": "A high BUN:Cr ratio (>20:1) with low urine sodium (<20) and concentrated urine indicates prerenal azotemia from hypoperfusion — the tubules avidly retain sodium and water."
+   },
+   {
+    "d": "Renal / Multisystem",
+    "c": "CKD — hyperphosphatemia",
+    "s": "A patient with end-stage renal disease who missed dialysis has hyperphosphatemia. Which intervention helps lower serum phosphate?",
+    "o": [
+     "Administer a phosphate binder with meals",
+     "Encourage a high-phosphate diet",
+     "Give IV phosphate",
+     "Restrict calcium entirely"
+    ],
+    "a": 0,
+    "r": "Phosphate binders taken with meals reduce GI phosphate absorption; dietary phosphate restriction and dialysis also help. Hyperphosphatemia drives hypocalcemia and bone disease in CKD."
+   },
+   {
+    "d": "Behavioral / Psychosocial",
+    "c": "Opioid withdrawal",
+    "s": "A patient with opioid dependence develops anxiety, yawning, lacrimation, rhinorrhea, diaphoresis, then nausea and diarrhea. Which is the MOST likely syndrome?",
+    "o": [
+     "Alcohol withdrawal",
+     "Opioid withdrawal",
+     "Benzodiazepine withdrawal",
+     "Stimulant intoxication"
+    ],
+    "a": 1,
+    "r": "Opioid withdrawal causes yawning, lacrimation, rhinorrhea, diaphoresis, and GI/autonomic symptoms; it's managed with opioid agonists, clonidine, and antiemetics. Monitor for QT prolongation."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Autonomy — refusal of treatment",
+    "s": "A fully alert, competent patient refuses a recommended blood transfusion for religious reasons. The nurse's BEST action is to:",
+    "o": [
+     "Transfuse anyway to save the patient",
+     "Have the family overrule the patient",
+     "Respect the informed refusal and notify the provider",
+     "Document the patient as noncompliant and proceed"
+    ],
+    "a": 2,
+    "r": "Autonomy means a competent, informed patient may refuse treatment even if life-sustaining; the nurse respects the decision, ensures it's informed, and explores alternatives with the team."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "DNR clarification",
+    "s": "A patient with a DNR order develops a treatable airway obstruction from a mucus plug. The nurse should:",
+    "o": [
+     "Clear the obstruction — a DNR does not mean withholding routine care",
+     "Withhold all interventions",
+     "Begin chest compressions",
+     "Do nothing until the family arrives"
+    ],
+    "a": 0,
+    "r": "A DNR limits resuscitation in cardiopulmonary arrest; it does not mean withholding appropriate ongoing care such as suctioning a mucus plug. Clarify goals of care when unclear."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Clinical inquiry — bring evidence to leadership",
+    "s": "A nurse finds a strong meta-analysis supporting a change to a unit procedure. MOST effective action?",
+    "o": [
+     "Mention it casually and move on",
+     "Assume leadership will adopt it eventually",
+     "Present the evidence to nursing and physician leadership to review the procedure",
+     "Change her own practice unilaterally"
+    ],
+    "a": 2,
+    "r": "Clinical inquiry improves care through proper channels — presenting evidence to leadership to revise the procedure system-wide rather than acting alone."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Advocacy — undertreated pain",
+    "s": "A patient in sickle cell crisis rates pain 9/10; the overnight provider declined more analgesia, labeling the patient 'drug-seeking.' On day shift the nurse should:",
+    "o": [
+     "Tell the patient nothing more can be done",
+     "Reassess and call the provider to recommend appropriate analgesia",
+     "Document and wait for rounds",
+     "Reassure the patient the next dose is soon"
+    ],
+    "a": 1,
+    "r": "Advocacy requires treating reported pain as valid, reassessing, and recommending an appropriate order; sickle cell pain is commonly undertreated and a 'drug-seeking' label should not drive care."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Vulnerability — protecting the at-risk patient",
+    "s": "Which patient is MOST vulnerable and warrants the highest level of nursing vigilance for complications?",
+    "o": [
+     "A stable patient awaiting discharge",
+     "A young patient with a single stable fracture",
+     "A patient with well-controlled chronic hypertension",
+     "An elderly, sedated, mechanically ventilated patient on multiple vasopressors"
+    ],
+    "a": 3,
+    "r": "In the Synergy Model, vulnerability reflects susceptibility to stressors; the sedated, ventilated, multi-pressor patient is least able to compensate and needs the most protective vigilance."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Certification value",
+    "s": "Which statement BEST reflects the value of specialty certification (e.g., CCRN)?",
+    "o": [
+     "It validates specialized knowledge and is associated with quality and professional credibility",
+     "It replaces the need for ongoing competency",
+     "It guarantees a pay raise in every setting",
+     "It is required to practice as an RN"
+    ],
+    "a": 0,
+    "r": "Certification validates specialized knowledge and supports professional credibility and quality care; it does not replace ongoing competency and isn't the basic license to practice."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Mobitz II AV block",
+    "s": "A monitor shows intermittently dropped QRS complexes with a constant PR interval on conducted beats. Which block is this, and what is the concern?",
+    "o": [
+     "Sinus arrhythmia",
+     "First-degree block — no concern",
+     "Mobitz I (Wenckebach) — usually benign",
+     "Mobitz II — high risk of progression to complete block; prepare for pacing"
+    ],
+    "a": 3,
+    "r": "Mobitz II (constant PR with sudden dropped beats) often progresses to complete heart block; anticipate pacing. Mobitz I has progressive PR lengthening and is usually benign."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Pacemaker failure to capture",
+    "s": "A paced ECG shows pacing spikes not followed by QRS complexes, and the patient is bradycardic. This indicates:",
+    "o": [
+     "Oversensing",
+     "Failure to capture",
+     "Failure to sense",
+     "Normal pacing"
+    ],
+    "a": 1,
+    "r": "Failure to capture is a spike without a resulting depolarization; causes include lead displacement, high thresholds, and electrolyte disturbances — assess the patient and the device."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Pulsus paradoxus",
+    "s": "A patient with a pericardial effusion has a >10 mmHg drop in systolic pressure during inspiration. This finding is:",
+    "o": [
+     "An artifact requiring no concern",
+     "A normal respiratory variation",
+     "Pulsus paradoxus, suggesting tamponade physiology",
+     "Pulsus alternans"
+    ],
+    "a": 2,
+    "r": "An exaggerated inspiratory fall in systolic pressure (pulsus paradoxus) suggests tamponade (also severe asthma/COPD); it reflects impaired ventricular filling."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Hypertensive emergency target",
+    "s": "For most hypertensive emergencies, the initial blood-pressure goal in the first hour is to:",
+    "o": [
+     "Lower the mean arterial pressure by no more than about 25%",
+     "Avoid lowering it at all",
+     "Lower the systolic to 90 within minutes",
+     "Normalize the blood pressure immediately"
+    ],
+    "a": 0,
+    "r": "To avoid organ hypoperfusion, MAP is generally reduced by no more than ~25% in the first hour, then more gradually (aortic dissection is an exception needing faster control)."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "NSTEMI management",
+    "s": "A patient with NSTEMI and ongoing chest pain is hemodynamically stable. Initial management includes antiplatelet therapy, anticoagulation, and:",
+    "o": [
+     "Discharge with outpatient follow-up",
+     "Anti-ischemic therapy with risk stratification for angiography",
+     "Immediate fibrinolytics",
+     "A negative inotrope"
+    ],
+    "a": 1,
+    "r": "NSTEMI is managed with dual antiplatelet therapy, anticoagulation, anti-ischemic measures, and risk-based timing of coronary angiography; fibrinolytics are not used in NSTEMI."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "PAOP interpretation",
+    "s": "An elevated pulmonary artery occlusion pressure (wedge) MOST directly reflects:",
+    "o": [
+     "Elevated left atrial/left-heart filling pressure",
+     "Systemic vascular resistance",
+     "Arterial oxygen content",
+     "Right atrial pressure"
+    ],
+    "a": 0,
+    "r": "PAOP estimates left atrial/LV end-diastolic pressure (left-heart preload); it rises in LV failure and volume overload."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Left vs right heart failure",
+    "s": "Which findings BEST reflect predominantly RIGHT-sided heart failure?",
+    "o": [
+     "Crackles and pulmonary edema",
+     "Orthopnea and pink frothy sputum",
+     "JVD, peripheral edema, and hepatic congestion",
+     "Isolated chest pain"
+    ],
+    "a": 2,
+    "r": "Right heart failure causes systemic congestion (JVD, peripheral edema, hepatomegaly); left heart failure causes pulmonary congestion (crackles, orthopnea, edema fluid)."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Beta-blocker benefit in ACS",
+    "s": "Why are beta-blockers beneficial in acute coronary syndrome when not contraindicated?",
+    "o": [
+     "They cause coronary vasospasm",
+     "They lower heart rate and contractility, reducing myocardial oxygen demand",
+     "They increase afterload",
+     "They raise heart rate to improve output"
+    ],
+    "a": 1,
+    "r": "Beta-blockers reduce heart rate, contractility, and blood pressure, lowering myocardial oxygen demand and arrhythmia risk; avoid in shock, severe bradycardia, or acute decompensated failure."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "Cardiogenic vs noncardiogenic edema",
+    "s": "Which finding favors cardiogenic over noncardiogenic (ARDS) pulmonary edema?",
+    "o": [
+     "Elevated PAOP and a history of heart failure",
+     "A normal PAOP with diffuse infiltrates",
+     "Bilateral infiltrates rule out cardiac causes",
+     "Low ejection fraction is irrelevant"
+    ],
+    "a": 0,
+    "r": "Cardiogenic edema shows elevated left-heart filling pressure (PAOP) and cardiac history; ARDS has a normal/low PAOP with increased permeability edema."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "Simple pneumothorax",
+    "s": "A stable patient with a small spontaneous pneumothorax and mild dyspnea is MOST appropriately managed with:",
+    "o": [
+     "Oxygen and monitoring, with chest-tube/aspiration if it enlarges or worsens",
+     "Immediate needle decompression regardless of size",
+     "A beta-blocker",
+     "Intubation"
+    ],
+    "a": 0,
+    "r": "A small, stable pneumothorax may be observed with supplemental oxygen; larger or symptomatic ones need aspiration or a chest tube. Needle decompression is reserved for tension physiology."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "Extubation cuff-leak test",
+    "s": "Before extubating a patient at risk for airway edema, a cuff-leak test is used to assess:",
+    "o": [
+     "Sedation depth",
+     "Oxygenation reserve",
+     "The risk of post-extubation stridor from laryngeal edema",
+     "Cardiac output"
+    ],
+    "a": 2,
+    "r": "Absence of a cuff leak suggests laryngeal edema and a higher risk of post-extubation stridor; it prompts caution and consideration of steroids before extubation."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "Tracheostomy decannulation emergency",
+    "s": "A patient's fresh tracheostomy tube becomes dislodged with respiratory distress. The PRIORITY action is to:",
+    "o": [
+     "Support oxygenation/ventilation and call for help to re-establish the airway",
+     "Remove all oxygen",
+     "Force the tube back in blindly",
+     "Wait for the surgeon without intervening"
+    ],
+    "a": 0,
+    "r": "A dislodged fresh trach is an airway emergency; provide oxygenation (e.g., bag-mask over the stoma or mouth as appropriate) and summon expert help for controlled airway re-establishment."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "Acute chest syndrome",
+    "s": "A patient with sickle cell disease develops fever, chest pain, hypoxemia, and a new pulmonary infiltrate. Which complication is MOST likely?",
+    "o": [
+     "Acute chest syndrome",
+     "Pleurisy",
+     "Pulmonary embolism only",
+     "Simple pneumonia only"
+    ],
+    "a": 0,
+    "r": "Acute chest syndrome (new infiltrate with respiratory symptoms in sickle cell disease) is a leading cause of death; treat with oxygen, analgesia, antibiotics, and transfusion as indicated."
+   },
+   {
+    "d": "Pulmonary",
+    "c": "Pleural effusion",
+    "s": "A patient has decreased breath sounds and dullness to percussion at the lung base with a meniscus sign on imaging. Which is MOST likely?",
+    "o": [
+     "Asthma",
+     "Emphysema",
+     "Pneumothorax",
+     "Pleural effusion"
+    ],
+    "a": 3,
+    "r": "Dullness to percussion with decreased breath sounds at the base and a layering effusion on imaging indicates a pleural effusion, which may be drained by thoracentesis."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Biphasic anaphylaxis",
+    "s": "After successful initial treatment of anaphylaxis, the nurse monitors the patient closely because:",
+    "o": [
+     "Discharge is always safe immediately",
+     "Symptoms never return once treated",
+     "A biphasic reaction can recur hours later",
+     "Epinephrine prevents all recurrence"
+    ],
+    "a": 2,
+    "r": "Anaphylaxis can recur in a biphasic reaction hours after the initial event, so observation is warranted even after a good initial response."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Upper vs lower GI bleed",
+    "s": "A patient with hematemesis and melena most likely has bleeding from which source?",
+    "o": [
+     "The appendix",
+     "An upper GI source (proximal to the ligament of Treitz)",
+     "The descending colon",
+     "The rectum"
+    ],
+    "a": 1,
+    "r": "Hematemesis and melena point to an upper GI bleed; hematochezia (bright red blood) more often reflects a lower GI source. Resuscitate and arrange endoscopy."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Acute liver failure — cerebral edema",
+    "s": "A patient with acute liver failure and grade IV encephalopathy is at greatest risk for which life-threatening complication?",
+    "o": [
+     "Polycythemia",
+     "Cerebral edema with raised intracranial pressure",
+     "Hyperglycemia",
+     "Hypercalcemia"
+    ],
+    "a": 1,
+    "r": "Cerebral edema and intracranial hypertension are leading causes of death in acute liver failure; care includes ICP precautions and transplant evaluation."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Malignant hyperthermia",
+    "s": "During general anesthesia a patient develops rapidly rising temperature, muscle rigidity, and a high end-tidal CO2. Which is the SPECIFIC antidote?",
+    "o": [
+     "Activated charcoal",
+     "Naloxone",
+     "Flumazenil",
+     "Dantrolene"
+    ],
+    "a": 3,
+    "r": "Malignant hyperthermia from anesthetic triggers is treated by stopping the agent, dantrolene, and aggressive cooling and supportive care."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Neuroleptic malignant syndrome",
+    "s": "A patient on antipsychotics develops hyperthermia, 'lead-pipe' rigidity, altered mental status, and autonomic instability. Which is MOST likely?",
+    "o": [
+     "Serotonin syndrome",
+     "Anticholinergic toxicity",
+     "Neuroleptic malignant syndrome",
+     "Thyroid storm"
+    ],
+    "a": 2,
+    "r": "NMS features rigidity, hyperthermia, altered mental status, and autonomic instability after dopamine antagonists; stop the drug and give supportive care (dantrolene/bromocriptine in severe cases)."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Febrile nonhemolytic transfusion reaction",
+    "s": "An hour into a transfusion a patient develops an isolated fever and chills without hypotension or hemolysis. The MOST appropriate action is to:",
+    "o": [
+     "Stop the transfusion, evaluate to exclude hemolysis, and treat with antipyretics",
+     "Continue without interruption",
+     "Give epinephrine",
+     "Increase the transfusion rate"
+    ],
+    "a": 0,
+    "r": "A febrile nonhemolytic reaction is treated by stopping the transfusion to rule out hemolysis, then antipyretics; leukoreduced products reduce recurrence."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Hypernatremia",
+    "s": "A patient with hypernatremia and free-water deficit should be corrected:",
+    "o": [
+     "Gradually to avoid cerebral edema",
+     "With fluid restriction",
+     "As rapidly as possible",
+     "With hypertonic saline"
+    ],
+    "a": 0,
+    "r": "Rapid correction of hypernatremia can cause cerebral edema; lower sodium gradually (about 10 mEq/L per 24 hours) with appropriate fluids."
+   },
+   {
+    "d": "Neurology",
+    "c": "Refractory ICP — rescue measures",
+    "s": "For ICP that remains dangerously elevated despite first-line therapy, which rescue measure may be used?",
+    "o": [
+     "Permissive hypercapnia",
+     "Trendelenburg positioning",
+     "Brief hyperventilation and/or barbiturate coma as a bridge",
+     "Withholding sedation"
+    ],
+    "a": 2,
+    "r": "Refractory intracranial hypertension may be temporized with brief hyperventilation (vasoconstriction) and barbiturate coma; sustained hyperventilation risks ischemia."
+   },
+   {
+    "d": "Neurology",
+    "c": "Spinal shock vs neurogenic shock",
+    "s": "A patient with a cervical spinal cord injury becomes hypotensive at 84/50. Which presentation BEST distinguishes neurogenic shock from hypovolemic shock?",
+    "o": [
+     "Hypotension with bradycardia and warm, dry skin from loss of sympathetic tone",
+     "Hypotension with tachycardia and cool skin",
+     "Areflexia limited to the injury level only",
+     "Fever and leukocytosis"
+    ],
+    "a": 0,
+    "r": "Neurogenic shock (a distributive shock) features hypotension with bradycardia and warm, dry skin from sympathetic loss; spinal shock refers to transient loss of reflexes below the injury."
+   },
+   {
+    "d": "Neurology",
+    "c": "EVD leveling",
+    "s": "An external ventricular drain must be leveled to a consistent reference point to:",
+    "o": [
+     "Reduce sedation needs",
+     "Prevent infection by itself",
+     "Increase drainage speed",
+     "Ensure accurate ICP measurement and controlled CSF drainage"
+    ],
+    "a": 3,
+    "r": "The EVD transducer/drip chamber is leveled to the tragus/foramen of Monro; incorrect leveling causes inaccurate ICP readings and over- or under-drainage of CSF."
+   },
+   {
+    "d": "Neurology",
+    "c": "Post-thrombolysis monitoring",
+    "s": "After IV thrombolysis for ischemic stroke, the nurse's PRIORITY monitoring is for:",
+    "o": [
+     "Signs of bleeding, including neurologic deterioration and blood-pressure control",
+     "Constipation",
+     "Hyperglycemia only",
+     "Skin breakdown"
+    ],
+    "a": 0,
+    "r": "After thrombolysis, watch closely for hemorrhage — sudden neurologic decline, headache, or hypertension — with frequent neuro checks and strict blood-pressure parameters."
+   },
+   {
+    "d": "Endocrine",
+    "c": "Hypoglycemia treatment",
+    "s": "An alert diabetic patient has a blood glucose of 48 with tremor and diaphoresis. The MOST appropriate first action is to:",
+    "o": [
+     "Give 15–20 g of fast-acting oral carbohydrate and recheck",
+     "Give IV potassium",
+     "Start an insulin infusion",
+     "Restrict all intake"
+    ],
+    "a": 0,
+    "r": "For a conscious hypoglycemic patient, give fast-acting oral carbohydrate and recheck in ~15 minutes (the 'rule of 15'); IV dextrose or glucagon is used if unable to swallow."
+   },
+   {
+    "d": "Endocrine",
+    "c": "Thyrotoxicosis with atrial fibrillation",
+    "s": "A patient in thyroid storm develops atrial fibrillation with rapid ventricular response. Besides treating the thyroid storm, which drug helps control both symptoms and rate?",
+    "o": [
+     "A beta-blocker",
+     "Insulin",
+     "Mannitol",
+     "A loop diuretic"
+    ],
+    "a": 0,
+    "r": "Beta-blockers blunt the adrenergic effects of thyrotoxicosis and control the ventricular rate in associated atrial fibrillation, alongside thionamides and supportive care."
+   },
+   {
+    "d": "Endocrine",
+    "c": "Perioperative stress steroids",
+    "s": "A patient on chronic corticosteroids is undergoing major surgery. To prevent adrenal crisis, the team should:",
+    "o": [
+     "Stop steroids the day before surgery",
+     "Give insulin instead",
+     "Provide stress-dose corticosteroids perioperatively",
+     "Restrict fluids"
+    ],
+    "a": 2,
+    "r": "Chronic steroid use suppresses the adrenal axis; stress-dose steroids during major surgical stress prevent an adrenal (Addisonian) crisis."
+   },
+   {
+    "d": "Renal / Multisystem",
+    "c": "Hypermagnesemia",
+    "s": "A CKD patient given magnesium develops hypotension, loss of deep tendon reflexes, and respiratory depression. Which is the MOST appropriate treatment?",
+    "o": [
+     "More magnesium",
+     "A loop diuretic alone is sufficient",
+     "IV calcium gluconate and stopping magnesium",
+     "Potassium replacement"
+    ],
+    "a": 2,
+    "r": "Hypermagnesemia causes loss of reflexes, hypotension, and respiratory depression; IV calcium antagonizes magnesium's effects while the source is stopped and excretion supported."
+   },
+   {
+    "d": "Renal / Multisystem",
+    "c": "Post-thyroidectomy hypocalcemia",
+    "s": "After thyroidectomy a patient develops perioral numbness and carpopedal spasm. The nurse should anticipate treatment for:",
+    "o": [
+     "Hyperglycemia",
+     "Hypernatremia",
+     "Hyperkalemia",
+     "Hypocalcemia (possible parathyroid injury)"
+    ],
+    "a": 3,
+    "r": "Inadvertent parathyroid injury during thyroidectomy can cause hypocalcemia with neuromuscular irritability (Chvostek/Trousseau, tetany); treat with calcium."
+   },
+   {
+    "d": "Renal / Multisystem",
+    "c": "Metabolic alkalosis",
+    "s": "A patient with prolonged vomiting and nasogastric suction is MOST likely to develop which acid–base disorder?",
+    "o": [
+     "Respiratory alkalosis",
+     "Respiratory acidosis",
+     "Metabolic alkalosis",
+     "Metabolic acidosis"
+    ],
+    "a": 2,
+    "r": "Loss of gastric acid from vomiting/NG suction causes a hypochloremic metabolic alkalosis, often with hypokalemia; treat the cause and replace chloride/potassium."
+   },
+   {
+    "d": "Behavioral / Psychosocial",
+    "c": "De-escalating an agitated patient",
+    "s": "An agitated but not yet violent patient is escalating. The MOST appropriate initial approach is to:",
+    "o": [
+     "Apply restraints immediately",
+     "Ignore the behavior",
+     "Confront the patient firmly",
+     "Use calm verbal de-escalation and ensure a safe environment"
+    ],
+    "a": 3,
+    "r": "Verbal de-escalation — a calm tone, listening, clear limits, and environmental safety — is the first-line approach before any restrictive intervention."
+   },
+   {
+    "d": "Behavioral / Psychosocial",
+    "c": "Acute stress after trauma",
+    "s": "Days after a traumatic event, an ICU patient has intrusive memories, hypervigilance, and poor sleep. The MOST appropriate nursing action is to:",
+    "o": [
+     "Avoid discussing the event entirely",
+     "Tell the patient to forget about it",
+     "Provide support, validate feelings, and refer for mental-health follow-up",
+     "Sedate the patient continuously"
+    ],
+    "a": 2,
+    "r": "Acute stress symptoms warrant supportive communication, normalization, and referral for evaluation, as early support can reduce progression to PTSD."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Emergency implied consent",
+    "s": "An unconscious patient with no available surrogate needs an emergent life-saving procedure. The team may proceed under:",
+    "o": [
+     "The emergency (implied) consent doctrine",
+     "The nurse's signature as consent",
+     "No legal basis until family arrives",
+     "A court order obtained later only"
+    ],
+    "a": 0,
+    "r": "In a true emergency when the patient can't consent and no surrogate is available, implied consent permits necessary life-saving treatment a reasonable person would want."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Disclosure of unanticipated outcome",
+    "s": "A patient experiences an unexpected complication from care. Ethical and just-culture practice calls for:",
+    "o": [
+     "Disclosing only to risk management",
+     "Honest disclosure of the unanticipated outcome to the patient/family",
+     "Withholding information to avoid liability",
+     "Disclosure only if the patient asks"
+    ],
+    "a": 1,
+    "r": "Patients have a right to honest disclosure of unanticipated outcomes; transparent communication supports trust and the principles of veracity and respect."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Patient safety advocacy (whistleblowing)",
+    "s": "A nurse repeatedly observes an unsafe practice that management won't address. The appropriate next step is to:",
+    "o": [
+     "Confront the coworker publicly",
+     "Stay silent to avoid conflict",
+     "Document privately and do nothing else",
+     "Escalate through formal safety/reporting channels to protect patients"
+    ],
+    "a": 3,
+    "r": "When internal escalation fails, the nurse continues advocating through formal safety and regulatory channels; patient safety obligations outweigh fear of conflict."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Precepting / facilitation of learning",
+    "s": "An experienced nurse is precepting a new graduate who is unsure about a high-risk medication. The BEST approach is to:",
+    "o": [
+     "Guide the new nurse through the rationale and safe process (mentoring)",
+     "Tell them to figure it out alone",
+     "Take over and do it silently",
+     "Report them for not knowing"
+    ],
+    "a": 0,
+    "r": "Facilitation of learning includes mentoring — coaching the novice through reasoning and safe practice — which builds competence and a learning culture."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Cultural competence",
+    "s": "A patient's cultural practices differ from the nurse's expectations of 'a good patient.' The nurse should:",
+    "o": [
+     "Limit family involvement",
+     "Expect the patient to adopt the nurse's norms",
+     "Document the patient as difficult",
+     "Provide culturally competent, individualized care without judgment"
+    ],
+    "a": 3,
+    "r": "Cultural competence means recognizing and respecting differences and individualizing care to the patient's values and beliefs, free of bias."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Root cause analysis / sentinel event",
+    "s": "After a serious preventable harm event, the facility conducts a root cause analysis primarily to:",
+    "o": [
+     "Close the case quickly",
+     "Satisfy the family only",
+     "Discipline the individuals involved",
+     "Identify system factors and prevent recurrence rather than assign blame"
+    ],
+    "a": 3,
+    "r": "Root cause analysis of sentinel events examines system and process failures to prevent recurrence, consistent with a just, non-punitive safety culture."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Leaving against medical advice",
+    "s": "A capacitated patient insists on leaving against medical advice. The nurse's BEST action is to:",
+    "o": [
+     "Threaten to call security",
+     "Ensure the patient understands the risks, document, and support an informed decision",
+     "Physically prevent them from leaving",
+     "Refuse to provide any discharge information"
+    ],
+    "a": 1,
+    "r": "A competent, informed patient may leave AMA; the nurse explains the risks, offers alternatives, documents the informed decision, and provides safe follow-up information."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Family-centered visitation",
+    "s": "Evidence increasingly supports open/flexible ICU visitation because it:",
+    "o": [
+     "Increases infection risk in all cases",
+     "Is primarily for staff convenience",
+     "Benefits patients and families and supports patient- and family-centered care",
+     "Always interferes with care"
+    ],
+    "a": 2,
+    "r": "Patient- and family-centered care supports flexible visitation and family presence, which improves communication, satisfaction, and outcomes when individualized to the patient."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Beneficence",
+    "s": "A nurse stays late to arrange resources that will clearly benefit a patient's recovery. This action MOST reflects which principle?",
+    "o": [
+     "Autonomy",
+     "Veracity",
+     "Beneficence",
+     "Justice"
+    ],
+    "a": 2,
+    "r": "Beneficence is the duty to act for the patient's good; it complements nonmaleficence (avoiding harm), autonomy, and justice."
+   },
+   {
+    "d": "Professional & Ethics",
+    "c": "Clinical judgment competency",
+    "s": "In the Synergy Model, integrating knowledge, skills, and experience to make sound patient decisions is the nurse competency of:",
+    "o": [
+     "Clinical judgment",
+     "Facilitation of learning",
+     "Systems thinking",
+     "Response to diversity"
+    ],
+    "a": 0,
+    "r": "Clinical judgment combines clinical reasoning, knowledge, and experience to make and adjust patient care decisions — a core Synergy Model nurse competency."
+   },
+   {
+    "d": "Cardiovascular",
+    "c": "Asystole management",
+    "s": "A patient is unresponsive with asystole confirmed in two leads. The PRIORITY is:",
+    "o": [
+     "Immediate defibrillation",
+     "Synchronized cardioversion",
+     "High-quality CPR and epinephrine while seeking reversible causes",
+     "A precordial thump"
+    ],
+    "a": 2,
+    "r": "Asystole is non-shockable; treat with high-quality CPR, epinephrine, and a search for reversible causes (H's and T's). Defibrillation has no role."
+   },
+   {
+    "d": "Multisystem",
+    "c": "Hyperkalemia — calcium first",
+    "s": "A patient has K+ 7.0 with a widening QRS. After IV calcium to stabilize the membrane, which therapies SHIFT potassium intracellularly?",
+    "o": [
+     "Sodium polystyrene and dialysis only",
+     "Insulin with dextrose and a beta-agonist",
+     "A loop diuretic alone",
+     "Calcium gluconate again"
+    ],
+    "a": 1,
+    "r": "After calcium stabilizes the myocardium, insulin/dextrose and a beta-agonist (albuterol) shift K+ into cells; binders and dialysis then remove it from the body."
+   },
+   {
+    "d": "Neurology",
+    "c": "Decerebrate vs decorticate posturing",
+    "s": "A comatose patient extends and internally rotates the arms with plantar flexion in response to pain. This posturing indicates:",
+    "o": [
+     "Decerebrate posturing (more ominous, brainstem-level injury)",
+     "Purposeful movement",
+     "Decorticate posturing (better prognosis)",
+     "Normal reflexes"
+    ],
+    "a": 0,
+    "r": "Decerebrate (extensor) posturing indicates deeper brainstem injury and a worse prognosis than decorticate (flexor) posturing; both signal severe neurologic compromise."
+   }
+  ]
+ }
+];
+
+const PASS_PCT = 70;
+const $=s=>document.querySelector(s);
+const V={home:$("#home"),exam:$("#exam"),results:$("#results"),review:$("#review")};
+function show(v){ Object.values(V).forEach(x=>x.classList.add("hide")); V[v].classList.remove("hide"); window.scrollTo({top:0,behavior:"smooth"}); }
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+/* ---------- History (synced) ---------- */
+const HIST_KEY="ccrn-mock-history";
+let history=[];
+try{ const r=localStorage.getItem(HIST_KEY); if(r) history=JSON.parse(r)||[]; }catch(e){}
+let localTs=0; try{ localTs=parseInt(localStorage.getItem(HIST_KEY+":ts")||"0",10)||0; }catch(e){}
+function saveHistory(){
+  localTs=Date.now();
+  try{ localStorage.setItem(HIST_KEY, JSON.stringify(history)); localStorage.setItem(HIST_KEY+":ts", String(localTs)); }catch(e){}
+  if(cloud.connected && !adopting && typeof schedulePush==="function") schedulePush();
+}
+function bestFor(id){ const hs=history.filter(h=>h.variation===id); return hs.length? Math.max(...hs.map(h=>h.pct)) : null; }
+
+/* ---------- Missed-question bank (Exam M) ----------
+   Auto-populated whenever a question is missed on Mock A/B/C (or re-missed on M).
+   Mastery: each correct re-answer advances a streak; MASTERY_GOAL correct in a
+   row retires the question from the active re-test pool. A miss resets it. */
+const MISSED_KEY="ccrn-mock-missed";
+const MASTERY_GOAL=2;
+let missed={};
+try{ const r=localStorage.getItem(MISSED_KEY); if(r){ const m=JSON.parse(r); if(m&&typeof m==="object") missed=m; } }catch(e){}
+function qkey(q){ let h=0; const s="k"+(q.s||""); for(let i=0;i<s.length;i++){ h=(h*31+s.charCodeAt(i))|0; } return "q"+(h>>>0).toString(36); }
+function saveMissed(){
+  localTs=Date.now();
+  try{ localStorage.setItem(MISSED_KEY, JSON.stringify(missed)); localStorage.setItem(HIST_KEY+":ts", String(localTs)); }catch(e){}
+  if(cloud.connected && !adopting && typeof schedulePush==="function") schedulePush();
+}
+// Update the bank for one answered question. src = {exam, idx} of the ORIGINAL mock.
+function recordResult(q, ok, src){
+  const k=qkey(q);
+  if(ok){
+    if(missed[k]){ missed[k].streak=(missed[k].streak||0)+1; missed[k].attempts=(missed[k].attempts||0)+1; if(missed[k].streak>=MASTERY_GOAL) missed[k].mastered=true; }
+    // never-missed correct answers do not enter the bank
+  } else {
+    const e=missed[k] || { exam:src.exam, idx:src.idx, attempts:0, addedTs:Date.now() };
+    e.exam=src.exam; e.idx=src.idx; e.streak=0; e.mastered=false; e.attempts=(e.attempts||0)+1; e.lastMiss=Date.now();
+    missed[k]=e;
+  }
+}
+function missedStats(){
+  const vals=Object.values(missed);
+  const total=vals.length, mastered=vals.filter(e=>e.mastered).length;
+  return { total, mastered, active: total-mastered, pct: total? Math.round(mastered/total*100):0 };
+}
+function masteryLabel(pct,total){ if(!total) return "no misses yet"; if(pct>=100) return "all mastered 🎉"; if(pct>=67) return "almost there"; if(pct>=34) return "building"; return "just started"; }
+// Rebuild the live "Missed Questions" exam from the active (non-mastered) bank.
+function missedQuestions(){
+  const out=[];
+  Object.keys(missed).forEach(k=>{
+    const e=missed[k]; if(e.mastered) return;
+    const ex=EXAMS.find(x=>x.id===e.exam); if(!ex||!ex.questions[e.idx]) return;
+    out.push({ ...ex.questions[e.idx], _src:{exam:e.exam, idx:e.idx} });
+  });
+  return out;
+}
+
+/* ---------- Home ---------- */
+function renderHome(){
+  const host=$("#mockList"); host.innerHTML="";
+  EXAMS.forEach(ex=>{
+    const best=bestFor(ex.id);
+    const b=document.createElement("button"); b.className="mockbtn"; b.type="button";
+    b.innerHTML=`<span class="badge">${ex.id}</span>
+      <span><span class="mname">${ex.name}</span><span class="mmeta">${ex.questions.length} questions · full blueprint</span></span>
+      <span class="right">${best!=null? '<span class="best">best '+best+'%</span>' : 'not taken yet'}</span>`;
+    b.onclick=()=>startExam(ex.id);
+    host.appendChild(b);
+  });
+  // ---- Missed Questions (Exam M) tile ----
+  const ms=missedStats();
+  const m=document.createElement("button"); m.className="mockbtn"; m.type="button";
+  m.style.borderColor = ms.active>0 ? "var(--amber)" : "var(--line)";
+  const barColor = ms.pct>=100?"var(--green)":ms.pct>=34?"var(--teal)":"var(--amber)";
+  m.innerHTML=`<span class="badge" style="background:var(--amber-wash); color:var(--amber)">★</span>
+    <span style="flex:1">
+      <span class="mname">Missed Questions</span>
+      <span class="mmeta">${ms.total? ms.active+' to re-test · '+ms.mastered+'/'+ms.total+' mastered' : 'auto-fills with questions you miss on A/B/C'}</span>
+      ${ms.total? '<span style="display:block; height:6px; background:var(--panel-2); border-radius:999px; overflow:hidden; margin-top:7px; max-width:240px"><span style="display:block; height:100%; width:'+ms.pct+'%; background:'+barColor+'"></span></span>' : ''}
+    </span>
+    <span class="right">${ms.total? '<span class="best" style="background:'+(ms.pct>=100?'var(--green-wash)':'var(--amber-wash)')+'; color:'+(ms.pct>=100?'var(--green)':'var(--amber)')+'">'+ms.pct+'% · '+masteryLabel(ms.pct,ms.total)+'</span>' : 'empty'}</span>`;
+  m.onclick=()=>{ if(ms.active>0) startExam("M"); else { /* gentle nudge */ const el=$("#storeStatus"); if(el){ const o=el.textContent; el.textContent = ms.total? "All missed questions are mastered — nice work. 🎉" : "Take Mock A, B, or C first; missed questions will collect here."; setTimeout(()=>{ el.textContent=o; footerStatus(); },2800);} } };
+  host.appendChild(m);
+  footerStatus();
+}
+
+/* ---------- Exam state ---------- */
+let cur={ id:null, name:"", qs:[], optOrder:[], answers:[], idx:0, t0:0, timerInt:null };
+function startExam(id){
+  let base, name;
+  if(id==="M"){
+    base=missedQuestions();
+    if(!base.length){ return; }
+    name="Missed Questions";
+  } else {
+    const ex=EXAMS.find(x=>x.id===id); if(!ex) return;
+    base=ex.questions.map((q,i)=>({ ...q, _src:{exam:id, idx:i} }));
+    name=ex.name;
+  }
+  cur.id=id; cur.name=name;
+  cur.qs = base.map(q=>({...q}));
+  shuffle(cur.qs);
+  cur.optOrder = cur.qs.map(()=>shuffle([0,1,2,3]));
+  cur.answers = cur.qs.map(()=>null);
+  cur.idx=0; cur.t0=Date.now();
+  if(cur.timerInt) clearInterval(cur.timerInt);
+  cur.timerInt=setInterval(updTimer,1000); updTimer();
+  show("exam"); render();
+}
+function updTimer(){
+  const s=Math.floor((Date.now()-cur.t0)/1000);
+  const m=String(Math.floor(s/60)).padStart(2,"0"), ss=String(s%60).padStart(2,"0");
+  const el=$("#timer"); if(el) el.textContent=m+":"+ss;
+}
+function render(){
+  const q=cur.qs[cur.idx];
+  $("#chip").textContent=q.d;
+  $("#counter").textContent=`Question ${cur.idx+1} of ${cur.qs.length}`;
+  $("#answered").textContent = cur.answers.filter(a=>a!=null).length+" answered";
+  $("#pfill").style.width=((cur.idx+1)/cur.qs.length*100)+"%";
+  $("#stem").textContent=q.s;
+  const host=$("#opts"); host.innerHTML="";
+  cur.optOrder[cur.idx].forEach((optIx,pos)=>{
+    const b=document.createElement("button"); b.className="opt"+(cur.answers[cur.idx]===optIx?" sel":""); b.type="button";
+    b.innerHTML=`<span class="ltr">${String.fromCharCode(65+pos)}</span>${q.o[optIx]}`;
+    b.onclick=()=>{ cur.answers[cur.idx]=optIx; render(); };
+    host.appendChild(b);
+  });
+  $("#prevBtn").disabled=cur.idx===0;
+  $("#nextBtn").textContent = cur.idx===cur.qs.length-1 ? "Submit ✓" : "Next →";
+}
+$("#prevBtn").onclick=()=>{ if(cur.idx>0){ cur.idx--; render(); } };
+$("#nextBtn").onclick=()=>{
+  if(cur.idx===cur.qs.length-1){
+    const un=cur.answers.filter(a=>a==null).length;
+    if(un>0 && !confirm(un+" question"+(un===1?"":"s")+" still unanswered. Submit anyway?")) return;
+    finish();
+  } else { cur.idx++; render(); }
+};
+$("#quitBtn").onclick=()=>{ if(confirm("Save and quit without scoring this attempt?")){ if(cur.timerInt)clearInterval(cur.timerInt); renderHome(); show("home"); } };
+
+/* ---------- Scoring ---------- */
+function finish(){
+  if(cur.timerInt) clearInterval(cur.timerInt);
+  const dur=Math.floor((Date.now()-cur.t0)/1000);
+  let correct=0; const dom={};
+  cur.qs.forEach((q,i)=>{
+    const ok = cur.answers[i]===q.a;
+    if(ok) correct++;
+    if(!dom[q.d]) dom[q.d]={c:0,t:0};
+    dom[q.d].t++; if(ok) dom[q.d].c++;
+    // update the missed-question bank (src is the original mock this question came from)
+    const src = q._src || { exam:cur.id, idx:i };
+    recordResult(q, ok, src);
+  });
+  saveMissed();
+  const total=cur.qs.length, pct=Math.round(correct/total*100);
+  history.push({ ts:Date.now(), variation:cur.id, score:correct, total, pct, dur, dom });
+  saveHistory();
+  renderResults(correct,total,pct,dur,dom);
+}
+function renderResults(correct,total,pct,dur,dom){
+  $("#resScore").textContent = correct+" / "+total+"  ("+pct+"%)";
+  const pass = pct>=PASS_PCT;
+  const pp=$("#passPill"); pp.className="passpill "+(pass?"pass":"fail"); pp.textContent=pass?"PASS":"BELOW PASS";
+  const m=Math.floor(dur/60), s=dur%60;
+  if(cur.id==="M"){
+    const ms=missedStats();
+    $("#resSub").innerHTML = `Re-test of missed questions · ${m}m ${s}s.<br><b>Mastery: ${ms.mastered}/${ms.total} mastered (${ms.pct}%)</b> · ${ms.active} still to re-test. Get a question right ${MASTERY_GOAL}× in a row to master it.`;
+  } else {
+    $("#resSub").textContent = `${cur.name} · ${m}m ${s}s · passing is about ${PASS_PCT}%.`;
+  }
+  const host=$("#dbars"); host.innerHTML="";
+  Object.keys(dom).sort().forEach(d=>{
+    const o=dom[d], p=Math.round(o.c/o.t*100);
+    const col = p>=70?"var(--green)":p>=50?"var(--amber)":"var(--red)";
+    const el=document.createElement("div"); el.className="dbar";
+    el.innerHTML=`<div class="lab"><span>${d}</span><span>${o.c}/${o.t}</span></div><div class="track"><div class="fill" style="width:${p}%; background:${col}"></div></div>`;
+    host.appendChild(el);
+  });
+  show("results");
+}
+$("#retakeBtn").onclick=()=>startExam(cur.id);
+$("#homeBtn").onclick=()=>{ renderHome(); show("home"); };
+
+/* ---------- Review ---------- */
+let revFilter="all";
+function renderReview(){
+  $("#revTitle").textContent="Review · "+cur.name;
+  const host=$("#revList"); host.innerHTML="";
+  cur.qs.forEach((q,i)=>{
+    const chosen=cur.answers[i], ok=chosen===q.a;
+    if(revFilter==="wrong" && ok) return;
+    const el=document.createElement("div"); el.className="rev "+(ok?"ok":"no");
+    const yourTxt = chosen==null ? "<span class='you'>(left blank)</span>" : (ok? "<span class='corr'>"+q.o[chosen]+"</span>" : "<span class='you'>"+q.o[chosen]+"</span>");
+    let ro = `<div class="ro">Your answer: ${yourTxt}`;
+    if(!ok) ro += `<br>Correct: <span class="corr">${q.o[q.a]}</span>`;
+    ro += `</div>`;
+    el.innerHTML=`<div class="rq"><span class="chip" style="margin-right:8px">${q.d}</span>${q.s}</div>${ro}<div class="rr">${q.r}</div><div class="bookref">📖 ${barronRef(q.d)}</div>`;
+    host.appendChild(el);
+  });
+  if(!host.children.length){ host.innerHTML='<p class="sub">Nothing to show — you didn\'t miss any in this filter. 🎉</p>'; }
+  show("review");
+}
+$("#reviewBtn").onclick=()=>{ revFilter="all"; document.querySelectorAll(".filt").forEach(b=>b.classList.toggle("sel",b.dataset.f==="all")); renderReview(); };
+$("#revBack").onclick=()=>show("results");
+$("#revHome").onclick=()=>{ renderHome(); show("home"); };
+document.querySelectorAll(".filt").forEach(b=>{ b.onclick=()=>{ revFilter=b.dataset.f; document.querySelectorAll(".filt").forEach(x=>x.classList.toggle("sel",x===b)); renderReview(); }; });
+
+/* ---------- Barron chapter refs ---------- */
+const BARRON_CH={
+  "Cardiovascular":"Ch. 3 (Cardiovascular) · hemodynamics in Ch. 6",
+  "Pulmonary":"Ch. 4 (Respiratory)",
+  "Multisystem":"Ch. 5 (Multisystem)",
+  "Renal / Multisystem":"Ch. 9 (Renal/GU) · also Ch. 5 (Multisystem)",
+  "Neurology":"Ch. 7 (Neurological)",
+  "Endocrine":"Ch. 10 (Endocrine)",
+  "Behavioral / Psychosocial":"Ch. 12 (Behavioral/Psychosocial)",
+  "Professional & Ethics":"Ch. 15 (Professional Caring & Ethical Practice)"
+};
+function barronRef(d){ return "Barron's CCRN — "+(BARRON_CH[d]||"see the matching body-system chapter"); }
+
+/* ===== Cloud sync (jsonbin, shared key, own bin) ===== */
+const CLOUD_KEY_LS="ccrn-sync-key", CLOUD_BIN_LS="ccrn-sync-mock-bin", JB_BASE="https://api.jsonbin.io/v3/b";
+let cloud={key:"",bin:"",connected:false};
+let pushTimer=null, adopting=false, cloudSaveState="", savedRevertTimer=null;
+function loadCloudCfg(){ try{ cloud.key=localStorage.getItem(CLOUD_KEY_LS)||""; cloud.bin=localStorage.getItem(CLOUD_BIN_LS)||""; }catch(e){} cloud.connected=!!(cloud.key&&cloud.bin); }
+function saveCloudCfg(){ try{ if(cloud.key)localStorage.setItem(CLOUD_KEY_LS,cloud.key); else localStorage.removeItem(CLOUD_KEY_LS); if(cloud.bin)localStorage.setItem(CLOUD_BIN_LS,cloud.bin); else localStorage.removeItem(CLOUD_BIN_LS); }catch(e){} cloud.connected=!!(cloud.key&&cloud.bin); }
+function cstat(m){ const el=$("#cloudStatus"); if(el) el.textContent=m; }
+function footerStatus(){
+  const st=$("#storeStatus");
+  if(st) st.textContent = (history.length? history.length+" attempt"+(history.length===1?"":"s")+" saved" : "No attempts yet") + (cloud.connected? " · ☁ "+(cloudSaveState==="saving"?"saving…":cloudSaveState==="error"?"save failed":cloudSaveState==="saved"?"saved ✓":"cloud on") : "");
+  const b=$("#syncBadge"), t=$("#syncBadgeTxt");
+  if(b&&t){ b.classList.remove("off","saved","saving","error");
+    if(!cloud.connected){ b.classList.add("off"); t.textContent="Cloud off"; }
+    else if(cloudSaveState==="saving"){ b.classList.add("saving"); t.textContent="Saving…"; }
+    else if(cloudSaveState==="error"){ b.classList.add("error"); t.textContent="Save failed"; }
+    else if(cloudSaveState==="saved"){ b.classList.add("saved"); t.textContent="Saved"; }
+    else { b.classList.add("saved"); t.textContent="Synced"; }
+  }
+}
+function jbHeaders(){ return {"Content-Type":"application/json","X-Master-Key":cloud.key,"X-Bin-Versioning":"false"}; }
+async function cloudCreateBin(){
+  const body=JSON.stringify({history, missed, updatedAt:localTs||Date.now()});
+  const r=await fetch(JB_BASE,{method:"POST",headers:{...jbHeaders(),"X-Bin-Name":"ccrn-mock","X-Bin-Private":"true"},body});
+  if(!r.ok) throw new Error("HTTP "+r.status);
+  const j=await r.json(); const id=j&&j.metadata&&j.metadata.id; if(!id) throw new Error("no bin id"); return id;
+}
+async function cloudPull(){ const r=await fetch(JB_BASE+"/"+encodeURIComponent(cloud.bin)+"/latest",{headers:jbHeaders()}); if(!r.ok) throw new Error("HTTP "+r.status); const j=await r.json(); return (j&&j.record)?j.record:null; }
+async function cloudPush(opts){
+  opts=opts||{};
+  cloudSaveState="saving"; footerStatus();
+  const body=JSON.stringify({history, missed, updatedAt:localTs||Date.now()});
+  const init={method:"PUT",headers:jbHeaders(),body}; if(opts.keepalive) init.keepalive=true;
+  try{ const r=await fetch(JB_BASE+"/"+encodeURIComponent(cloud.bin),init); if(!r.ok) throw new Error("HTTP "+r.status); }
+  catch(e){ cloudSaveState="error"; footerStatus(); throw e; }
+  cloudSaveState="saved"; footerStatus();
+  if(savedRevertTimer) clearTimeout(savedRevertTimer);
+  savedRevertTimer=setTimeout(()=>{ cloudSaveState=""; footerStatus(); },2500);
+  return true;
+}
+/* Merge attempt histories append-only, de-duped by ts */
+function mergeHistories(a,b){
+  const seen=new Set(), out=[];
+  (a||[]).concat(b||[]).forEach(h=>{ if(h&&h.ts!=null && !seen.has(h.ts)){ seen.add(h.ts); out.push(h); } });
+  out.sort((x,y)=>x.ts-y.ts); return out;
+}
+/* Merge missed banks across devices: union of keys; for shared keys keep the
+   LOWER streak (re-test if shaky on either device) and recompute mastery. */
+function mergeMissed(a,b){
+  const out={}, keys=new Set([...Object.keys(a||{}),...Object.keys(b||{})]);
+  keys.forEach(k=>{
+    const x=(a||{})[k], y=(b||{})[k];
+    if(x&&y){
+      const streak=Math.min(x.streak||0, y.streak||0);
+      out[k]={ exam:x.exam||y.exam, idx:(x.idx!=null?x.idx:y.idx),
+        attempts:Math.max(x.attempts||0,y.attempts||0), streak,
+        addedTs:Math.min(x.addedTs||Date.now(), y.addedTs||Date.now()),
+        lastMiss:Math.max(x.lastMiss||0,y.lastMiss||0), mastered: streak>=MASTERY_GOAL };
+    } else { out[k]=x||y; }
+  });
+  return out;
+}
+async function cloudSync(){
+  if(!cloud.connected) return;
+  cstat("Syncing…");
+  try{
+    const rec=await cloudPull();
+    const remote = rec && Array.isArray(rec.history) ? rec.history : [];
+    const merged = mergeHistories(history, remote);
+    const histChanged = merged.length!==history.length;
+    // merge missed bank
+    let missChanged=false;
+    if(rec && rec.missed && typeof rec.missed==="object"){
+      const before=JSON.stringify(missed);
+      missed=mergeMissed(missed, rec.missed);
+      missChanged = before!==JSON.stringify(missed);
+    }
+    adopting=true; history=merged;
+    try{ localStorage.setItem(HIST_KEY, JSON.stringify(history)); localStorage.setItem(MISSED_KEY, JSON.stringify(missed)); localStorage.setItem(HIST_KEY+":ts", String(Date.now())); }catch(e){}
+    adopting=false;
+    await cloudPush();
+    cstat((histChanged||missChanged)?"Synced ✓ scores and missed questions merged across your devices.":"Already up to date ✓");
+    renderHome(); footerStatus();
+  }catch(e){ cstat("Sync failed: "+friendlyErr(e)); }
+}
+function schedulePush(){ if(pushTimer)clearTimeout(pushTimer); pushTimer=setTimeout(()=>{ pushTimer=null; cloudPush().catch(()=>{}); },1200); }
+function flushPush(){ if(pushTimer){ clearTimeout(pushTimer); pushTimer=null; } if(cloud.connected) cloudPush({keepalive:true}).catch(()=>{}); }
+function friendlyErr(e){ const m=(e&&e.message)||""; if(m.indexOf("401")>-1||m.indexOf("403")>-1)return "key not accepted — check the Master Key."; if(m.indexOf("404")>-1)return "bin not found — check the Bin ID."; if(m.indexOf("429")>-1)return "rate limited — wait a few seconds."; if(m.toLowerCase().indexOf("failed to fetch")>-1)return "couldn't reach the network. Open the file in your browser, not the Claude viewer."; return m||"unknown error."; }
+function openCloud(){ $("#cloudKey").value=cloud.key||""; $("#cloudBin").value=cloud.bin||""; cstat(cloud.connected?"Connected. Bin ID: "+cloud.bin:"Not connected yet."); $("#cloudModal").classList.remove("hide"); }
+$("#cloudBtn").onclick=openCloud;
+$("#cloudClose").onclick=()=>$("#cloudModal").classList.add("hide");
+$("#cloudModal").onclick=(e)=>{ if(e.target===$("#cloudModal")) $("#cloudModal").classList.add("hide"); };
+$("#cloudConnect").onclick=async()=>{
+  const key=$("#cloudKey").value.trim(), bin=$("#cloudBin").value.trim();
+  if(!key){ cstat("Paste your jsonbin Master Key first."); return; }
+  cloud.key=key;
+  if(bin){ cloud.bin=bin; cloud.connected=true; saveCloudCfg(); cstat("Connecting…"); await cloudSync(); footerStatus(); }
+  else{ cstat("Creating a new cloud bin…"); try{ const id=await cloudCreateBin(); cloud.bin=id; cloud.connected=true; saveCloudCfg(); $("#cloudBin").value=id; cstat("Connected ✓  Bin ID: "+id+"  — paste this (with your key) on your other device."); footerStatus(); }catch(e){ cloud.connected=false; cstat("Couldn't connect: "+friendlyErr(e)); } }
+};
+$("#cloudSyncNow").onclick=async()=>{ if(!cloud.connected){ cstat("Connect first."); return; } await cloudSync(); };
+$("#cloudDisconnect").onclick=()=>{ cloud.key=""; cloud.bin=""; cloud.connected=false; saveCloudCfg(); $("#cloudKey").value=""; $("#cloudBin").value=""; cstat("Disconnected. Scores still save on this device."); footerStatus(); };
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden") flushPush(); });
+window.addEventListener("pagehide", flushPush);
+
+/* ---------- Theme ---------- */
+function currentTheme(){ let t=null; try{t=localStorage.getItem('ccrn-theme');}catch(e){} if(t==='dark'||t==='light')return t; return (window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'; }
+function updateThemeBtn(){ $("#themeBtn").textContent=currentTheme()==='dark'?'☀️ Light':'🌙 Dark'; }
+function applyTheme(t){ try{localStorage.setItem('ccrn-theme',t);}catch(e){} if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t); else document.documentElement.removeAttribute('data-theme'); updateThemeBtn(); }
+$("#themeBtn").onclick=()=>applyTheme(currentTheme()==='dark'?'light':'dark');
+updateThemeBtn();
+
+/* ---------- Init ---------- */
+loadCloudCfg(); renderHome(); show("home"); footerStatus();
+if(cloud.connected) cloudSync();
+</script>
+</body>
+</html>
