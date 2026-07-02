@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CCRN Study</title>
+<title>Study Hub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -14,43 +14,41 @@
   }
   *{box-sizing:border-box}
   body{margin:0; min-height:100vh; background:var(--paper); color:var(--ink); font-family:"Inter",system-ui,sans-serif; display:flex; align-items:center; justify-content:center; padding:24px}
-  .wrap{max-width:520px; width:100%}
-  h1{font-family:"Newsreader",serif; font-weight:500; font-size:32px; margin:0 0 6px}
-  .lead{color:var(--soft); font-size:15px; margin:0 0 28px}
-  a.card{display:block; text-decoration:none; color:inherit; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px 22px; margin-bottom:14px; transition:border-color .15s, transform .15s}
-  a.card:hover{border-color:var(--teal); transform:translateY(-1px)}
-  .title{font-family:"Newsreader",serif; font-size:21px; font-weight:500; margin:0 0 4px; display:flex; align-items:center; gap:10px}
-  .desc{color:var(--soft); font-size:14px; margin:0; line-height:1.5}
-  .dot{font-size:13px; color:var(--teal)}
-  .foot{color:var(--soft); font-size:12.5px; margin-top:22px; line-height:1.6; opacity:.85}
+  .wrap{max-width:560px; width:100%}
+  .eyebrow{font-size:12.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--teal); font-weight:600; margin:0 0 8px}
+  h1{font-family:"Newsreader",serif; font-weight:500; font-size:34px; margin:0 0 6px; letter-spacing:-.01em}
+  .lead{color:var(--soft); font-size:15px; margin:0 0 30px; line-height:1.55}
+  a.card{display:block; text-decoration:none; color:inherit; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:22px 24px; margin-bottom:16px; transition:border-color .15s, transform .15s, box-shadow .15s}
+  a.card:hover{border-color:var(--teal); transform:translateY(-1px); box-shadow:0 6px 20px rgba(14,123,99,.10)}
+  .tag{font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--soft); font-weight:600; margin:0 0 6px}
+  .title{font-family:"Newsreader",serif; font-size:23px; font-weight:500; margin:0 0 6px; display:flex; align-items:center; gap:10px}
+  .desc{color:var(--soft); font-size:14px; margin:0; line-height:1.55}
+  .go{display:inline-block; margin-top:12px; color:var(--teal); font-size:13.5px; font-weight:600}
+  .dot{font-size:14px; color:var(--teal)}
+  .foot{color:var(--soft); font-size:12.5px; margin-top:24px; line-height:1.7; opacity:.9}
 </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>CCRN Study</h1>
-    <p class="lead">Adult CCRN prep — built from your notes and the AACN blueprint.</p>
+    <p class="eyebrow">Study Hub</p>
+    <h1>Choose your certification track</h1>
+    <p class="lead">Two complete study suites in one place. Progress and cloud sync are kept separate for each exam.</p>
 
-    <a class="card" href="ccrn-recall.html">
-      <p class="title"><span class="dot">◆</span> Adaptive Recall</p>
-      <p class="desc">Spaced-repetition quiz. Concepts climb to mastery and retire from your queue. Tracks per-domain progress.</p>
+    <a class="card" href="ccrn.html">
+      <p class="tag">Adult Critical Care</p>
+      <p class="title"><span class="dot">◆</span> CCRN</p>
+      <p class="desc">Adaptive recall, practice &amp; mock exams, and rapid drills across the full adult CCRN blueprint.</p>
+      <span class="go">Open CCRN &rarr;</span>
     </a>
 
-    <a class="card" href="ccrn-practice-exam.html">
-      <p class="title"><span class="dot">◆</span> Practice Exam</p>
-      <p class="desc">Full timed-style run-through with scoring, domain breakdown, miss review, and saved score history.</p>
+    <a class="card" href="csccmc.html">
+      <p class="tag">Cardiac Surgery &amp; Cardiac Medicine</p>
+      <p class="title"><span class="dot">◆</span> CSC / CMC</p>
+      <p class="desc">Concept-by-concept assessment, practice bank, mock exams, drills, and vocabulary across both cardiac subspecialty blueprints.</p>
+      <span class="go">Open CSC / CMC &rarr;</span>
     </a>
 
-    <a class="card" href="ccrn-drills.html">
-      <p class="title"><span class="dot">◆</span> Rapid Drills</p>
-      <p class="desc">Fast tap-to-match drills for the easy-to-forget facts — drugs, antidotes, shock profiles, murmurs, acid–base. Active reps that track what you miss.</p>
-    </a>
-
-    <a class="card" href="ccrn-mock.html">
-      <p class="title"><span class="dot">◆</span> Mock Exams</p>
-      <p class="desc">Three full-length practice exams across the whole blueprint, with a timer, end scoring, pass/fail, domain breakdown, and a complete review with rationales.</p>
-    </a>
-
-    <p class="foot">Open ☁ Cloud sync in each app to save and sync across your devices. Bookmark this page or Add to Home Screen for quick access.</p>
+    <p class="foot">Open ☁ Cloud sync inside each app to save and sync across your devices. Bookmark this page or Add to Home Screen for quick access.</p>
   </div>
 </body>
 </html>
