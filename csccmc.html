@@ -221,6 +221,14 @@ i { font-style: italic; }
 .exam-btn span { font-size: 12.5px; color: var(--ink-faint); }
 .exam-btn.accent { background: var(--amber-wash); border-color: var(--amber); }
 .exam-btn.accent b { color: var(--amber); }
+.qcount { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 12px; margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--line); }
+.qcount-label { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+.qcount-input {
+  width: 84px; font-family: inherit; font-size: 14px; text-align: center; font-variant-numeric: tabular-nums;
+  border: 1px solid var(--line); border-radius: 9px; padding: 8px 10px; background: var(--paper); color: var(--ink);
+}
+.qcount-input:focus { outline: none; border-color: var(--teal); }
+.qcount-hint { flex-basis: 100%; font-size: 12px; color: var(--ink-faint); line-height: 1.45; margin: 0; }
 
 /* ------------------------------ roadmap -------------------------------- */
 .roadmap { margin-top: 20px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow); }
@@ -548,6 +556,7 @@ i { font-style: italic; }
   </script>
 
   <!-- data -->
+    <!-- blueprints.js -->
   <script>
 /* =============================================================================
    blueprints.js  —  AACN CSC & CMC Test Plans (structured)
@@ -907,8 +916,8 @@ STUDY.blueprints = {
     bp.conceptCount = Object.keys(flat).length;
   });
 })();
-
-</script>
+  </script>
+  <!-- data/csc-bank.js -->
   <script>
 /* =============================================================================
    csc-bank.js  —  CSC master question bank (seed set)
@@ -953,8 +962,8 @@ STUDY.banks.CSC = [
   {"id": "csc-0027", "cert": "CSC", "domain": "III", "domainName": "Therapeutic Interventions", "category": "C. Respiratory", "concept": "csc-III-C-4", "topic": "Extubation readiness", "difficulty": 1, "stem": "Following a 4-vessel CABG, the nurse assesses a 70 kg patient for readiness to wean from mechanical ventilation. Which finding BEST indicates readiness to extubate?", "options": [{"key": "A", "text": "a PaO2/FiO2 ratio of 100"}, {"key": "B", "text": "a spontaneous tidal volume of 350 mL with an adequate rate and stable gas exchange"}, {"key": "C", "text": "a rapid shallow breathing index (RSBI) of 130"}, {"key": "D", "text": "a negative inspiratory force of -15 cm H2O"}], "answer": "B", "rationale": {"correct": "Readiness to extubate integrates adequate oxygenation, ventilation, and spontaneous respiratory mechanics with hemodynamic stability, adequate reversal of sedation/paralysis, and protective airway reflexes. A spontaneous tidal volume around 5 mL/kg (about 350 mL for 70 kg) with an adequate rate and stable gas exchange supports extubation.", "distractors": {"A": "A P/F ratio of 100 indicates significant hypoxemia (ARDS range) and argues against extubation.", "C": "An RSBI (rate/tidal volume) around 130 predicts weaning failure; values under about 105 are more favorable.", "D": "A NIF of only -15 cm H2O is weak; a more negative value (about -20 to -30 or beyond) suggests adequate strength."}}, "refs": [{"b": "Bojar", "ed": "6th ed", "ch": 10, "t": "Respiratory Management", "s": "Weaning and extubation criteria", "p": 457}, {"b": "Hardin", "ed": "1st ed", "ch": 11, "t": "Mechanical Ventilation After Cardiac Surgery", "s": "Weaning from mechanical ventilation"}]},
   {"id": "csc-0028", "cert": "CSC", "domain": "IV", "domainName": "Monitoring and Diagnostics", "category": "B. Respiratory", "concept": "csc-IV-B-2", "topic": "Mixed venous oxygen saturation", "difficulty": 2, "stem": "A post-op patient's continuous mixed venous oxygen saturation (SvO2) falls from 68% to 52% while the SpO2 and hemoglobin are unchanged. The nurse recognizes this MOST likely reflects", "options": [{"key": "A", "text": "a fall in cardiac output with increased oxygen extraction."}, {"key": "B", "text": "an improvement in oxygen delivery."}, {"key": "C", "text": "a wedged pulmonary artery catheter."}, {"key": "D", "text": "sepsis with reduced oxygen extraction."}], "answer": "A", "rationale": {"correct": "SvO2 reflects the balance of oxygen delivery and consumption. With SpO2 and hemoglobin unchanged, a falling SvO2 indicates the tissues are extracting more oxygen because delivery has dropped, most often from a fall in cardiac output. It is an early warning of low output before overt hypotension.", "distractors": {"B": "Improved delivery would RAISE, not lower, SvO2.", "C": "A wedged (over-inserted) catheter falsely raises the measured value toward arterial saturation, not lowers it.", "D": "Early distributive sepsis classically produces a HIGH SvO2 from impaired extraction, the opposite pattern."}}, "refs": [{"b": "Bojar", "ed": "6th ed", "ch": 7, "t": "Admission to the ICU and Monitoring Techniques", "s": "Mixed venous oxygen saturation monitoring", "p": 341}, {"b": "Hardin", "ed": "1st ed", "ch": 9, "t": "Hemodynamic Monitoring", "s": "Oxygen delivery and consumption; SvO2"}]},
   {"id": "csc-0029", "cert": "CSC", "domain": "IV", "domainName": "Monitoring and Diagnostics", "category": "A. Cardiovascular", "concept": "csc-IV-A-3", "topic": "New ST elevation post-CABG", "difficulty": 3, "stem": "One hour post-CABG, the monitor shows new ST-segment elevation in the inferior leads (II, III, aVF) with a fall in cardiac output. The nurse should recognize this as MOST concerning for", "options": [{"key": "A", "text": "acute graft occlusion or spasm compromising the right coronary distribution."}, {"key": "B", "text": "expected postoperative pericarditis."}, {"key": "C", "text": "normal repolarization after bypass."}, {"key": "D", "text": "lead misplacement."}], "answer": "A", "rationale": {"correct": "New regional ST elevation in a coronary distribution (inferior leads II/III/aVF reflect the RCA territory in most patients) with hemodynamic deterioration after CABG suggests acute graft failure, occlusion, thrombosis, or spasm and possible perioperative MI. This warrants urgent notification and evaluation (ECG, echo, possible return to cath lab or OR).", "distractors": {"B": "Pericarditis typically produces diffuse, not regional, ST elevation and does not usually cause an acute fall in output.", "C": "New regional ST elevation with falling output is pathologic, not a normal post-bypass finding.", "D": "Lead misplacement would not produce a coherent single-territory injury pattern with a simultaneous output drop."}}, "refs": [{"b": "Bojar", "ed": "6th ed", "ch": 2, "t": "Diagnostic Techniques in Cardiac Surgery", "s": "Electrocardiography; perioperative ischemia/infarction", "p": 121}, {"b": "Hardin", "ed": "1st ed", "ch": 13, "t": "Postoperative Complications of Cardiac Surgery", "s": "Perioperative myocardial infarction"}]}];
-
-</script>
+  </script>
+  <!-- data/csc-bank-2.js -->
   <script>
 /* csc-bank-2.js - expansion batch (pushed onto STUDY.banks.CSC).
    Same schema/citation conventions as csc-bank.js. Add future batches
@@ -982,8 +991,8 @@ STUDY.banks.CSC.push(
   {"id": "csc-0048", "cert": "CSC", "domain": "IV", "domainName": "Monitoring and Diagnostics", "category": "A. Cardiovascular", "concept": "csc-IV-A-1", "topic": "IABP optimal augmentation", "difficulty": 2, "stem": "Reviewing an IABP arterial waveform at 1:2, the nurse recognizes OPTIMAL inflation timing when", "options": [{"key": "A", "text": "the augmented diastolic peak is as high as or higher than the preceding unassisted systole, with a sharp V at the dicrotic notch"}, {"key": "B", "text": "the augmentation peak is lower than the unassisted systole and rounded"}, {"key": "C", "text": "there is no dicrotic notch visible"}, {"key": "D", "text": "the assisted systolic pressure is higher than the unassisted systolic"}], "answer": "A", "rationale": {"correct": "Optimal inflation is confirmed by a sharp 'V' at the dicrotic notch and diastolic augmentation that is at least as high as the previous unassisted systolic pressure. Proper deflation lowers the assisted end-diastolic and assisted systolic pressures.", "distractors": {"B": "A low, rounded augmentation peak suggests suboptimal (e.g., late) inflation.", "C": "The dicrotic notch should be visible; its sharp 'V' is the landmark for inflation.", "D": "Effective counterpulsation LOWERS the assisted systolic pressure (systolic unloading), not raises it."}}, "refs": [{"b": "Hardin", "ed": "1st ed", "ch": 10, "t": "Intra-aortic Balloon Pump", "s": "Optimal inflation/deflation on the arterial waveform"}, {"b": "Bojar", "ed": "6th ed", "ch": 11, "t": "Cardiovascular Management", "s": "IABP waveform interpretation", "p": 513}]},
   {"id": "csc-0049", "cert": "CSC", "domain": "IV", "domainName": "Monitoring and Diagnostics", "category": "B. Respiratory", "concept": "csc-IV-B-2", "topic": "First sign of failing wean", "difficulty": 2, "stem": "A patient with a pulmonary artery catheter is undergoing a weaning trial. According to the texts, which is often the FIRST hemodynamic sign that the patient is not tolerating weaning?", "options": [{"key": "A", "text": "a rise in pulmonary artery pressure"}, {"key": "B", "text": "a fall in central venous pressure"}, {"key": "C", "text": "bradycardia"}, {"key": "D", "text": "a rise in SvO2"}], "answer": "A", "rationale": {"correct": "A rise in pulmonary artery pressure is frequently the first hemodynamic abnormality in a patient tolerating weaning poorly, while tachypnea is the first clinical sign. Recognizing these early prompts return to prior support before decompensation.", "distractors": {"B": "A falling CVP is not the characteristic early marker of weaning intolerance.", "C": "Weaning intolerance is usually accompanied by tachycardia, not bradycardia.", "D": "SvO2 tends to FALL with increased work of breathing and stress, not rise."}}, "refs": [{"b": "Bojar", "ed": "6th ed", "ch": 10, "t": "Respiratory Management", "s": "Signs of weaning intolerance (rising PA pressure, tachypnea)", "p": 457}, {"b": "Hardin", "ed": "1st ed", "ch": 9, "t": "Hemodynamic Monitoring", "s": "Pulmonary artery pressure trends"}]}
 );
-
-</script>
+  </script>
+  <!-- data/cmc-bank.js -->
   <script>
 /* =============================================================================
    cmc-bank.js  —  CMC master question bank (seed set)
@@ -1013,8 +1022,8 @@ STUDY.banks.CMC = [
   {"id": "cmc-0015", "cert": "CMC", "domain": "IV", "domainName": "Monitoring and Diagnostics", "category": "A. Cardiovascular", "concept": "cmc-IV-A-4", "topic": "Cardiac biomarkers", "difficulty": 1, "stem": "A patient presents with chest pain of 3 hours' duration. Which laboratory test is the MOST specific and sensitive marker for myocardial injury?", "options": [{"key": "A", "text": "cardiac troponin"}, {"key": "B", "text": "total creatine kinase (CK)"}, {"key": "C", "text": "myoglobin"}, {"key": "D", "text": "aspartate aminotransferase (AST)"}], "answer": "A", "rationale": {"correct": "Cardiac-specific troponin (I or T) is the preferred biomarker for myocardial injury because of its high sensitivity and cardiac specificity; a rising and/or falling pattern with an appropriate clinical context supports acute MI. High-sensitivity assays detect injury early.", "distractors": {"B": "Total CK is not cardiac specific; CK-MB is more specific than total CK but still inferior to troponin.", "C": "Myoglobin rises early but is nonspecific (also released from skeletal muscle) and is not used to confirm MI.", "D": "AST is a nonspecific marker of tissue injury and is not used for myocardial infarction diagnosis."}}, "refs": [{"b": "Bojar", "ed": "6th ed", "ch": 2, "t": "Diagnostic Techniques in Cardiac Surgery", "s": "Cardiac biomarkers; troponin", "p": 121}, {"b": "Hardin", "ed": "1st ed", "ch": 3, "t": "Indications for Cardiac Surgery", "s": "Diagnostic evaluation of ischemia"}]},
   {"id": "cmc-0016", "cert": "CMC", "domain": "IV", "domainName": "Monitoring and Diagnostics", "category": "A. Cardiovascular", "concept": "cmc-IV-A-1", "topic": "PA catheter waveform: RV to PA", "difficulty": 2, "stem": "During pulmonary artery catheter insertion, the nurse observes the waveform change from a right ventricular tracing to one showing a rise in the diastolic pressure and a dicrotic notch. This indicates the catheter tip has advanced into the", "options": [{"key": "A", "text": "pulmonary artery."}, {"key": "B", "text": "right atrium."}, {"key": "C", "text": "wedge (occlusion) position."}, {"key": "D", "text": "superior vena cava."}], "answer": "A", "rationale": {"correct": "As the PA catheter passes from the right ventricle into the pulmonary artery, the diastolic pressure RISES (the PA does not fall to near zero in diastole as the RV does) and a dicrotic notch appears from pulmonic valve closure. Recognizing waveform transitions prevents over-insertion and pulmonary artery rupture.", "distractors": {"B": "The right atrial tracing is a low-pressure waveform with a, c, and v waves seen before the RV, not after it.", "C": "The wedge tracing is a further, damped low-pressure waveform with a and v waves obtained only after the PA when the balloon occludes a branch.", "D": "The SVC/RA pressures are low and precede the RV; the tip has advanced past them."}}, "refs": [{"b": "Bojar", "ed": "6th ed", "ch": 7, "t": "Admission to the ICU and Monitoring Techniques", "s": "Pulmonary artery catheter; waveform interpretation", "p": 341}, {"b": "Hardin", "ed": "1st ed", "ch": 9, "t": "Hemodynamic Monitoring", "s": "Pulmonary artery pressure monitoring"}]},
   {"id": "cmc-0017", "cert": "CMC", "domain": "IV", "domainName": "Monitoring and Diagnostics", "category": "A. Cardiovascular", "concept": "cmc-IV-A-3", "topic": "Digoxin toxicity", "difficulty": 2, "stem": "A patient on digoxin for heart failure presents with nausea, visual disturbances (yellow-green halos), and a junctional rhythm. The nurse recognizes these findings as MOST consistent with", "options": [{"key": "A", "text": "digoxin toxicity, worsened by hypokalemia."}, {"key": "B", "text": "expected therapeutic effect of digoxin."}, {"key": "C", "text": "hypermagnesemia."}, {"key": "D", "text": "beta-blocker overdose."}], "answer": "A", "rationale": {"correct": "Nausea, visual changes (yellow-green halos), and dysrhythmias (including junctional rhythm, AV block, and PVCs) are classic digoxin toxicity. HYPOkalemia potentiates digoxin binding and increases toxicity risk, so potassium must be monitored and repleted; severe toxicity is treated with digoxin-specific antibody fragments.", "distractors": {"B": "These are toxic, not therapeutic, effects; therapeutic digoxin does not cause visual halos and toxic dysrhythmias.", "C": "Hypermagnesemia causes weakness, hyporeflexia, and bradycardia, not the visual halos and pattern described here.", "D": "Beta-blocker overdose causes bradycardia and hypotension but not the characteristic visual halos of digoxin toxicity."}}, "refs": [{"b": "Bojar", "ed": "6th ed", "ch": 11, "t": "Cardiovascular Management", "s": "Digoxin; toxicity and electrolyte interactions", "p": 513}, {"b": "Hardin", "ed": "1st ed", "ch": 12, "t": "Pharmacologic Support Following Cardiac Surgery", "s": "Antidysrhythmics and inotropes"}]}];
-
-</script>
+  </script>
+  <!-- data/cmc-bank-2.js -->
   <script>
 /* cmc-bank-2.js - expansion batch (pushed onto STUDY.banks.CMC). */
 window.STUDY=window.STUDY||{};STUDY.banks=STUDY.banks||{};STUDY.banks.CMC=STUDY.banks.CMC||[];
@@ -1032,8 +1041,8 @@ STUDY.banks.CMC.push(
   {"id": "cmc-0028", "cert": "CMC", "domain": "IV", "domainName": "Monitoring and Diagnostics", "category": "A. Cardiovascular", "concept": "cmc-IV-A-5", "topic": "BNP in heart failure", "difficulty": 1, "stem": "A patient presents with dyspnea of unclear cause. Which laboratory value BEST supports a diagnosis of decompensated heart failure as the cause?", "options": [{"key": "A", "text": "an elevated B-type natriuretic peptide (BNP)"}, {"key": "B", "text": "an elevated D-dimer"}, {"key": "C", "text": "a low troponin"}, {"key": "D", "text": "an elevated white blood cell count"}], "answer": "A", "rationale": {"correct": "BNP (and NT-proBNP) is released in response to ventricular wall stretch and volume/pressure overload; an elevated level supports heart failure as the cause of dyspnea and correlates with severity, helping distinguish cardiac from pulmonary causes.", "distractors": {"B": "An elevated D-dimer is nonspecific and is used to help exclude venous thromboembolism, not diagnose heart failure.", "C": "A low troponin argues against acute myocardial injury but does not establish heart failure.", "D": "An elevated WBC count suggests infection/inflammation, not heart failure specifically."}}, "refs": [{"b": "Hardin", "ed": "1st ed", "ch": 3, "t": "Indications for Cardiac Surgery", "s": "Heart failure; natriuretic peptides"}, {"b": "Bojar", "ed": "6th ed", "ch": 2, "t": "Diagnostic Techniques in Cardiac Surgery", "s": "Cardiac biomarkers", "p": 121}]},
   {"id": "cmc-0029", "cert": "CMC", "domain": "IV", "domainName": "Monitoring and Diagnostics", "category": "A. Cardiovascular", "concept": "cmc-IV-A-1", "topic": "Wedge (PAOP) interpretation", "difficulty": 2, "stem": "A pulmonary artery catheter shows a pulmonary artery occlusion pressure (wedge) of 26 mm Hg with a cardiac index of 1.8 L/min/m2 and clear improvement in the a and v waves when the balloon is inflated. This wedge value MOST directly reflects an elevated", "options": [{"key": "A", "text": "left ventricular end-diastolic (filling) pressure"}, {"key": "B", "text": "right atrial pressure"}, {"key": "C", "text": "pulmonary vascular resistance"}, {"key": "D", "text": "systemic vascular resistance"}], "answer": "A", "rationale": {"correct": "The pulmonary artery occlusion (wedge) pressure estimates left atrial pressure and, in turn, left ventricular end-diastolic pressure (left-sided preload). A wedge of 26 with a low cardiac index indicates elevated left-sided filling pressures with poor output - a congested, low-output (often cardiogenic) picture.", "distractors": {"B": "Right atrial pressure is reflected by the CVP, not the wedge.", "C": "PVR is calculated from the transpulmonary gradient and cardiac output, not read directly as the wedge.", "D": "SVR is a systemic afterload calculation, unrelated to the wedge measurement."}}, "refs": [{"b": "Bojar", "ed": "6th ed", "ch": 7, "t": "Admission to the ICU and Monitoring Techniques", "s": "Pulmonary artery catheter; PAOP interpretation", "p": 341}, {"b": "Hardin", "ed": "1st ed", "ch": 9, "t": "Hemodynamic Monitoring", "s": "Pulmonary artery occlusion pressure"}]}
 );
-
-</script>
+  </script>
+  <!-- data/drills.js -->
   <script>
 /* =============================================================================
    drills.js  —  Rapid matching-drill decks (finite, digestible reference sets)
@@ -1050,8 +1059,8 @@ STUDY.drills = {
   "params-lytes": {"title":"Values — Electrolytes & Metabolic","subtitle":"Electrolyte goals, glucose, lactate, and urine output.","prompt":"Match each item to its normal/target value.","qPrompt":"Normal or target for","pairs":[{"left":"Serum potassium (goal post-op)","right":"4.0–5.0 mEq/L (repleted ~4.5)"},{"left":"Serum magnesium (goal post-op)","right":"≥ 2.0 mg/dL"},{"left":"Ionized calcium","right":"4.5–5.6 mg/dL (1.1–1.4 mmol/L)"},{"left":"Post-op glucose target","right":"≈ 140–180 mg/dL"},{"left":"Lactate (normal)","right":"0.5–2.0 mmol/L (rising = hypoperfusion)"},{"left":"Urine output — adequate","right":"≥ 0.5 mL/kg/hr"}],"facts":["A HIT screen is warranted with a platelet drop of >50% (typically POD 5–10) — stop all heparin and start a direct thrombin inhibitor (argatroban).","On CPB the ACT is kept very high (>400–480 s); protamine reverses heparin at the end of bypass and normalizes the ACT.","Repleting K⁺ (~4.5 mEq/L) and Mg²⁺ (≥2 mg/dL) is one of the highest-yield, lowest-risk measures to prevent post-op atrial fibrillation."]},
   "params-resp": {"title":"Values — Respiratory, ABG & Injury","subtitle":"Oxygenation thresholds, ABG norms, and injury markers.","prompt":"Match each item to its value/threshold.","qPrompt":"Normal value or threshold for","pairs":[{"left":"PaO₂/FiO₂ ratio — ARDS threshold","right":"≤ 300 (mild), ≤ 200 (moderate)"},{"left":"Rapid shallow breathing index (RSBI) — favorable","right":"< 105 breaths/min/L"},{"left":"Arterial pH (normal)","right":"7.35–7.45"},{"left":"PaCO₂ (normal)","right":"35–45 mm Hg"},{"left":"HCO₃⁻ (normal)","right":"22–26 mEq/L"},{"left":"Troponin","right":"Elevated indicates myocardial injury (assay-specific cutoff)"}]}
 };
-
-</script>
+  </script>
+  <!-- data/vocab.js -->
   <script>
 /* =============================================================================
    vocab.js  —  High-yield CSC/CMC exam vocabulary
@@ -1113,8 +1122,8 @@ STUDY.vocab = [
   {"term": "CALS", "def": "Cardiac surgery advanced life support \u2014 arrest protocol emphasizing early resternotomy and cautious epinephrine.", "cat": "Concepts", "note": ""},
   {"term": "Stevenson classification", "def": "Bedside heart-failure profiles by congestion (wet/dry) and perfusion (warm/cold).", "cat": "Concepts", "note": "Cold-and-wet carries the worst prognosis."},
   {"term": "STS risk score", "def": "Society of Thoracic Surgeons Predicted Risk of Mortality (PROM): a calculated percentage estimating 30-day operative mortality (and major morbidity) from patient variables, used to stratify surgical risk and guide SAVR-vs-TAVR and operative decisions. Risk bands: <4% = low risk, 4\u20138% = intermediate risk, >8% = high risk, and roughly >15% is often considered prohibitive/extreme risk.", "cat": "Concepts", "note": "Higher scores push decision-making toward transcatheter (e.g., TAVR) or non-surgical/palliative options; low scores support standard open surgery."}];
-
-</script>
+  </script>
+  <!-- data/assessment.js -->
   <script>
 /* =============================================================================
    assessment.js  —  Knowledge Assessment clusters (parent + sibling questions)
@@ -1152,8 +1161,8 @@ STUDY.clusters = [
   {"cluster": "cmc-shock", "cert": "CMC", "domain": "II", "domainName": "Non-Cardiovascular Conditions", "concept": "cmc-II-F-2", "conceptLabel": "Shock states", "topic": "Shock differentiation", "parent": {"id": "cmc-0009", "angle": "Recognition"}, "siblings": [{"id": "cmc-0026", "angle": "Management"}, {"id": "cmc-ka-05", "angle": "Mechanism"}]},
   {"cluster": "cmc-digoxin", "cert": "CMC", "domain": "IV", "domainName": "Monitoring and Diagnostics", "concept": "cmc-IV-A-3", "conceptLabel": "Digoxin toxicity", "topic": "Digoxin toxicity", "parent": {"id": "cmc-ka-07", "angle": "Recognition"}, "siblings": [{"id": "cmc-ka-06", "angle": "Management"}, {"id": "cmc-0017", "angle": "Mechanism"}]}
 ];
-
-</script>
+  </script>
+  <!-- data/bank-ext.js -->
   <script>
 /* bank-ext.js  —  expansion siblings for high-yield concepts (pushed onto banks). */
 window.STUDY=window.STUDY||{};STUDY.banks=STUDY.banks||{};STUDY.banks.CSC=STUDY.banks.CSC||[];STUDY.banks.CMC=STUDY.banks.CMC||[];
@@ -1173,8 +1182,8 @@ STUDY.banks.CMC.push(
   {"id": "cmc-ka-12", "cert": "CMC", "domain": "III", "domainName": "Therapeutic Interventions", "category": "D. Electrophysiologic Interventions", "concept": "cmc-III-D-8", "topic": "Defibrillation", "angle": "Recognition", "difficulty": 1, "stem": "Which rhythms are SHOCKABLE (treated with defibrillation)?", "options": [{"key": "A", "text": "ventricular fibrillation and pulseless ventricular tachycardia"}, {"key": "B", "text": "asystole and pulseless electrical activity"}, {"key": "C", "text": "sinus bradycardia and first-degree AV block"}, {"key": "D", "text": "atrial fibrillation with a stable rate"}], "answer": "A", "rationale": {"correct": "The shockable arrest rhythms are ventricular fibrillation and pulseless ventricular tachycardia. Asystole and PEA are NON-shockable (treated with CPR, epinephrine, and reversible-cause correction).", "distractors": {"B": "Asystole and PEA are non-shockable.", "C": "Bradycardia and first-degree block are not defibrillated.", "D": "Stable AF is rate/rhythm managed, not defibrillated; unstable organized rhythms get SYNCHRONIZED cardioversion."}}, "refs": [{"b": "Hardin", "ed": "1st ed", "ch": 15, "t": "Postoperative Dysrhythmias", "s": "Shockable vs non-shockable rhythms"}, {"b": "Bojar", "ed": "6th ed", "ch": 11, "t": "Cardiovascular Management", "s": "Defibrillation indications", "p": 513}]},
   {"id": "cmc-ka-13", "cert": "CMC", "domain": "III", "domainName": "Therapeutic Interventions", "category": "D. Electrophysiologic Interventions", "concept": "cmc-III-D-8", "topic": "Defibrillation", "angle": "Mechanism", "difficulty": 2, "stem": "Why is defibrillation delivered UNsynchronized in ventricular fibrillation?", "options": [{"key": "A", "text": "There is no organized R wave to synchronize to, so the shock is delivered immediately at high energy."}, {"key": "B", "text": "Synchronization increases the energy delivered."}, {"key": "C", "text": "Unsynchronized shocks are lower energy and safer for a pulse."}, {"key": "D", "text": "VF requires timing the shock to the T wave."}], "answer": "A", "rationale": {"correct": "Synchronized cardioversion times the shock to the R wave to avoid the vulnerable period - but VF has no organized QRS/R wave to synchronize to. The machine would never discharge, so defibrillation is UNsynchronized, delivered at once to depolarize the myocardium and allow an organized rhythm to resume.", "distractors": {"B": "Synchronization does not increase energy; it times the delivery.", "C": "Defibrillation is typically HIGHER energy and is for pulseless rhythms.", "D": "Shocking on the T wave is exactly what synchronization AVOIDS; in VF there is no T wave to target."}}, "refs": [{"b": "Hardin", "ed": "1st ed", "ch": 15, "t": "Postoperative Dysrhythmias", "s": "Defibrillation vs synchronized cardioversion"}, {"b": "Bojar", "ed": "6th ed", "ch": 11, "t": "Cardiovascular Management", "s": "Electrical therapy for ventricular arrhythmias", "p": 513}]}
 );
-
-</script>
+  </script>
+  <!-- data/bank-full.js -->
   <script>
 /* =============================================================================
    bank-full.js  —  full-blueprint concept coverage batch (pushed onto banks).
@@ -1308,9 +1317,8 @@ STUDY.banks.CMC.push(
   {"id": "cmc-IV-B-4", "cert": "CMC", "domain": "IV", "domainName": "Monitoring and Diagnostics", "category": "B. Respiratory", "concept": "cmc-IV-B-4", "topic": "End-tidal capnography (EtCO2)", "angle": "Recognition", "difficulty": 2, "stem": "During CPR, a sudden rise in end-tidal CO2 (EtCO2) most likely indicates", "options": [{"key": "A", "text": "return of spontaneous circulation (restored pulmonary blood flow)"}, {"key": "B", "text": "worsening arrest"}, {"key": "C", "text": "airway disconnection"}, {"key": "D", "text": "hyperventilation"}], "answer": "A", "rationale": {"correct": "An abrupt EtCO2 increase during CPR suggests return of spontaneous circulation as pulmonary blood flow (and CO2 delivery to the lungs) is restored; EtCO2 also gauges CPR quality."}, "refs": [{"b": "Bojar", "ed": "6th ed", "ch": 7, "t": "Admission to the ICU and Monitoring Techniques", "s": "Capnography", "p": 341}, {"b": "Hardin", "ed": "1st ed", "ch": 11, "t": "Mechanical Ventilation After Cardiac Surgery", "s": "Capnography"}]},
   {"id": "cmc-IV-B-5", "cert": "CMC", "domain": "IV", "domainName": "Monitoring and Diagnostics", "category": "B. Respiratory", "concept": "cmc-IV-B-5", "topic": "Radiography", "angle": "Recognition", "difficulty": 1, "stem": "A chest radiograph is the first-line imaging study to evaluate", "options": [{"key": "A", "text": "heart size/pulmonary congestion, effusions, pneumothorax, and line/tube position"}, {"key": "B", "text": "coronary artery stenosis"}, {"key": "C", "text": "serum electrolytes"}, {"key": "D", "text": "the cardiac rhythm"}], "answer": "A", "rationale": {"correct": "The CXR screens cardiac silhouette/congestion, pleural effusion, pneumothorax, and device/line placement; it is a rapid, widely available first study."}, "refs": [{"b": "Bojar", "ed": "6th ed", "ch": 2, "t": "Diagnostic Techniques in Cardiac Surgery", "s": "Chest radiography", "p": 121}, {"b": "Hardin", "ed": "1st ed", "ch": 9, "t": "Hemodynamic Monitoring", "s": "Chest imaging"}]}
 );
-
-</script>
-  <!-- cmc-angles.js: full CMC blueprint angle set (77 concepts x 3 angles = 231) -->
+  </script>
+  <!-- data/cmc-angles.js -->
   <script>
 /* cmc-angles.js - full CMC blueprint angle set: 77 concepts x {Recognition, Management, Mechanism} = 231 items. Pushed onto STUDY.banks.CMC. */
 window.STUDY=window.STUDY||{};STUDY.banks=STUDY.banks||{};STUDY.banks.CMC=STUDY.banks.CMC||[];
@@ -1548,7 +1556,7 @@ STUDY.banks.CMC.push(
   {"id": "cmc-ang-231", "cert": "CMC", "domain": "IV", "domainName": "Monitoring and Diagnostics", "category": "B. Respiratory", "concept": "cmc-IV-B-5", "angle": "Mechanism", "topic": "How x-ray images form", "difficulty": 2, "stem": "A chest radiograph creates its image because", "options": [{"key": "A", "text": "it detects reflected sound waves"}, {"key": "B", "text": "it records the electrical activity of the heart"}, {"key": "C", "text": "it measures magnetic resonance signals"}, {"key": "D", "text": "tissues of different densities absorb x-rays to different degrees, with denser structures appearing lighter"}], "answer": "D", "rationale": {"correct": "Differential attenuation of the x-ray beam by air, soft tissue, fluid, and bone produces the contrast seen on the film.", "distractors": {"A": "Sound-wave reflection is ultrasound, not radiography.", "B": "Electrical recording is electrocardiography, not radiography.", "C": "Magnetic resonance is a different imaging modality from plain radiography."}}, "refs": [{"b": "Bojar", "ed": "6th ed", "ch": 2, "t": "Diagnostic Techniques in Cardiac Surgery", "s": "Principles of radiographic imaging", "p": 121}, {"b": "Hardin", "ed": "1st ed", "ch": 13, "t": "Postoperative Complications of Cardiac Surgery and Nursing Interventions", "s": "Interpreting the chest film"}]}
 );
   </script>
-  <!-- csc-angles.js: full CSC blueprint angle set (102 concepts x 3 angles = 306) -->
+  <!-- data/csc-angles.js -->
   <script>
 /* csc-angles.js - full CSC blueprint angle set: 102 concepts x {Recognition, Management, Mechanism} = 306 items. Pushed onto STUDY.banks.CSC. */
 window.STUDY=window.STUDY||{};STUDY.banks=STUDY.banks||{};STUDY.banks.CSC=STUDY.banks.CSC||[];
@@ -1730,7 +1738,7 @@ STUDY.banks.CSC.push(
   {"id": "csc-ang-175", "cert": "CSC", "domain": "III", "domainName": "Therapeutic Interventions", "category": "A. Cardiovascular", "concept": "csc-III-A-7", "angle": "Recognition", "topic": "Purpose of a short-term VAD", "difficulty": 2, "stem": "A short-term ventricular assist device is used to", "options": [{"key": "A", "text": "mechanically support a failing ventricle as a bridge to recovery or decision"}, {"key": "B", "text": "pace the heart's electrical rhythm"}, {"key": "C", "text": "permanently replace the entire heart in all cases"}, {"key": "D", "text": "oxygenate blood in place of the lungs"}], "answer": "A", "rationale": {"correct": "A temporary VAD offloads and supports a failing ventricle while recovery is awaited or further decisions are made.", "distractors": {"B": "A VAD provides mechanical circulatory support, not pacing.", "C": "A short-term VAD supports a ventricle temporarily; it does not replace the whole heart permanently.", "D": "Gas exchange is the role of ECMO, not a ventricular assist device."}}, "refs": [{"b": "Bojar", "ed": "6th ed", "ch": 11, "t": "Cardiovascular Management", "s": "Short-term mechanical circulatory support", "p": 513}, {"b": "Hardin", "ed": "1st ed", "ch": 19, "t": "Bridge to Transplant and Cardiac Transplantation", "s": "Ventricular assist devices"}]},
   {"id": "csc-ang-176", "cert": "CSC", "domain": "III", "domainName": "Therapeutic Interventions", "category": "A. Cardiovascular", "concept": "csc-III-A-7", "angle": "Management", "topic": "VAD nursing care", "difficulty": 2, "stem": "Nursing care for a patient on a short-term VAD includes", "options": [{"key": "A", "text": "monitoring device flow, volume status and right heart function, anticoagulation, and cannula sites"}, {"key": "B", "text": "ignoring device flow readings"}, {"key": "C", "text": "deliberately keeping the patient hypovolemic"}, {"key": "D", "text": "withholding all anticoagulation"}], "answer": "A", "rationale": {"correct": "Flows depend on adequate preload and right heart function, and anticoagulation and site care prevent thrombosis, bleeding, and infection.", "distractors": {"B": "Device flow is a key parameter that must be monitored.", "C": "Hypovolemia reduces device filling and flow and can cause suction events.", "D": "Anticoagulation is required to prevent device thrombosis."}}, "refs": [{"b": "Bojar", "ed": "6th ed", "ch": 11, "t": "Cardiovascular Management", "s": "Nursing care of mechanical support", "p": 513}, {"b": "Hardin", "ed": "1st ed", "ch": 19, "t": "Bridge to Transplant and Cardiac Transplantation", "s": "VAD monitoring"}]},
   {"id": "csc-ang-177", "cert": "CSC", "domain": "III", "domainName": "Therapeutic Interventions", "category": "A. Cardiovascular", "concept": "csc-III-A-7", "angle": "Mechanism", "topic": "How a VAD supports circulation", "difficulty": 2, "stem": "A ventricular assist device maintains circulation by", "options": [{"key": "A", "text": "pumping blood from the failing ventricle into the arterial system, unloading that ventricle"}, {"key": "B", "text": "increasing pulmonary vascular resistance"}, {"key": "C", "text": "oxygenating blood in place of the lungs"}, {"key": "D", "text": "defibrillating the heart"}], "answer": "A", "rationale": {"correct": "The device diverts blood from the weak ventricle to the arterial circulation, maintaining output while reducing the ventricle's workload.", "distractors": {"B": "A VAD supports output; it does not work by raising pulmonary resistance.", "C": "Oxygenation is the function of an oxygenator (ECMO), not a VAD.", "D": "A VAD provides mechanical pumping, not defibrillation."}}, "refs": [{"b": "Bojar", "ed": "6th ed", "ch": 11, "t": "Cardiovascular Management", "s": "Mechanism of ventricular assist", "p": 513}, {"b": "Hardin", "ed": "1st ed", "ch": 19, "t": "Bridge to Transplant and Cardiac Transplantation", "s": "Ventricular unloading"}]},
-  {"id": "csc-ang-178", "cert": "CSC", "domain": "III", "domainName": "Therapeutic Interventions", "category": "A. Cardiovascular", "concept": "csc-III-A-8", "angle": "Recognition", "topic": "VA ECMO support", "difficulty": 2, "stem": "Venoarterial (VA) ECMO provides", "options": [{"key": "A", "text": "anticoagulation therapy only"}, {"key": "B", "text": "both circulatory and respiratory (gas exchange) support"}, {"key": "C", "text": "pacing of the heart only"}, {"key": "D", "text": "respiratory support with no circulatory support"}], "answer": "B", "rationale": {"correct": "VA ECMO drains venous blood, oxygenates it, and returns it to the arterial system, supporting both the circulation and gas exchange.", "distractors": {"A": "Anticoagulation is required with ECMO but is not the support ECMO provides.", "C": "ECMO is not a pacing device.", "D": "VA ECMO provides circulatory support as well; respiratory-only support is the venovenous (VV) configuration."}}, "refs": [{"b": "Bojar", "ed": "6th ed", "ch": 11, "t": "Cardiovascular Management", "s": "Extracorporeal membrane oxygenation", "p": 513}, {"b": "Hardin", "ed": "1st ed", "ch": 19, "t": "Bridge to Transplant and Cardiac Transplantation", "s": "ECMO support modes"}]},
+  {"id": "csc-ang-178", "cert": "CSC", "domain": "III", "domainName": "Therapeutic Interventions", "category": "A. Cardiovascular", "concept": "csc-III-A-8", "angle": "Recognition", "topic": "VA ECMO indication", "difficulty": 2, "stem": "A postcardiotomy patient remains in refractory cardiogenic shock with worsening oxygenation despite an intra-aortic balloon pump and maximal inotropes. The support that would provide BOTH circulatory and gas-exchange support is", "options": [{"key": "A", "text": "an additional intra-aortic balloon pump"}, {"key": "B", "text": "venovenous (VV) ECMO"}, {"key": "C", "text": "venoarterial (VA) ECMO"}, {"key": "D", "text": "continuous renal replacement therapy"}], "answer": "C", "rationale": {"correct": "VA ECMO drains venous blood, oxygenates it, and returns it to the arterial circulation, so it supports both the failing heart and gas exchange when other measures are inadequate.", "distractors": {"A": "The balloon pump augments coronary perfusion and lowers afterload but adds little cardiac output and provides no gas exchange.", "B": "VV ECMO supports oxygenation only and gives no circulatory support, so it cannot treat cardiogenic shock.", "D": "CRRT replaces renal function and provides neither circulatory nor respiratory support."}}, "refs": [{"b": "Bojar", "ed": "6th ed", "ch": 11, "t": "Cardiovascular Management", "s": "Extracorporeal membrane oxygenation; indications and configurations", "p": 513}, {"b": "Hardin", "ed": "1st ed", "ch": 19, "t": "Bridge to Transplant and Cardiac Transplantation", "s": "ECMO support modes"}]},
   {"id": "csc-ang-179", "cert": "CSC", "domain": "III", "domainName": "Therapeutic Interventions", "category": "A. Cardiovascular", "concept": "csc-III-A-8", "angle": "Management", "topic": "ECMO nursing care", "difficulty": 2, "stem": "Nursing care of the ECMO patient includes", "options": [{"key": "A", "text": "disregarding oxygenator function"}, {"key": "B", "text": "stopping all anticoagulation"}, {"key": "C", "text": "monitoring circuit function, anticoagulation, cannula sites, and distal limb perfusion"}, {"key": "D", "text": "ignoring perfusion of the cannulated limb"}], "answer": "C", "rationale": {"correct": "Watching the circuit and oxygenator, maintaining anticoagulation, and checking cannula sites and distal perfusion detect the major ECMO complications.", "distractors": {"A": "Oxygenator performance is a critical parameter to monitor.", "B": "Anticoagulation is needed to prevent circuit thrombosis.", "D": "Distal limb ischemia is a recognized complication that must be monitored."}}, "refs": [{"b": "Bojar", "ed": "6th ed", "ch": 11, "t": "Cardiovascular Management", "s": "Nursing management of ECMO", "p": 513}, {"b": "Hardin", "ed": "1st ed", "ch": 19, "t": "Bridge to Transplant and Cardiac Transplantation", "s": "ECMO monitoring and complications"}]},
   {"id": "csc-ang-180", "cert": "CSC", "domain": "III", "domainName": "Therapeutic Interventions", "category": "A. Cardiovascular", "concept": "csc-III-A-8", "angle": "Mechanism", "topic": "How ECMO oxygenates", "difficulty": 2, "stem": "ECMO supports gas exchange by", "options": [{"key": "A", "text": "directly contracting the heart"}, {"key": "B", "text": "passing blood through a membrane oxygenator that adds oxygen and removes carbon dioxide outside the body"}, {"key": "C", "text": "dissolving clots in the pulmonary arteries"}, {"key": "D", "text": "pacing the myocardium"}], "answer": "B", "rationale": {"correct": "Blood is circulated across a gas-permeable membrane that oxygenates it and clears CO2 before returning it to the patient.", "distractors": {"A": "ECMO does not contract the heart; it circulates and oxygenates blood externally.", "C": "ECMO provides gas exchange and support, not thrombolysis.", "D": "ECMO is not a pacing therapy."}}, "refs": [{"b": "Bojar", "ed": "6th ed", "ch": 11, "t": "Cardiovascular Management", "s": "Membrane oxygenation principles", "p": 513}, {"b": "Hardin", "ed": "1st ed", "ch": 19, "t": "Bridge to Transplant and Cardiac Transplantation", "s": "Extracorporeal gas exchange"}]},
   {"id": "csc-ang-181", "cert": "CSC", "domain": "III", "domainName": "Therapeutic Interventions", "category": "A. Cardiovascular", "concept": "csc-III-A-9", "angle": "Recognition", "topic": "Purpose of a mediastinal drain", "difficulty": 1, "stem": "After cardiac surgery, a mediastinal drain is placed primarily to", "options": [{"key": "A", "text": "provide cardiac pacing"}, {"key": "B", "text": "evacuate blood and fluid and prevent cardiac tamponade"}, {"key": "C", "text": "deliver medications to the heart"}, {"key": "D", "text": "directly measure cardiac output"}], "answer": "B", "rationale": {"correct": "Draining accumulating blood and fluid keeps it from compressing the heart, preventing tamponade.", "distractors": {"A": "A drain does not pace the heart.", "C": "Mediastinal drains remove fluid; they are not medication routes.", "D": "A drain does not measure cardiac output."}}, "refs": [{"b": "Bojar", "ed": "6th ed", "ch": 9, "t": "Mediastinal Bleeding", "s": "Mediastinal drainage", "p": 417}, {"b": "Hardin", "ed": "1st ed", "ch": 13, "t": "Postoperative Complications of Cardiac Surgery and Nursing Interventions", "s": "Chest and mediastinal drains"}]},
@@ -1856,11 +1864,12 @@ STUDY.banks.CSC.push(
   {"id": "csc-ang-301", "cert": "CSC", "domain": "IV", "domainName": "Monitoring and Diagnostics", "category": "C. Neurology", "concept": "csc-IV-C-2", "angle": "Recognition", "topic": "What cerebral oximetry measures", "difficulty": 2, "stem": "Cerebral oximetry (near-infrared spectroscopy) monitors", "options": [{"key": "A", "text": "regional cerebral tissue oxygen saturation"}, {"key": "B", "text": "the cardiac rhythm"}, {"key": "C", "text": "systemic blood pressure alone"}, {"key": "D", "text": "the depth of neuromuscular blockade"}], "answer": "A", "rationale": {"correct": "Cerebral oximetry uses near-infrared light to estimate the oxygen saturation of hemoglobin in brain tissue.", "distractors": {"B": "Cerebral oximetry does not record the cardiac rhythm.", "C": "Cerebral oximetry measures regional brain oxygenation, not systemic blood pressure.", "D": "Neuromuscular blockade is monitored by train-of-four, not cerebral oximetry."}}, "refs": [{"b": "Bojar", "ed": "6th ed", "ch": 7, "t": "Admission to the ICU and Monitoring Techniques", "s": "Cerebral oximetry", "p": 341}, {"b": "Hardin", "ed": "1st ed", "ch": 8, "t": "Recovery from Anesthesia", "s": "Near-infrared cerebral monitoring"}]},
   {"id": "csc-ang-302", "cert": "CSC", "domain": "IV", "domainName": "Monitoring and Diagnostics", "category": "C. Neurology", "concept": "csc-IV-C-2", "angle": "Management", "topic": "Responding to low cerebral saturation", "difficulty": 2, "stem": "A significant drop in cerebral oximetry readings should prompt measures to", "options": [{"key": "A", "text": "induce hypoxemia"}, {"key": "B", "text": "improve cerebral oxygen delivery, such as optimizing blood pressure, oxygenation, and hemoglobin"}, {"key": "C", "text": "ignore the change"}, {"key": "D", "text": "deliberately lower the blood pressure"}], "answer": "B", "rationale": {"correct": "A fall in cerebral saturation signals inadequate brain oxygen delivery, prompting interventions to restore it.", "distractors": {"A": "Hypoxemia would worsen cerebral oxygenation.", "C": "A significant drop in cerebral saturation warrants intervention, not disregard.", "D": "Lowering blood pressure would further reduce cerebral perfusion."}}, "refs": [{"b": "Bojar", "ed": "6th ed", "ch": 7, "t": "Admission to the ICU and Monitoring Techniques", "s": "Cerebral desaturation interventions", "p": 341}, {"b": "Hardin", "ed": "1st ed", "ch": 8, "t": "Recovery from Anesthesia", "s": "Optimizing cerebral oxygenation"}]},
   {"id": "csc-ang-303", "cert": "CSC", "domain": "IV", "domainName": "Monitoring and Diagnostics", "category": "C. Neurology", "concept": "csc-IV-C-2", "angle": "Mechanism", "topic": "How cerebral oximetry works", "difficulty": 2, "stem": "Cerebral oximetry estimates brain oxygenation by", "options": [{"key": "A", "text": "measuring intracranial pressure"}, {"key": "B", "text": "using near-infrared light to measure hemoglobin oxygen saturation in cerebral tissue"}, {"key": "C", "text": "sampling cerebrospinal fluid"}, {"key": "D", "text": "recording brain electrical activity"}], "answer": "B", "rationale": {"correct": "Near-infrared light penetrates the scalp and skull, and the absorption by hemoglobin yields a regional tissue oxygen saturation.", "distractors": {"A": "Cerebral oximetry measures oxygenation, not intracranial pressure.", "C": "Cerebral oximetry is noninvasive and does not sample cerebrospinal fluid.", "D": "Electrical activity is measured by EEG-based monitors, not cerebral oximetry."}}, "refs": [{"b": "Bojar", "ed": "6th ed", "ch": 7, "t": "Admission to the ICU and Monitoring Techniques", "s": "Near-infrared spectroscopy principles", "p": 341}, {"b": "Hardin", "ed": "1st ed", "ch": 8, "t": "Recovery from Anesthesia", "s": "Tissue oximetry"}]},
-  {"id": "csc-ang-304", "cert": "CSC", "domain": "IV", "domainName": "Monitoring and Diagnostics", "category": "C. Neurology", "concept": "csc-IV-C-3", "angle": "Recognition", "topic": "What TOF assesses", "difficulty": 1, "stem": "Train-of-four monitoring assesses", "options": [{"key": "A", "text": "the depth of neuromuscular blockade"}, {"key": "B", "text": "cerebral perfusion"}, {"key": "C", "text": "the depth of sedation"}, {"key": "D", "text": "oxygenation"}], "answer": "A", "rationale": {"correct": "Train-of-four quantifies the degree of neuromuscular blockade by the muscle response to nerve stimulation.", "distractors": {"B": "Train-of-four assesses neuromuscular blockade, not cerebral perfusion.", "C": "Sedation depth is assessed by scales or BIS, not train-of-four.", "D": "Train-of-four does not measure oxygenation."}}, "refs": [{"b": "Bojar", "ed": "6th ed", "ch": 4, "t": "Cardiac Anesthesia", "s": "Train-of-four monitoring", "p": 217}, {"b": "Hardin", "ed": "1st ed", "ch": 12, "t": "Pharmacologic Support Following Cardiac Surgery", "s": "Assessing neuromuscular blockade"}]},
+  {"id": "csc-ang-304", "cert": "CSC", "domain": "IV", "domainName": "Monitoring and Diagnostics", "category": "C. Neurology", "concept": "csc-IV-C-3", "angle": "Recognition", "topic": "Interpreting a train-of-four result", "difficulty": 2, "stem": "A patient on a continuous neuromuscular blocking infusion after surgery has a train-of-four showing 0 of 4 twitches. This result MOST likely indicates", "options": [{"key": "A", "text": "complete reversal of neuromuscular blockade"}, {"key": "B", "text": "an appropriately titrated level of blockade"}, {"key": "C", "text": "excessive blockade; the infusion should be reduced toward 1-2 twitches"}, {"key": "D", "text": "inadequate sedation rather than blockade"}], "answer": "C", "rationale": {"correct": "Zero of four twitches reflects deep neuromuscular blockade; infusions are usually titrated to 1-2 twitches, so an absent response signals over-paralysis and the dose should be reduced.", "distractors": {"A": "Full reversal would show four equal twitches without fade, not an absent response.", "B": "An appropriately titrated infusion typically leaves 1-2 detectable twitches, not zero.", "D": "Train-of-four measures neuromuscular blockade, not sedation depth, which is judged by sedation scales or BIS."}}, "refs": [{"b": "Bojar", "ed": "6th ed", "ch": 4, "t": "Cardiac Anesthesia", "s": "Train-of-four monitoring and titration of neuromuscular blockade", "p": 217}, {"b": "Hardin", "ed": "1st ed", "ch": 12, "t": "Pharmacologic Support Following Cardiac Surgery", "s": "Assessing neuromuscular blockade"}]},
   {"id": "csc-ang-305", "cert": "CSC", "domain": "IV", "domainName": "Monitoring and Diagnostics", "category": "C. Neurology", "concept": "csc-IV-C-3", "angle": "Management", "topic": "Using TOF to guide paralysis", "difficulty": 2, "stem": "Train-of-four monitoring guides neuromuscular blockade by", "options": [{"key": "A", "text": "titrating the paralytic to a target number of twitches and confirming recovery before extubation"}, {"key": "B", "text": "measuring the sedation level"}, {"key": "C", "text": "guiding oxygen therapy"}, {"key": "D", "text": "assessing cardiac output"}], "answer": "A", "rationale": {"correct": "Counting evoked twitches lets the nurse maintain the desired depth of blockade and verify recovery before removing the tube.", "distractors": {"B": "Train-of-four measures neuromuscular blockade, not sedation.", "C": "Train-of-four does not guide oxygen therapy.", "D": "Train-of-four does not assess cardiac output."}}, "refs": [{"b": "Bojar", "ed": "6th ed", "ch": 4, "t": "Cardiac Anesthesia", "s": "Titrating neuromuscular blockade", "p": 217}, {"b": "Hardin", "ed": "1st ed", "ch": 12, "t": "Pharmacologic Support Following Cardiac Surgery", "s": "Train-of-four and recovery"}]},
   {"id": "csc-ang-306", "cert": "CSC", "domain": "IV", "domainName": "Monitoring and Diagnostics", "category": "C. Neurology", "concept": "csc-IV-C-3", "angle": "Mechanism", "topic": "How TOF works", "difficulty": 2, "stem": "Train-of-four works by", "options": [{"key": "A", "text": "delivering four electrical stimuli to a peripheral nerve and observing the resulting muscle twitches to gauge blockade"}, {"key": "B", "text": "sampling arterial blood"}, {"key": "C", "text": "measuring light absorption"}, {"key": "D", "text": "recording brain waves"}], "answer": "A", "rationale": {"correct": "The number and strength of twitches from the four stimuli indicate how much neuromuscular blockade is present.", "distractors": {"B": "Train-of-four is a noninvasive nerve stimulation test, not a blood sample.", "C": "Light absorption is used in oximetry, not train-of-four.", "D": "Train-of-four uses peripheral nerve stimulation, not brain-wave recording."}}, "refs": [{"b": "Bojar", "ed": "6th ed", "ch": 4, "t": "Cardiac Anesthesia", "s": "Peripheral nerve stimulation", "p": 217}, {"b": "Hardin", "ed": "1st ed", "ch": 12, "t": "Pharmacologic Support Following Cardiac Surgery", "s": "Mechanism of train-of-four"}]}
 );
   </script>
+
   <!-- engine + ui -->
   <script>
 /* =============================================================================
@@ -2358,7 +2367,7 @@ STUDY.banks.CSC.push(
       var b = bank(cert), map = {}; b.forEach(function (q) { map[q.id] = q; });
       return ids.map(function (id) { return map[id]; }).filter(Boolean);
     },
-    startMissed: function (cert) {
+    startMissed: function (cert, limit) {
       var qs = window.APP.missedList(cert);
       if (!qs.length) {
         var root = document.getElementById("view");
@@ -2370,11 +2379,13 @@ STUDY.banks.CSC.push(
         e.appendChild(b); root.appendChild(e);
         return;
       }
+      qs = shuffle(qs);
+      if (limit && limit > 0) qs = qs.slice(0, limit);
       runQuiz({
-        cert: cert, questions: shuffle(qs),
+        cert: cert, questions: qs,
         title: cert + " — Missed-Question Review (" + qs.length + ")",
         mode: "missed",
-        onFinish: function (res) { showResults(res, { retryMissed: function(){ window.APP.startMissed(cert); } }); }
+        onFinish: function (res) { showResults(res, { retryMissed: function(){ window.APP.startMissed(cert, limit); } }); }
       });
     },
 
@@ -2436,11 +2447,15 @@ STUDY.banks.CSC.push(
       }); }); });
       return { total: total, covered: covered, full: full };
     },
-    startAssessment: function (cert) {
+    startAssessment: function (cert, count) {
       var clusters = window.APP.conceptClusters(cert);
       var byConceptCluster = {}; clusters.forEach(function (c) { byConceptCluster[c.concept] = c; });
       var parents = clusters.map(function (cl) { return cl.parentQ; });
       if (!parents.length) { window.APP.home(); return; }
+      // optional cap: quiz a random subset of concepts (0 / blank => sweep all)
+      if (count && count > 0 && count < parents.length) {
+        parents = shuffle(parents).slice(0, count);
+      }
       runQuiz({
         cert: cert, questions: parents,
         title: cert + " Knowledge Assessment \u2014 " + parents.length + " concepts",
@@ -2474,14 +2489,16 @@ STUDY.banks.CSC.push(
     },
 
     /* ---- Adaptive pretest: 2-3 items per concept that has questions ---- */
-    startPretest: function (cert) {
+    startPretest: function (cert, limit) {
       var by = byConcept(cert);
       var chosen = [];
       Object.keys(by).forEach(function (cid) {
         chosen = chosen.concat(shuffle(by[cid]).slice(0, 3)); // up to 3/concept
       });
+      chosen = shuffle(chosen);
+      if (limit && limit > 0) chosen = chosen.slice(0, limit);
       runQuiz({
-        cert: cert, questions: shuffle(chosen),
+        cert: cert, questions: chosen,
         title: cert + " Pretest — concept sweep (" + chosen.length + " items)",
         mode: "pretest",
         onFinish: function (res) {
@@ -2718,6 +2735,7 @@ STUDY.banks.CSC.push(
     v.appendChild(el("h2", "build-header", "Knowledge Assessment"));
     v.appendChild(el("p", "muted", "The CSC and CMC assessment exams \u2014 one question per concept currently in the bank."));
 
+    var lastSec = null;
     ["CSC", "CMC"].forEach(function (cert) {
       var clusters = A.conceptClusters(cert);
       var cov = A.conceptCoverage(cert);
@@ -2735,16 +2753,28 @@ STUDY.banks.CSC.push(
       var row = el("div", "exam-row");
       var b = el("button", "exam-btn");
       b.innerHTML = "<b>Start " + cert + " assessment</b><span>" + clusters.length + " concepts</span>";
-      b.onclick = function () { A.startAssessment(cert); };
+      b.onclick = function () { A.startAssessment(cert, 0); };  // sweep every concept
       row.appendChild(b);
       sec.appendChild(row);
       v.appendChild(sec);
+      lastSec = sec;
     });
 
     /* ---------- BOTTOM: Knowledge Practice ---------- */
     v.appendChild(el("div", "build-divider"));
     v.appendChild(el("h2", "build-header", "Knowledge Practice"));
     v.appendChild(el("p", "muted", "Drill the concepts you missed. Each missed concept brings its sibling questions here; answer one correctly and it graduates to mastered."));
+
+    // "How many questions" control for practice — defined here, appended at the bottom
+    // of the last practice bank below. Start buttons read it live at click time.
+    var qCountInput = el("input", "qcount-input");
+    qCountInput.type = "number"; qCountInput.min = "1"; qCountInput.step = "1";
+    qCountInput.placeholder = "all"; qCountInput.setAttribute("inputmode", "numeric");
+    qCountInput.id = "practiceCount";
+    function chosenCount() {
+      var n = parseInt(qCountInput.value, 10);
+      return (isFinite(n) && n > 0) ? n : 0;   // 0 / blank => each session's normal length
+    }
 
     // favorites + mixed practice (span both certs)
     var favRow = el("div", "exam-row");
@@ -2754,10 +2784,11 @@ STUDY.banks.CSC.push(
     favRow.appendChild(favBtn);
     var mixBtn = el("button", "exam-btn");
     mixBtn.innerHTML = "<b>Mixed CSC + CMC practice</b><span>random set from both</span>";
-    mixBtn.onclick = function () { A.startMixed(30); };
+    mixBtn.onclick = function () { A.startMixed(chosenCount()); };
     favRow.appendChild(mixBtn);
     v.appendChild(favRow);
 
+    var lastPracticeSec = null;
     ["CSC", "CMC"].forEach(function (cert) {
       var sec = el("section", "exam-sec");
       sec.appendChild(el("h3", "exam-cert", cert + " practice bank"));
@@ -2768,11 +2799,11 @@ STUDY.banks.CSC.push(
       var row = el("div", "exam-row");
       var rb = el("button", "exam-btn accent");
       rb.innerHTML = "<b>Practice recall bank</b><span>" + mc + " to review</span>";
-      rb.onclick = function () { A.startMissed(cert); };
+      rb.onclick = function () { A.startMissed(cert, chosenCount()); };
       row.appendChild(rb);
       var pb = el("button", "exam-btn");
       pb.innerHTML = "<b>Full concept drill</b><span>sample every covered concept</span>";
-      pb.onclick = function () { A.startPretest(cert); };
+      pb.onclick = function () { A.startPretest(cert, chosenCount()); };
       row.appendChild(pb);
       sec.appendChild(row);
 
@@ -2789,8 +2820,22 @@ STUDY.banks.CSC.push(
         });
         sec.appendChild(road);
       }
+      lastPracticeSec = sec;
       v.appendChild(sec);
     });
+
+    // Numeric question-count control, placed at the bottom of the last practice bank.
+    if (lastPracticeSec) {
+      var qcount = el("div", "qcount");
+      var qlabel = el("label", "qcount-label", "Questions per practice session");
+      qlabel.setAttribute("for", "practiceCount");
+      qcount.appendChild(qlabel);
+      qcount.appendChild(qCountInput);
+      qcount.appendChild(el("p", "qcount-hint",
+        "Leave blank to use each session's normal length. Enter a number to cap how many questions the Mixed practice, recall bank, and full concept drill will serve."));
+      lastPracticeSec.appendChild(qcount);
+    }
+
     backBtn(v);
   };
   // aliases so any older reference still resolves to the combined page
