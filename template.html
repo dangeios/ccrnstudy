@@ -221,14 +221,17 @@ i { font-style: italic; }
 .exam-btn span { font-size: 12.5px; color: var(--ink-faint); }
 .exam-btn.accent { background: var(--amber-wash); border-color: var(--amber); }
 .exam-btn.accent b { color: var(--amber); }
-.qcount { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 12px; margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--line); }
-.qcount-label { font-size: 13.5px; font-weight: 600; color: var(--ink); }
-.qcount-input {
-  width: 84px; font-family: inherit; font-size: 14px; text-align: center; font-variant-numeric: tabular-nums;
-  border: 1px solid var(--line); border-radius: 9px; padding: 8px 10px; background: var(--paper); color: var(--ink);
+
+/* practice question-count picker */
+.practice-count { display: flex; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.practice-count label { font-size: 13px; font-weight: 600; color: var(--ink-soft); }
+.count-input {
+  font-family: inherit; font-size: 15px; font-variant-numeric: tabular-nums;
+  width: 92px; padding: 8px 10px; color: var(--ink);
+  background: var(--paper); border: 1px solid var(--line); border-radius: 9px;
 }
-.qcount-input:focus { outline: none; border-color: var(--teal); }
-.qcount-hint { flex-basis: 100%; font-size: 12px; color: var(--ink-faint); line-height: 1.45; margin: 0; }
+.count-input:focus-visible { outline: 2.5px solid var(--teal); outline-offset: 1px; border-color: var(--teal); }
+.count-max { font-size: 12.5px; color: var(--ink-faint); }
 
 /* ------------------------------ roadmap -------------------------------- */
 .roadmap { margin-top: 20px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow); }
@@ -632,9 +635,36 @@ i { font-style: italic; }
     var answer = keys[arr.map(function (o) { return o.ok; }).indexOf(true)];
     return { options: options, answer: answer };
   }
+  // Assemble a favorites question object from a correct-text + distractor-texts
+  // plus an optional per-option-text rationale map ("why"). Distractor rationales
+  // are re-keyed to whatever A/B/C/D letter each option lands on after shuffle,
+  // so authored rationales survive randomization.
+  function buildAuthored(meta, correctText, distractorTexts, why, refs) {
+    var mc = makeMCQ(correctText, distractorTexts);
+    var rationale = { correct: (why && why[correctText]) || correctText };
+    var dmap = {};
+    mc.options.forEach(function (o) {
+      if (o.key === mc.answer) return;
+      dmap[o.key] = (why && why[o.text]) || (o.text + " does not match this description.");
+    });
+    rationale.distractors = dmap;
+    return Object.assign({}, meta, {
+      options: mc.options, answer: mc.answer, rationale: rationale, refs: refs || []
+    });
+  }
   function vocabToQuestion(term) {
     var v = null; S.vocab.forEach(function (x) { if (x.term === term) v = x; });
     if (!v) return null;
+    // Preferred: authored, rubric-quality question (discriminating stem, curated
+    // confusable-term distractors, per-distractor rationales, references).
+    if (v.q && v.q.stem && v.q.correct && v.q.distractors && v.q.distractors.length >= 3) {
+      return buildAuthored({
+        id: "fav-v-" + v.term, _favKey: "v:" + v.term, cert: "Vocabulary",
+        angle: "Application", domainName: v.cat, topic: v.term, difficulty: 2,
+        stem: v.q.stem
+      }, v.q.correct, v.q.distractors, v.q.why, v.q.refs);
+    }
+    // Fallback: legacy definition-match against same-category terms.
     var pool = S.vocab.filter(function (x) { return x.term !== term; });
     var same = shuffle(pool.filter(function (x) { return x.cat === v.cat; }));
     var other = shuffle(pool.filter(function (x) { return x.cat !== v.cat; }));
@@ -651,6 +681,14 @@ i { font-style: italic; }
   function drillToQuestion(deckId, i) {
     var d = S.drills[deckId]; if (!d || !d.pairs[i]) return null;
     var pair = d.pairs[i];
+    // Preferred: authored rubric-quality question on the pair.
+    if (pair.q && pair.q.stem && pair.q.correct && pair.q.distractors && pair.q.distractors.length >= 3) {
+      return buildAuthored({
+        id: "fav-d-" + deckId + "-" + i, _favKey: "d:" + deckId + ":" + i, cert: "Drill",
+        angle: "Application", domainName: d.title, topic: pair.left, difficulty: 2,
+        stem: pair.q.stem
+      }, pair.q.correct, pair.q.distractors, pair.q.why, pair.q.refs);
+    }
     var others = shuffle(d.pairs.filter(function (p, j) { return j !== i; })
       .map(function (p) { return p.right; }));
     var mc = makeMCQ(pair.right, others);
@@ -780,7 +818,9 @@ i { font-style: italic; }
 
     function render() {
       var q = qs[idx];
-      if (!order[q.id]) order[q.id] = shuffle(q.options);
+      // options render in fixed A-B-C-D key order (answers are position-balanced
+      // in the data, so no shuffle is needed and the layout stays consistent)
+      if (!order[q.id]) order[q.id] = q.options.slice().sort(function (a, b) { return a.key < b.key ? -1 : a.key > b.key ? 1 : 0; });
       var opts2 = order[q.id];
       prog.textContent = "Question " + (idx + 1) + " of " + qs.length;
       barfill.style.width = ((idx) / qs.length * 100) + "%";
@@ -949,12 +989,14 @@ i { font-style: italic; }
       var refs = el("div", "refs");
       refs.appendChild(el("span", "refs-label", "References"));
       q.refs.forEach(function (rf) {
-        var name = rf.b === "Bojar"
-          ? "Bojar, Manual of Perioperative Care in Adult Cardiac Surgery (" + rf.ed + ")"
-          : "Hardin & Kaplow, Cardiac Surgery Essentials for Critical Care Nursing (" + rf.ed + ")";
-        var loc = "Ch. " + rf.ch + " (" + rf.t + ")" +
+        var name;
+        if (rf.b === "Bojar") name = "Bojar, Manual of Perioperative Care in Adult Cardiac Surgery" + (rf.ed ? " (" + rf.ed + ")" : "");
+        else if (rf.b === "Hardin") name = "Hardin & Kaplow, Cardiac Surgery Essentials for Critical Care Nursing" + (rf.ed ? " (" + rf.ed + ")" : "");
+        else name = rf.b + (rf.ed ? " (" + rf.ed + ")" : "");
+        var loc = (rf.ch != null ? "Ch. " + rf.ch + " " : "") +
+                  (rf.t ? "(" + rf.t + ")" : "") +
                   (rf.s ? " — " + rf.s : "") + (rf.p ? ", p. " + rf.p : "");
-        refs.appendChild(el("div", "ref", "<b>" + esc(name) + "</b> " + esc(loc)));
+        refs.appendChild(el("div", "ref", "<b>" + esc(name) + "</b> " + (loc ? esc(loc) : "")));
       });
       card.appendChild(refs);
     }
@@ -1023,9 +1065,18 @@ i { font-style: italic; }
     },
     // Mixed CSC + CMC practice: a randomized sample drawn from both banks.
     startMixed: function (n) {
-      n = n || 30;
-      var pool = shuffle(bank("CSC").concat(bank("CMC")));
-      var qs = pool.slice(0, Math.min(n, pool.length));
+      // Dedup by normalized stem: six concepts appear in both blueprints as
+      // parallel items, so a mixed set could otherwise show the same question twice.
+      // Assessment (ka) items live in the banks too, so they are included.
+      var seenStems = {};
+      var pool = shuffle(bank("CSC").concat(bank("CMC"))).filter(function (q) {
+        var key = String(q.stem || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+        if (seenStems[key]) return false;
+        seenStems[key] = 1;
+        return true;
+      });
+      // Default: every available CSC + CMC question. Pass n to cap the set.
+      var qs = (n && n > 0 && n < pool.length) ? pool.slice(0, n) : pool;
       runQuiz({
         cert: "Mixed", questions: qs, favPool: "know",
         title: "Mixed CSC + CMC Practice \u2014 " + qs.length + " items",
@@ -1055,7 +1106,7 @@ i { font-style: italic; }
       var b = bank(cert), map = {}; b.forEach(function (q) { map[q.id] = q; });
       return ids.map(function (id) { return map[id]; }).filter(Boolean);
     },
-    startMissed: function (cert, limit) {
+    startMissed: function (cert) {
       var qs = window.APP.missedList(cert);
       if (!qs.length) {
         var root = document.getElementById("view");
@@ -1067,13 +1118,11 @@ i { font-style: italic; }
         e.appendChild(b); root.appendChild(e);
         return;
       }
-      qs = shuffle(qs);
-      if (limit && limit > 0) qs = qs.slice(0, limit);
       runQuiz({
-        cert: cert, questions: qs,
+        cert: cert, questions: shuffle(qs),
         title: cert + " — Missed-Question Review (" + qs.length + ")",
         mode: "missed",
-        onFinish: function (res) { showResults(res, { retryMissed: function(){ window.APP.startMissed(cert, limit); } }); }
+        onFinish: function (res) { showResults(res, { retryMissed: function(){ window.APP.startMissed(cert); } }); }
       });
     },
 
@@ -1135,15 +1184,11 @@ i { font-style: italic; }
       }); }); });
       return { total: total, covered: covered, full: full };
     },
-    startAssessment: function (cert, count) {
+    startAssessment: function (cert) {
       var clusters = window.APP.conceptClusters(cert);
       var byConceptCluster = {}; clusters.forEach(function (c) { byConceptCluster[c.concept] = c; });
       var parents = clusters.map(function (cl) { return cl.parentQ; });
       if (!parents.length) { window.APP.home(); return; }
-      // optional cap: quiz a random subset of concepts (0 / blank => sweep all)
-      if (count && count > 0 && count < parents.length) {
-        parents = shuffle(parents).slice(0, count);
-      }
       runQuiz({
         cert: cert, questions: parents,
         title: cert + " Knowledge Assessment \u2014 " + parents.length + " concepts",
@@ -1177,16 +1222,14 @@ i { font-style: italic; }
     },
 
     /* ---- Adaptive pretest: 2-3 items per concept that has questions ---- */
-    startPretest: function (cert, limit) {
+    startPretest: function (cert) {
       var by = byConcept(cert);
       var chosen = [];
       Object.keys(by).forEach(function (cid) {
         chosen = chosen.concat(shuffle(by[cid]).slice(0, 3)); // up to 3/concept
       });
-      chosen = shuffle(chosen);
-      if (limit && limit > 0) chosen = chosen.slice(0, limit);
       runQuiz({
-        cert: cert, questions: chosen,
+        cert: cert, questions: shuffle(chosen),
         title: cert + " Pretest — concept sweep (" + chosen.length + " items)",
         mode: "pretest",
         onFinish: function (res) {
@@ -1199,6 +1242,27 @@ i { font-style: italic; }
             score: Math.round(res.correct/res.total*100) };
           persist();
           showResults(res, { retryMissed: function(){ window.APP.startMissed(cert); } });
+        }
+      });
+    },
+
+    /* ---- Full concept drill: the ENTIRE cert bank (includes assessment ka
+       items, since those live in the banks), optionally capped to a user-chosen
+       count. Still records weak concepts so the focus-concept roadmap keeps working. */
+    startConceptDrill: function (cert, n) {
+      var pool = shuffle(bank(cert).slice());
+      if (!pool.length) { window.APP.home(); return; }
+      var qs = (n && n > 0 && n < pool.length) ? pool.slice(0, n) : pool;
+      runQuiz({
+        cert: cert, questions: qs,
+        title: cert + " Full Concept Drill \u2014 " + qs.length + " item" + (qs.length !== 1 ? "s" : ""),
+        mode: "pretest",
+        onFinish: function (res) {
+          var weak = {};
+          res.results.forEach(function (r) { if (!r.ok) weak[r.q.concept] = (weak[r.q.concept] || 0) + 1; });
+          state.pretest[cert] = { date: Date.now(), weak: weak, score: Math.round(res.correct / res.total * 100) };
+          persist();
+          showResults(res, { retryMissed: function () { window.APP.startMissed(cert); } });
         }
       });
     }
@@ -1423,7 +1487,6 @@ i { font-style: italic; }
     v.appendChild(el("h2", "build-header", "Knowledge Assessment"));
     v.appendChild(el("p", "muted", "The CSC and CMC assessment exams \u2014 one question per concept currently in the bank."));
 
-    var lastSec = null;
     ["CSC", "CMC"].forEach(function (cert) {
       var clusters = A.conceptClusters(cert);
       var cov = A.conceptCoverage(cert);
@@ -1441,11 +1504,10 @@ i { font-style: italic; }
       var row = el("div", "exam-row");
       var b = el("button", "exam-btn");
       b.innerHTML = "<b>Start " + cert + " assessment</b><span>" + clusters.length + " concepts</span>";
-      b.onclick = function () { A.startAssessment(cert, 0); };  // sweep every concept
+      b.onclick = function () { A.startAssessment(cert); };
       row.appendChild(b);
       sec.appendChild(row);
       v.appendChild(sec);
-      lastSec = sec;
     });
 
     /* ---------- BOTTOM: Knowledge Practice ---------- */
@@ -1453,30 +1515,46 @@ i { font-style: italic; }
     v.appendChild(el("h2", "build-header", "Knowledge Practice"));
     v.appendChild(el("p", "muted", "Drill the concepts you missed. Each missed concept brings its sibling questions here; answer one correctly and it graduates to mastered."));
 
-    // "How many questions" control for practice — defined here, appended at the bottom
-    // of the last practice bank below. Start buttons read it live at click time.
-    var qCountInput = el("input", "qcount-input");
-    qCountInput.type = "number"; qCountInput.min = "1"; qCountInput.step = "1";
-    qCountInput.placeholder = "all"; qCountInput.setAttribute("inputmode", "numeric");
-    qCountInput.id = "practiceCount";
-    function chosenCount() {
-      var n = parseInt(qCountInput.value, 10);
-      return (isFinite(n) && n > 0) ? n : 0;   // 0 / blank => each session's normal length
-    }
-
     // favorites + mixed practice (span both certs)
     var favRow = el("div", "exam-row");
     var favBtn = el("button", "exam-btn accent");
     favBtn.innerHTML = "<b>\u2605 Quiz favorites</b><span>" + A.favCount("know") + " starred item" + (A.favCount("know") !== 1 ? "s" : "") + "</span>";
     favBtn.onclick = function () { A.startFavorites(); };
     favRow.appendChild(favBtn);
+    var mixTotal = (function () {
+      var seen = {}, n = 0;
+      A.bank("CSC").concat(A.bank("CMC")).forEach(function (q) {
+        var k = String(q.stem || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+        if (seen[k]) return; seen[k] = 1; n++;
+      });
+      return n;
+    })();
+    var mixN = mixTotal;   // default: every available mixed question
     var mixBtn = el("button", "exam-btn");
-    mixBtn.innerHTML = "<b>Mixed CSC + CMC practice</b><span>random set from both</span>";
-    mixBtn.onclick = function () { A.startMixed(chosenCount()); };
+    mixBtn.innerHTML = "<b>Mixed CSC + CMC practice</b><span>all " + mixTotal + " \u00b7 set count below</span>";
+    mixBtn.onclick = function () { A.startMixed(mixN >= mixTotal ? null : mixN); };
     favRow.appendChild(mixBtn);
     v.appendChild(favRow);
 
-    var lastPracticeSec = null;
+    // numeric picker: how many mixed CSC + CMC questions to run
+    var mixCnt = el("div", "practice-count");
+    mixCnt.appendChild(el("label", null, "Mixed questions to practice"));
+    var mixInp = el("input", "count-input");
+    mixInp.type = "number"; mixInp.min = "1"; mixInp.max = String(mixTotal); mixInp.value = String(mixTotal);
+    mixInp.setAttribute("aria-label", "Mixed CSC + CMC questions to practice");
+    mixInp.onchange = function () {
+      var val = parseInt(mixInp.value, 10);
+      if (isNaN(val) || val < 1) val = 1;
+      if (val > mixTotal) val = mixTotal;
+      mixInp.value = String(val);
+      mixN = val;
+      mixBtn.innerHTML = "<b>Mixed CSC + CMC practice</b><span>" +
+        (mixN >= mixTotal ? "all " + mixTotal : mixN + " of " + mixTotal) + " \u00b7 set count below</span>";
+    };
+    mixCnt.appendChild(mixInp);
+    mixCnt.appendChild(el("span", "count-max", "of " + mixTotal + " available"));
+    v.appendChild(mixCnt);
+
     ["CSC", "CMC"].forEach(function (cert) {
       var sec = el("section", "exam-sec");
       sec.appendChild(el("h3", "exam-cert", cert + " practice bank"));
@@ -1484,16 +1562,38 @@ i { font-style: italic; }
       var mastered = Object.keys(A.state.mastered[cert]).length;
       sec.appendChild(el("p", "muted small",
         mc + " question" + (mc !== 1 ? "s" : "") + " to review \u00b7 " + mastered + " mastered"));
+      var total = A.bank(cert).length;   // full bank incl. assessment items
+      var chosen = total;                // default: every available question
       var row = el("div", "exam-row");
       var rb = el("button", "exam-btn accent");
       rb.innerHTML = "<b>Practice recall bank</b><span>" + mc + " to review</span>";
-      rb.onclick = function () { A.startMissed(cert, chosenCount()); };
+      rb.onclick = function () { A.startMissed(cert); };
       row.appendChild(rb);
       var pb = el("button", "exam-btn");
-      pb.innerHTML = "<b>Full concept drill</b><span>sample every covered concept</span>";
-      pb.onclick = function () { A.startPretest(cert, chosenCount()); };
+      pb.innerHTML = "<b>Full concept drill</b><span>all " + total + " questions \u00b7 set count below</span>";
+      pb.onclick = function () { A.startConceptDrill(cert, chosen); };
       row.appendChild(pb);
       sec.appendChild(row);
+
+      // numeric picker: how many knowledge-practice questions to run
+      var cnt = el("div", "practice-count");
+      cnt.appendChild(el("label", null, "Questions to practice"));
+      var inp = el("input", "count-input");
+      inp.type = "number"; inp.min = "1"; inp.max = String(total); inp.value = String(total);
+      inp.setAttribute("aria-label", cert + " questions to practice");
+      inp.onchange = function () {
+        var val = parseInt(inp.value, 10);
+        if (isNaN(val) || val < 1) val = 1;
+        if (val > total) val = total;
+        inp.value = String(val);
+        chosen = val;
+        pb.innerHTML = "<b>Full concept drill</b><span>" +
+          (chosen >= total ? "all " + total + " questions" : chosen + " of " + total + " questions") +
+          " \u00b7 set count below</span>";
+      };
+      cnt.appendChild(inp);
+      cnt.appendChild(el("span", "count-max", "of " + total + " available"));
+      sec.appendChild(cnt);
 
       // weak-concept roadmap from last drill/pretest
       var pt = A.state.pretest[cert];
@@ -1508,22 +1608,8 @@ i { font-style: italic; }
         });
         sec.appendChild(road);
       }
-      lastPracticeSec = sec;
       v.appendChild(sec);
     });
-
-    // Numeric question-count control, placed at the bottom of the last practice bank.
-    if (lastPracticeSec) {
-      var qcount = el("div", "qcount");
-      var qlabel = el("label", "qcount-label", "Questions per practice session");
-      qlabel.setAttribute("for", "practiceCount");
-      qcount.appendChild(qlabel);
-      qcount.appendChild(qCountInput);
-      qcount.appendChild(el("p", "qcount-hint",
-        "Leave blank to use each session's normal length. Enter a number to cap how many questions the Mixed practice, recall bank, and full concept drill will serve."));
-      lastPracticeSec.appendChild(qcount);
-    }
-
     backBtn(v);
   };
   // aliases so any older reference still resolves to the combined page
