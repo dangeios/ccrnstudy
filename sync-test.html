@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Study Hub · Sync check</title>
+<style>
+  :root {
+    --bg: #eef3f5; --panel: #ffffff; --fg: #14212b; --mut: #5b6b78; --line: #d5dde3;
+    --acc: #0f6e7a; --acc-soft: #d7eef0; --ok: #1d6b3a; --err: #b3261e;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0c161c; --panel: #16222b; --fg: #e6edf2; --mut: #9aabb8; --line: #2c3c48;
+            --acc: #4fb3bf; --acc-soft: #173a40; --ok: #7fd49b; --err: #ff8a80; color-scheme: dark; }
+  }
+  *, *::before, *::after { box-sizing: inherit; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+         font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 20px 16px 48px; }
+  header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+  h1 { font-size: 1.35rem; margin: 0; flex: 1; min-width: 180px; }
+  h2 { font-size: 1.02rem; margin: 0 0 8px; }
+  .badge { font-size: .85rem; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--mut); }
+  .badge[data-s=synced], .badge[data-s=saved] { color: var(--ok); border-color: currentColor; }
+  .badge[data-s=error] { color: var(--err); border-color: currentColor; }
+  button { font: inherit; cursor: pointer; }
+  .btn { border: 1px solid var(--acc); background: var(--acc); color: var(--panel); border-radius: 10px; padding: 8px 14px; font-weight: 600; }
+  .btn.ghost { background: transparent; color: var(--acc); }
+  button:focus-visible, input:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+  p { margin: 0 0 10px; color: var(--mut); }
+  ol { margin: 0; padding-left: 1.3em; color: var(--mut); }
+  ol li { margin-bottom: 4px; }
+  ol strong { color: var(--fg); font-weight: 600; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+  .card { text-align: left; border: 1px solid var(--line); background: transparent; color: var(--fg);
+          border-radius: 10px; padding: 10px 12px; min-height: 64px; }
+  .card small { display: block; color: var(--mut); font-size: .78rem; margin-top: 2px; }
+  .card[aria-pressed=true] { background: var(--acc-soft); border-color: var(--acc); }
+  .card[aria-pressed=true] small { color: var(--acc); }
+  .who { margin-top: 10px; font-size: .9rem; color: var(--mut); }
+  label { display: block; font-size: .85rem; font-weight: 600; margin: 8px 0 4px; }
+  input { width: 100%; font: inherit; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); }
+  pre { margin: 10px 0 0; padding: 10px; background: var(--bg); border-radius: 8px; overflow-x: auto; font-size: .8rem; max-height: 260px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Sync check</h1>
+    <span class="badge" id="badge" data-s="off">Off</span>
+    <button class="btn" id="acctBtn" type="button">Log in</button>
+  </header>
+
+  <section id="cfgPanel" hidden>
+    <h2>Connect your Supabase project</h2>
+    <p>account.js has no project URL or key yet. Paste them here to test on this device (stored only in this browser), or put them in account.js’s CONFIG block so every device and app gets them.</p>
+    <label for="cfgUrl">Project URL</label>
+    <input id="cfgUrl" placeholder="https://abcdefghijklmno.supabase.co" autocomplete="off">
+    <label for="cfgKey">Anon public key</label>
+    <input id="cfgKey" placeholder="eyJhbGciOi… or sb_publishable_…" autocomplete="off">
+    <div class="row"><button class="btn" id="cfgSave" type="button">Save and reload</button></div>
+  </section>
+
+  <section>
+    <h2>How to run the test</h2>
+    <ol>
+      <li><strong>On your computer:</strong> create an account, then tap three concepts below.</li>
+      <li><strong>On your phone:</strong> open this same page and log in with that account. The three concepts appear.</li>
+      <li><strong>On your phone:</strong> tap two different concepts.</li>
+      <li><strong>Back on your computer:</strong> switch to this tab. All five are marked, each tagged with the device that marked it.</li>
+    </ol>
+    <p class="who" id="who"></p>
+  </section>
+
+  <section>
+    <h2>Mark concepts as mastered</h2>
+    <p>Like the real apps, a mastered concept from either device always survives the merge.</p>
+    <div class="grid" id="grid"></div>
+    <div class="row">
+      <button class="btn ghost" id="syncBtn" type="button">Sync now</button>
+      <button class="btn ghost" id="cloudBtn" type="button">Show cloud copy</button>
+      <button class="btn ghost" id="resetBtn" type="button">Clear this device</button>
+    </div>
+    <pre id="cloud" hidden></pre>
+  </section>
+</main>
+
+<script src="account.js"></script>
+<script>
+(function () {
+  var APP = 'sync-test';
+  var LS_KEY = 'studyhub-sync-test-v1';
+  var CFG_KEY = 'studyhub-test-cfg';
+  var CONCEPTS = [
+    'Cardiac tamponade', 'Beck’s triad', 'Pulsus paradoxus', 'IABP timing',
+    'Preload vs afterload', 'SVR calculation', 'Torsades de pointes', 'Mixed venous O2',
+    'Cardiogenic shock', 'Junctional rhythm', 'Post-op bleeding', 'Pericarditis ECG'
+  ];
+  var device = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? 'phone' : 'computer';
+
+  function load() {
+    try { return JSON.parse(localStorage.getItem(LS_KEY)) || { mastered: {} }; }
+    catch (e) { return { mastered: {} }; }
+  }
+  function save(s) { try { localStorage.setItem(LS_KEY, JSON.stringify(s)); } catch (e) {} }
+  var state = load();
+
+  // Same shape as the real apps’ merges: union, earliest record wins.
+  function merge(local, remote) {
+    var out = { mastered: {} };
+    [remote, local].forEach(function (src) {
+      var m = (src && src.mastered) || {};
+      Object.keys(m).forEach(function (k) { if (!out.mastered[k]) out.mastered[k] = m[k]; });
+    });
+    return out;
+  }
+
+  var grid = document.getElementById('grid');
+  function render() {
+    grid.innerHTML = '';
+    CONCEPTS.forEach(function (name, i) {
+      var id = 'c' + i, rec = state.mastered[id];
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'card';
+      b.setAttribute('aria-pressed', rec ? 'true' : 'false');
+      b.innerHTML = name + '<small>' + (rec ? 'Mastered on ' + rec : 'Tap to mark') + '</small>';
+      b.onclick = function () {
+        if (state.mastered[id]) return;          // union merge: marks can’t be undone across devices
+        state.mastered[id] = device;
+        save(state); render(); sync.changed();
+      };
+      grid.appendChild(b);
+    });
+  }
+
+  // Use pasted test config only if account.js isn’t configured yet.
+  if (!Account.configured()) {
+    var saved = null;
+    try { saved = JSON.parse(localStorage.getItem(CFG_KEY)); } catch (e) {}
+    if (saved && saved.url && saved.anonKey) Account.init(saved);
+    else document.getElementById('cfgPanel').hidden = false;
+  }
+  document.getElementById('cfgSave').onclick = function () {
+    var url = document.getElementById('cfgUrl').value.trim();
+    var key = document.getElementById('cfgKey').value.trim();
+    if (!/^https:\/\/.+/.test(url) || !key) { alert('Paste both the project URL (starting with https://) and the anon key.'); return; }
+    localStorage.setItem(CFG_KEY, JSON.stringify({ url: url, anonKey: key }));
+    location.reload();
+  };
+
+  var badge = document.getElementById('badge');
+  var sync = Account.attach(APP, {
+    getLocal: function () { return state; },
+    setLocal: function (merged) { state = merged; save(state); render(); },
+    merge: merge,
+    onStatus: function (s) { badge.dataset.s = s; badge.textContent = Account.STATUS_TEXT[s] || s; }
+  });
+
+  var acctBtn = document.getElementById('acctBtn');
+  var who = document.getElementById('who');
+  acctBtn.onclick = function () { Account.openModal(); };
+  Account.onAuthChange(function (u) {
+    acctBtn.textContent = u ? 'Account' : 'Log in';
+    who.textContent = (u ? 'Signed in as ' + u.email : 'Not signed in') + ' on this ' + device + '.';
+  });
+  who.textContent = 'Not signed in on this ' + device + '.';
+
+  document.getElementById('syncBtn').onclick = function () {
+    if (!Account.user()) { Account.openModal(); return; }
+    sync.syncNow();
+  };
+  document.getElementById('cloudBtn').onclick = function () {
+    var pre = document.getElementById('cloud');
+    if (!Account.user()) { pre.hidden = false; pre.textContent = 'Log in to see the cloud copy.'; return; }
+    pre.hidden = false; pre.textContent = 'Loading…';
+    Account.pull(APP).then(function (d) {
+      pre.textContent = d ? JSON.stringify(d, null, 2) : 'No cloud copy yet.';
+    }).catch(function (e) { pre.textContent = 'Couldn’t load: ' + (e.message || e); });
+  };
+  document.getElementById('resetBtn').onclick = function () {
+    if (!confirm('Clear this device’s marks? If you’re signed in, the cloud copy brings them back on the next sync.')) return;
+    state = { mastered: {} }; save(state); render();
+  };
+
+  render();
+})();
+</script>
+</body>
+</html>
