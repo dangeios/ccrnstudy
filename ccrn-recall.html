@@ -1293,6 +1293,7 @@ let adopting = false;
 let acct = null, acctStatus = "off";   // Study Hub account sync (account.js)
 const RESET_LS = STORE_KEY + ":resetAt";  // when progress was last reset (synced, so a reset reaches every device)
 let resetAt = 0;
+const APP_VERSION = "2026.10.22b";   // shown in the footer so you can tell which version a device has loaded
 /* Per-question / per-favorite edit times, so a demotion or an un-star on one
    device isn't undone by the other device's older copy. */
 const PTS_LS = STORE_KEY + ":itemTs", FTS_LS = FAV_KEY + ":ts";
@@ -1644,13 +1645,25 @@ $("#exitBtn").onclick=()=>{ renderDashboard(); show("dashboard"); };
 $("#reviewBtn").onclick=renderMastered;
 $("#backBtn").onclick=()=>{ renderDashboard(); show("dashboard"); };
 $("#doneBtn").onclick=()=>{ renderDashboard(); show("dashboard"); };
+/* Reset uses an in-page "tap again" confirm instead of confirm(): some phone
+   browsers and in-app viewers silently block confirm(), which made the button
+   look like it did nothing. */
+let resetArmed = null;
 $("#resetBtn").onclick=async()=>{
+  const btn=$("#resetBtn");
   const everywhere = !!(window.Account && Account.user());
-  if(confirm(everywhere
-      ? "Reset all progress on every device? Every concept goes back to “not started” here and on your other devices when they next sync. Favorites are kept."
-      : "Reset all progress? Every concept goes back to “not started.”")){
-    await resetProgress(); renderDashboard();
+  if(!resetArmed){
+    btn.textContent = everywhere ? "Tap again to reset on all devices" : "Tap again to reset";
+    btn.style.color = "var(--red)"; btn.style.fontWeight = "600";
+    resetArmed = setTimeout(()=>{ resetArmed=null; btn.textContent="Reset all progress"; btn.style.color=""; btn.style.fontWeight=""; }, 5000);
+    return;
   }
+  clearTimeout(resetArmed); resetArmed=null;
+  await resetProgress(); renderDashboard();
+  if(acct && everywhere) acct.syncNow();       // send the reset right away
+  btn.style.color="var(--green)";
+  btn.textContent = everywhere ? "Reset ✓ syncing to your devices" : "Reset ✓";
+  setTimeout(()=>{ btn.textContent="Reset all progress"; btn.style.color=""; btn.style.fontWeight=""; }, 3500);
 };
 
 /* ---------- Cross-device sync via export/import ---------- */
@@ -1729,7 +1742,7 @@ function footerStatus(){
                        : acctStatus==="error" ? "account save failed — will retry"
                        : "synced to your account");
     }
-    st.textContent = "Saving to: " + storeStatus + tail;
+    st.textContent = "Saving to: " + storeStatus + tail + " · v" + APP_VERSION;
   }
   // Always-visible top-bar badge
   const b=document.getElementById("syncBadge"), t=document.getElementById("syncBadgeTxt");
