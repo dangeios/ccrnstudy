@@ -168,7 +168,7 @@
       <span class="sub">Adaptive review from your missed questions · Adult CCRN</span>
     </div>
     <span style="display:flex; align-items:center; gap:10px">
-      <span class="syncbadge off" id="syncBadge"><span class="sb-dot"></span><span id="syncBadgeTxt">Cloud off</span></span>
+      <span class="syncbadge off" id="syncBadge" role="button" tabindex="0" style="cursor:pointer" title="Account &amp; sync"><span class="sb-dot"></span><span id="syncBadgeTxt">Cloud off</span></span>
       <span class="pulse"><span class="dot"></span> <span id="pulseTxt">Loading…</span></span>
     </span>
   </div>
@@ -206,7 +206,8 @@
     <div class="footer-controls">
       <span class="mini" id="storeStatus" style="color:var(--ink-faint)">Checking storage…</span>
       <span style="display:flex; gap:14px; flex-wrap:wrap">
-        <button class="mini" id="cloudBtn" style="color:var(--teal)">☁ Cloud sync</button>
+        <button class="mini" id="cloudBtn" style="color:var(--teal)">☁ Account &amp; sync</button>
+        <button class="mini" id="legacyCloudBtn">Old jsonbin sync</button>
         <button class="mini" id="exportBtn">Export progress</button>
         <button class="mini" id="importBtn">Import progress</button>
         <button class="mini" id="resetBtn">Reset all progress</button>
@@ -308,6 +309,7 @@
   </div>
 </div>
 
+<script src="account.js"></script>
 <script>
 /* ---------- Question bank (compiled from the Drive folder) ---------- */
 const QUESTIONS = [
@@ -1320,6 +1322,7 @@ let localTs = 0;
 let cloud = { key:"", bin:"", connected:false };
 let pushTimer = null, adopting = false;
 let cloudSaveState = "", savedRevertTimer = null;
+let acct = null, acctStatus = "off";   // Study Hub account sync (account.js)
 
 function blank(){ return {box:START_BOX, seen:false, correct:0, wrong:0, mastered:false}; }
 function P(id){ if(!progress[id]) progress[id]=blank(); return progress[id]; }
@@ -1365,6 +1368,7 @@ function saveFavorites(){
   try{ window.localStorage.setItem(FAV_KEY, JSON.stringify(favorites)); }catch(e){}
   try{ if(canCloud) window.storage.set(FAV_KEY, JSON.stringify(favorites), false); }catch(e){}
   if(cloud.connected && !adopting && typeof schedulePush==="function") schedulePush();
+  if(acct && !adopting) acct.changed();
 }
 function toggleFav(id){
   if(favorites[id]) delete favorites[id]; else favorites[id]=true;
@@ -1378,6 +1382,7 @@ function saveProgress(){
   if(canCloud){ try{ window.storage.set(STORE_KEY, blob, false); }catch(e){ canCloud=false; } }
   try{ writeDomainStats(); }catch(e){}
   if(cloud.connected && !adopting && typeof schedulePush==="function") schedulePush();
+  if(acct && !adopting) acct.changed();
 }
 /* Shared (same-origin) summary the practice-exam app can read to target weak domains. */
 function writeDomainStats(){
@@ -1733,9 +1738,14 @@ function saveCloudCfg(){
 function cstat(msg){ const el=document.getElementById("cloudStatus"); if(el) el.textContent = msg; }
 function footerStatus(){
   const st=document.getElementById("storeStatus");
+  const signedIn = !!(window.Account && Account.user());
   if(st){
     let tail = "";
-    if(cloud.connected){
+    if(signedIn){
+      tail = " · ☁ " + (acctStatus==="saving" ? "saving to your account…"
+                       : acctStatus==="error" ? "account save failed — will retry"
+                       : "synced to your account");
+    } else if(cloud.connected){
       tail = " · ☁ " + (cloudSaveState==="saving" ? "saving…"
                        : cloudSaveState==="saved" ? "saved ✓"
                        : cloudSaveState==="error" ? "save failed — will retry"
@@ -1747,7 +1757,13 @@ function footerStatus(){
   const b=document.getElementById("syncBadge"), t=document.getElementById("syncBadgeTxt");
   if(b && t){
     b.classList.remove("off","saved","saving","error");
-    if(!cloud.connected){ b.classList.add("off"); t.textContent="Cloud off"; }
+    if(signedIn){
+      if(acctStatus==="saving"){ b.classList.add("saving"); t.textContent="Saving…"; }
+      else if(acctStatus==="error"){ b.classList.add("error"); t.textContent="Save failed"; }
+      else if(acctStatus==="saved"){ b.classList.add("saved"); t.textContent="Saved"; }
+      else { b.classList.add("saved"); t.textContent="Synced"; }
+    }
+    else if(!cloud.connected){ b.classList.add("off"); t.textContent="Sign in to sync"; }
     else if(cloudSaveState==="saving"){ b.classList.add("saving"); t.textContent="Saving…"; }
     else if(cloudSaveState==="error"){ b.classList.add("error"); t.textContent="Save failed"; }
     else if(cloudSaveState==="saved"){ b.classList.add("saved"); t.textContent="Saved"; }
@@ -1877,7 +1893,10 @@ function openCloud(){
   cstat(cloud.connected ? "Connected. Bin ID: " + cloud.bin : "Not connected yet.");
   document.getElementById("cloudModal").classList.remove("hide");
 }
-$("#cloudBtn").onclick = openCloud;
+$("#cloudBtn").onclick = ()=>{ if(window.Account) Account.openModal(); else openCloud(); };
+$("#legacyCloudBtn").onclick = openCloud;
+$("#syncBadge").onclick = ()=>{ if(window.Account) Account.openModal(); };
+$("#syncBadge").onkeydown = (e)=>{ if((e.key==="Enter"||e.key===" ") && window.Account){ e.preventDefault(); Account.openModal(); } };
 $("#cloudClose").onclick = ()=> document.getElementById("cloudModal").classList.add("hide");
 $("#cloudModal").onclick = (e)=>{ if(e.target===document.getElementById("cloudModal")) document.getElementById("cloudModal").classList.add("hide"); };
 $("#cloudConnect").onclick = async ()=>{
@@ -1911,6 +1930,38 @@ $("#cloudDisconnect").onclick = ()=>{
   footerStatus();
 };
 
+/* ---------- Study Hub account sync (account.js → Supabase) ----------
+   Same payload as the jsonbin version ({progress, favorites}) and the SAME
+   mergeProgress / favorites-union logic — only the transport is new. */
+function attachAccount(){
+  if(!window.Account) return;          // account.js missing → local-only, as before
+  acct = Account.attach("ccrn-recall", {
+    getLocal: ()=>({ progress, favorites }),
+    merge: (local, remote)=>{
+      const fav = Object.assign({}, local.favorites||{});
+      Object.keys((remote && remote.favorites)||{}).forEach(id=>{ if(remote.favorites[id]) fav[id]=true; });
+      return { progress: mergeProgress(local.progress, remote && remote.progress), favorites: fav };
+    },
+    setLocal: (merged)=>{
+      adopting = true;
+      progress = merged.progress || {};
+      QUESTIONS.forEach(q=>{ if(!progress[q.id]) progress[q.id]=blank(); });
+      favorites = merged.favorites || {};
+      localTs = Date.now();
+      if(canLocal){ try{
+        window.localStorage.setItem(STORE_KEY, JSON.stringify(progress));
+        window.localStorage.setItem(TS_LS, String(localTs));
+        window.localStorage.setItem(FAV_KEY, JSON.stringify(favorites));
+      }catch(e){} }
+      try{ writeDomainStats(); }catch(e){}
+      adopting = false;
+      if(!views.dashboard.classList.contains("hide")) renderDashboard();
+    },
+    onStatus: (s)=>{ acctStatus = s; footerStatus(); }
+  });
+  Account.onAuthChange(()=>footerStatus());
+}
+
 /* ---------- Night mode toggle ---------- */
 function currentTheme(){
   let t=null; try{ t=localStorage.getItem('ccrn-theme'); }catch(e){}
@@ -1931,6 +1982,7 @@ updateThemeBtn();
   await loadProgress();
   try{ writeDomainStats(); }catch(e){}
   loadCloudCfg();
+  attachAccount();
   footerStatus();
   renderDashboard();
   show("dashboard");
