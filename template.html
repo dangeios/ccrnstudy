@@ -500,8 +500,8 @@ i { font-style: italic; }
           <a href="#" class="nav-link" data-nav="vocab">Vocab</a>
           <a href="#" class="nav-link" data-nav="mocks">Mocks</a>
         </nav>
-        <span class="syncbadge off" id="syncBadge"><span class="sb-dot"></span><span id="syncBadgeTxt">Cloud off</span></span>
-        <button class="themetoggle" id="cloudBtn" type="button">☁ Cloud sync</button>
+        <span class="syncbadge off" id="syncBadge" role="button" tabindex="0" style="cursor:pointer" title="Account &amp; sync"><span class="sb-dot"></span><span id="syncBadgeTxt">Sign in to sync</span></span>
+        <button class="themetoggle" id="cloudBtn" type="button">☁ Account</button>
         <button class="themetoggle" id="themetoggle" type="button">◐ Theme</button>
       </div>
     </header>
@@ -512,29 +512,6 @@ i { font-style: italic; }
       <span>Built from the AACN CSC (eff. 2022) &amp; CMC (eff. 2022) test plans.</span>
       <span>Rationales cite Bojar, <i>Manual of Perioperative Care in Adult Cardiac Surgery</i> (6th ed.) &amp; Hardin &amp; Kaplow, <i>Cardiac Surgery Essentials for Critical Care Nursing</i>.</span>
     </footer>
-  </div>
-
-  <!-- CLOUD SYNC MODAL -->
-  <div id="cloudModal" class="modal hide">
-    <div class="modal-card">
-      <p class="modal-title">☁ Cloud sync</p>
-      <p class="modal-lead">
-        Saves your CSC/CMC progress to the same <b>jsonbin.io</b> account as your CCRN apps so it syncs across devices.
-        Use the <i>same Master Key</i> you use there. First device: paste the key, leave Bin ID blank, tap Connect — you'll get a Bin ID. Other device: paste the same key <i>and</i> that Bin ID.
-      </p>
-      <label class="modal-label">jsonbin Master Key</label>
-      <input id="cloudKey" type="password" autocomplete="off" placeholder="$2a$10$…" />
-      <label class="modal-label">Bin ID <span style="opacity:.7">(blank on first device)</span></label>
-      <input id="cloudBin" type="text" autocomplete="off" placeholder="e.g. 6650a1b2ac…" />
-      <p id="cloudStatus" class="modal-status"></p>
-      <div class="modal-actions">
-        <button class="btn primary" id="cloudConnect" type="button">Connect</button>
-        <button class="btn ghost" id="cloudSyncNow" type="button">Sync now</button>
-        <button class="btn ghost" id="cloudDisconnect" type="button">Disconnect</button>
-        <button class="btn ghost" id="cloudClose" type="button">Close</button>
-      </div>
-      <p class="modal-note">This app uses its own bin (<code>csc-cmc-study</code>), separate from your CCRN bins, but the same Master Key.</p>
-    </div>
   </div>
 
   <script>
@@ -1292,7 +1269,7 @@ i { font-style: italic; }
     var hero = el("div", "hero");
     hero.appendChild(el("div", "hero-eyebrow", "Study Hub"));
     hero.appendChild(el("h1", "hero-title", "Choose your certification track"));
-    hero.appendChild(el("p", "hero-sub", "Two complete study suites in one place. Pick the exam you're preparing for \u2014 your progress and cloud sync are kept separate for each."));
+    hero.appendChild(el("p", "hero-sub", "Two complete study suites in one place. Pick the exam you're preparing for \u2014 your progress is kept separate for each."));
     v.appendChild(hero);
 
     var grid = el("div", "modgrid");
@@ -1875,258 +1852,194 @@ i { font-style: italic; }
 })();
 
 </script>
+  <script src="account.js"></script>
   <script>
 /* =============================================================================
-   cloud.js — jsonbin.io cloud sync for the CSC/CMC Study app
+   sync.js — Study Hub account sync for the CSC/CMC app (account.js → Supabase)
    -----------------------------------------------------------------------------
-   Mirrors the sync model used by the CCRN apps:
-     - ONE Master Key, shared across apps (localStorage "ccrn-sync-key").
-     - Each app has its OWN private bin. This app's bin id lives in
-       "csc-cmc-sync-bin"; on jsonbin the bin is named "csc-cmc-study".
-     - Pull-merge-push so progress from either device is never lost.
-     - Debounced push after every save; keepalive flush on page hide.
-   All progress (missed, mastered, seen, examHistory, pretest) syncs in one bin,
-   because this is a single-page app rather than four separate files.
+   Same sign-in as the CCRN apps; this app keeps its own row ("csc-cmc").
+   Syncs missed, mastered, seen, examHistory, pretest and favorites.
+   Missed / mastered / favorites carry per-item edit times so that clearing a
+   missed question, un-mastering one, or un-starring one on one device isn't
+   undone by the other device's older copy. With no edit times (older data) the
+   original merge rules decide.
    ========================================================================== */
 (function () {
   "use strict";
   var A = window.APP;
   if (!A) return;
-
-  var CLOUD_KEY_LS = "ccrn-sync-key";       // shared Master Key (same as the CCRN apps)
-  var CLOUD_BIN_LS = "csc-cmc-sync-bin";    // this app's own bin id
-  var JB_BASE = "https://api.jsonbin.io/v3/b";
-  var BIN_NAME = "csc-cmc-study";
-
-  var cloud = { key: "", bin: "", connected: false };
-  var pushTimer = null, adopting = false, cloudSaveState = "", savedRevertTimer = null;
-
   function $(sel) { return document.querySelector(sel); }
 
-  function loadCloudCfg() {
-    try {
-      cloud.key = localStorage.getItem(CLOUD_KEY_LS) || "";
-      cloud.bin = localStorage.getItem(CLOUD_BIN_LS) || "";
-    } catch (e) {}
-    cloud.connected = !!(cloud.key && cloud.bin);
-  }
-  function saveCloudCfg() {
-    try {
-      if (cloud.key) localStorage.setItem(CLOUD_KEY_LS, cloud.key); else localStorage.removeItem(CLOUD_KEY_LS);
-      if (cloud.bin) localStorage.setItem(CLOUD_BIN_LS, cloud.bin); else localStorage.removeItem(CLOUD_BIN_LS);
-    } catch (e) {}
-    cloud.connected = !!(cloud.key && cloud.bin);
-  }
-  function cstat(msg) { var el = $("#cloudStatus"); if (el) el.textContent = msg; }
+  var TS_LS = "csc_cmc_study_v1:itemTs";
+  var CERTS = ["CSC", "CMC"];
+  var acct = null, status = "off", adopting = false;
 
-  function badge() {
-    var b = $("#syncBadge"), t = $("#syncBadgeTxt");
-    if (!b || !t) return;
-    b.classList.remove("off", "saved", "saving", "error");
-    if (!cloud.connected) { b.classList.add("off"); t.textContent = "Cloud off"; }
-    else if (cloudSaveState === "saving") { b.classList.add("saving"); t.textContent = "Saving\u2026"; }
-    else if (cloudSaveState === "error") { b.classList.add("error"); t.textContent = "Save failed"; }
-    else if (cloudSaveState === "saved") { b.classList.add("saved"); t.textContent = "Saved"; }
-    else { b.classList.add("saved"); t.textContent = "Synced"; }
+  /* ---- flat views: "CSC|qid" -> value, "know|key" -> 1 ---- */
+  function flat(byGroup, groups) {
+    var out = {};
+    groups.forEach(function (g) {
+      var m = (byGroup && byGroup[g]) || {};
+      Object.keys(m).forEach(function (k) { out[g + "|" + k] = m[k]; });
+    });
+    return out;
+  }
+  function unflat(f, groups) {
+    var out = {};
+    groups.forEach(function (g) { out[g] = {}; });
+    Object.keys(f || {}).forEach(function (fk) {
+      var i = fk.indexOf("|"), g = fk.slice(0, i), k = fk.slice(i + 1);
+      (out[g] = out[g] || {})[k] = f[fk];
+    });
+    return out;
+  }
+  var POOLS = ["know", "mock"];
+  function views(s) {
+    return { missed: flat(s.missed, CERTS), mastered: flat(s.mastered, CERTS), fav: flat(s.favorites, POOLS) };
   }
 
-  function jbHeaders() {
-    return { "Content-Type": "application/json", "X-Master-Key": cloud.key, "X-Bin-Versioning": "false" };
+  var ts = { missed: {}, mastered: {}, fav: {} };
+  try { var t = JSON.parse(localStorage.getItem(TS_LS)); if (t) { ts.missed = t.missed || {}; ts.mastered = t.mastered || {}; ts.fav = t.fav || {}; } } catch (e) {}
+  var prev = JSON.parse(JSON.stringify(views(A.state)));
+  function saveTs() { try { localStorage.setItem(TS_LS, JSON.stringify(ts)); } catch (e) {} }
+
+  function stamp() {
+    if (!window.Account) return;
+    var v = views(A.state);
+    Account.stampChanges(ts.missed, prev.missed, v.missed);
+    Account.stampChanges(ts.mastered, prev.mastered, v.mastered);
+    Account.stampChanges(ts.fav, prev.fav, v.fav);
+    prev = Account.clone(v); saveTs();
+  }
+
+  /* ---- original rules, used for items with no edit times ---- */
+  function mergeSeen(a, b) {
+    var seen = {};
+    Object.keys(a || {}).forEach(function (k) { seen[k] = a[k]; });
+    Object.keys(b || {}).forEach(function (k) {
+      var l = seen[k] || { correct: 0, attempts: 0 }, r = b[k] || { correct: 0, attempts: 0 };
+      seen[k] = { correct: Math.max(l.correct, r.correct), attempts: Math.max(l.attempts, r.attempts) };
+    });
+    return seen;
+  }
+  function mergeHistory(a, b) {
+    var keys = {}, hist = [];
+    (a || []).concat(b || []).forEach(function (h) {
+      var k = h.date + "|" + h.cert + "|" + h.examNo;
+      if (!keys[k]) { keys[k] = 1; hist.push(h); }
+    });
+    hist.sort(function (x, y) { return x.date - y.date; });
+    return hist;
+  }
+  function mergePretest(a, b) {
+    var pt = {};
+    Object.keys(a || {}).forEach(function (c) { pt[c] = a[c]; });
+    Object.keys(b || {}).forEach(function (c) {
+      if (!pt[c] || (b[c].date || 0) > (pt[c].date || 0)) pt[c] = b[c];
+    });
+    return pt;
   }
 
   function payload() {
     var s = A.state;
-    return JSON.stringify({
+    return {
+      state: { missed: s.missed, mastered: s.mastered, seen: s.seen, examHistory: s.examHistory,
+               pretest: s.pretest, favorites: s.favorites },
+      ts: ts
+    };
+  }
+
+  function merge(local, remote) {
+    var l = local.state, r = (remote && remote.state) || {};
+    var lt = local.ts || {}, rt = (remote && remote.ts) || {};
+    var lv = views(l), rv = views(r);
+    var mi = Account.mergeStamped(lv.missed, lt.missed, rv.missed, rt.missed,
+      function (a, b) { return Math.max(a || 0, b || 0); });
+    var ma = Account.mergeStamped(lv.mastered, lt.mastered, rv.mastered, rt.mastered,
+      function (a, b) { return (a || b) ? 1 : null; });
+    var fa = Account.mergeStamped(lv.fav, lt.fav, rv.fav, rt.fav,
+      function (a, b) { return (a || b) ? 1 : null; });
+    // A question can't be both missed and mastered: the newer edit wins; on a tie, missed wins (original rule).
+    Object.keys(ma.map).forEach(function (k) {
+      if (mi.map[k] && (mi.ts[k] || 0) >= (ma.ts[k] || 0)) delete ma.map[k];
+      else if (mi.map[k]) delete mi.map[k];
+    });
+    return {
       state: {
-        missed: s.missed, mastered: s.mastered, seen: s.seen,
-        examHistory: s.examHistory, pretest: s.pretest
+        missed: unflat(mi.map, CERTS), mastered: unflat(ma.map, CERTS),
+        seen: mergeSeen(l.seen, r.seen),
+        examHistory: mergeHistory(l.examHistory, r.examHistory),
+        pretest: mergePretest(l.pretest, r.pretest),
+        favorites: unflat(fa.map, POOLS)
       },
-      updatedAt: Date.now()
-    });
+      ts: { missed: mi.ts, mastered: ma.ts, fav: fa.ts }
+    };
   }
 
-  async function cloudCreateBin() {
-    var r = await fetch(JB_BASE, {
-      method: "POST",
-      headers: Object.assign({}, jbHeaders(), { "X-Bin-Name": BIN_NAME, "X-Bin-Private": "true" }),
-      body: payload()
-    });
-    if (!r.ok) throw new Error("HTTP " + r.status);
-    var j = await r.json();
-    var id = j && j.metadata && j.metadata.id;
-    if (!id) throw new Error("no bin id returned");
-    return id;
-  }
-  async function cloudPull() {
-    var r = await fetch(JB_BASE + "/" + encodeURIComponent(cloud.bin) + "/latest", { method: "GET", headers: jbHeaders() });
-    if (!r.ok) throw new Error("HTTP " + r.status);
-    var j = await r.json();
-    return (j && j.record) ? j.record : null;
-  }
-  async function cloudPush(opts) {
-    opts = opts || {};
-    if (!cloud.connected) return;
-    cloudSaveState = "saving"; badge();
-    var init = { method: "PUT", headers: jbHeaders(), body: payload() };
-    if (opts.keepalive) init.keepalive = true;
-    try {
-      var r = await fetch(JB_BASE + "/" + encodeURIComponent(cloud.bin), init);
-      if (!r.ok) throw new Error("HTTP " + r.status);
-    } catch (e) { cloudSaveState = "error"; badge(); throw e; }
-    cloudSaveState = "saved"; badge();
-    if (savedRevertTimer) clearTimeout(savedRevertTimer);
-    savedRevertTimer = setTimeout(function () { cloudSaveState = ""; badge(); }, 2500);
-    return true;
+  // Only redraw when it can't interrupt anything: the Home screen or the track chooser.
+  function safeRefresh() {
+    if (!A.refresh) return;
+    var view = document.getElementById("view");
+    if (view && view.querySelector(".quiz, .results")) return;
+    var active = document.querySelector(".nav-link.active");
+    if (A._onChooser || !active || active.dataset.nav === "home") A.refresh();
   }
 
-  /* ---- merge: never lose progress from either device ---- */
-  function mergeCount(a, b) {
-    var out = {}, keys = {};
-    Object.keys(a || {}).forEach(function (k) { keys[k] = 1; });
-    Object.keys(b || {}).forEach(function (k) { keys[k] = 1; });
-    Object.keys(keys).forEach(function (k) {
-      var v = Math.max((a && a[k]) || 0, (b && b[k]) || 0);
-      if (v > 0) out[k] = v;
-    });
-    return out;
-  }
-  function mergeState(local, remote) {
-    var out = JSON.parse(JSON.stringify(local));
-    ["CSC", "CMC"].forEach(function (c) {
-      // missed: union, keep higher count (a miss on either device survives)
-      out.missed[c] = mergeCount(local.missed[c], remote.missed && remote.missed[c]);
-      // mastered: union of both, minus anything still sitting in the missed queue
-      var mm = {};
-      Object.keys((local.mastered && local.mastered[c]) || {}).forEach(function (k) { mm[k] = 1; });
-      Object.keys((remote.mastered && remote.mastered[c]) || {}).forEach(function (k) { mm[k] = 1; });
-      Object.keys(out.missed[c]).forEach(function (k) { delete mm[k]; });
-      out.mastered[c] = mm;
-    });
-    // seen: max attempts and max correct per question
-    var seen = {};
-    Object.keys(local.seen || {}).forEach(function (k) { seen[k] = local.seen[k]; });
-    Object.keys(remote.seen || {}).forEach(function (k) {
-      var l = seen[k] || { correct: 0, attempts: 0 }, r = remote.seen[k] || { correct: 0, attempts: 0 };
-      seen[k] = { correct: Math.max(l.correct, r.correct), attempts: Math.max(l.attempts, r.attempts) };
-    });
-    out.seen = seen;
-    // examHistory: union, dedup by date|cert|examNo, sorted
-    var seenKeys = {}, hist = [];
-    (local.examHistory || []).concat(remote.examHistory || []).forEach(function (h) {
-      var k = h.date + "|" + h.cert + "|" + h.examNo;
-      if (!seenKeys[k]) { seenKeys[k] = 1; hist.push(h); }
-    });
-    hist.sort(function (a, b) { return a.date - b.date; });
-    out.examHistory = hist;
-    // pretest: keep the most recent per cert
-    var pt = {};
-    Object.keys(local.pretest || {}).forEach(function (c) { pt[c] = local.pretest[c]; });
-    Object.keys(remote.pretest || {}).forEach(function (c) {
-      if (!pt[c] || (remote.pretest[c].date || 0) > (pt[c].date || 0)) pt[c] = remote.pretest[c];
-    });
-    out.pretest = pt;
-    return out;
+  function setLocal(m) {
+    var before = JSON.stringify(payload().state);
+    var st = m.state || {};
+    adopting = true;
+    A.state.missed = st.missed || { CSC: {}, CMC: {} };
+    A.state.mastered = st.mastered || { CSC: {}, CMC: {} };
+    CERTS.forEach(function (c) { A.state.missed[c] = A.state.missed[c] || {}; A.state.mastered[c] = A.state.mastered[c] || {}; });
+    A.state.seen = st.seen || {};
+    A.state.examHistory = st.examHistory || [];
+    A.state.pretest = st.pretest || {};
+    A.state.favorites = st.favorites || { know: {}, mock: {} };
+    POOLS.forEach(function (p) { A.state.favorites[p] = A.state.favorites[p] || {}; });
+    ts = { missed: (m.ts && m.ts.missed) || {}, mastered: (m.ts && m.ts.mastered) || {}, fav: (m.ts && m.ts.fav) || {} };
+    saveTs();
+    prev = JSON.parse(JSON.stringify(views(A.state)));
+    A.persist();                 // saves locally; the hook below ignores it while adopting
+    adopting = false;
+    if (JSON.stringify(payload().state) !== before) safeRefresh();
   }
 
-  async function cloudSync() {
-    if (!cloud.connected) return;
-    cstat("Syncing\u2026");
-    try {
-      var rec = await cloudPull();
-      if (rec && rec.state) {
-        adopting = true;
-        var merged = mergeState(A.state, rec.state);
-        // copy merged fields onto the live state object (kept by reference in the engine)
-        A.state.missed = merged.missed;
-        A.state.mastered = merged.mastered;
-        A.state.seen = merged.seen;
-        A.state.examHistory = merged.examHistory;
-        A.state.pretest = merged.pretest;
-        A.persist();          // saves locally; push is suppressed while adopting
-        adopting = false;
-        await cloudPush();     // write the merged result back
-        cstat("Synced \u2713  progress merged across your devices.");
-      } else {
-        await cloudPush();
-        cstat("Pushed this device's progress to the cloud \u2713");
-      }
-      badge();
-      if (A.refresh) A.refresh();
-    } catch (e) { cstat("Sync failed: " + friendlyErr(e)); }
+  function badge() {
+    var b = $("#syncBadge"), t = $("#syncBadgeTxt");
+    if (!b || !t) return;
+    var signedIn = !!(window.Account && Account.user());
+    b.classList.remove("off", "saved", "saving", "error");
+    if (!signedIn) { b.classList.add("off"); t.textContent = "Sign in to sync"; }
+    else if (status === "saving") { b.classList.add("saving"); t.textContent = "Saving\u2026"; }
+    else if (status === "error") { b.classList.add("error"); t.textContent = "Save failed"; }
+    else if (status === "saved") { b.classList.add("saved"); t.textContent = "Saved"; }
+    else { b.classList.add("saved"); t.textContent = "Synced"; }
   }
 
-  function schedulePush() {
-    if (pushTimer) clearTimeout(pushTimer);
-    pushTimer = setTimeout(function () { pushTimer = null; cloudPush().catch(function () {}); }, 1200);
-  }
-  function flushPush() {
-    if (pushTimer) { clearTimeout(pushTimer); pushTimer = null; }
-    if (cloud.connected) cloudPush({ keepalive: true }).catch(function () {});
-  }
-  function friendlyErr(e) {
-    var m = (e && e.message) || "";
-    if (m.indexOf("401") > -1 || m.indexOf("403") > -1) return "key not accepted \u2014 check the Master Key.";
-    if (m.indexOf("404") > -1) return "bin not found \u2014 check the Bin ID.";
-    if (m.indexOf("429") > -1) return "rate limited \u2014 wait a few seconds and try again.";
-    if (m.toLowerCase().indexOf("failed to fetch") > -1 || m.toLowerCase().indexOf("networkerror") > -1)
-      return "couldn't reach the network. If you're in an in-app viewer, open the file in your browser instead.";
-    return m || "unknown error.";
-  }
-
-  /* ---- hook the engine's save so every change schedules a cloud push ---- */
-  A._onPersist = function () { if (cloud.connected && !adopting) schedulePush(); };
-
-  /* ---- modal wiring ---- */
-  function openCloud() {
-    if ($("#cloudKey")) $("#cloudKey").value = cloud.key || "";
-    if ($("#cloudBin")) $("#cloudBin").value = cloud.bin || "";
-    cstat(cloud.connected ? "Connected. Bin ID: " + cloud.bin : "Not connected yet.");
-    var m = $("#cloudModal"); if (m) m.classList.remove("hide");
-  }
-  function closeCloud() { var m = $("#cloudModal"); if (m) m.classList.add("hide"); }
+  // every engine save → stamp edit times + schedule a sync
+  A._onPersist = function () {
+    if (adopting) return;
+    stamp();
+    if (acct) acct.changed();
+  };
 
   function wire() {
-    loadCloudCfg(); badge();
-    var cb = $("#cloudBtn"); if (cb) cb.onclick = openCloud;
-    var cc = $("#cloudClose"); if (cc) cc.onclick = closeCloud;
-    var modal = $("#cloudModal");
-    if (modal) modal.onclick = function (e) { if (e.target === modal) closeCloud(); };
-
-    var connect = $("#cloudConnect");
-    if (connect) connect.onclick = async function () {
-      var key = ($("#cloudKey").value || "").trim(), bin = ($("#cloudBin").value || "").trim();
-      if (!key) { cstat("Paste your jsonbin Master Key first."); return; }
-      cloud.key = key;
-      if (bin) {
-        cloud.bin = bin; cloud.connected = true; saveCloudCfg();
-        cstat("Connecting\u2026"); await cloudSync(); badge();
-      } else {
-        cstat("Creating a new cloud bin\u2026");
-        try {
-          var id = await cloudCreateBin();
-          cloud.bin = id; cloud.connected = true; saveCloudCfg();
-          $("#cloudBin").value = id;
-          cstat("Connected \u2713  Your Bin ID is: " + id + "  \u2014 paste this (with your key) on your other device.");
-          badge();
-        } catch (e) { cloud.connected = false; cstat("Couldn't connect: " + friendlyErr(e)); }
-      }
-    };
-    var syncNow = $("#cloudSyncNow");
-    if (syncNow) syncNow.onclick = async function () {
-      if (!cloud.connected) { cstat("Connect first."); return; }
-      await cloudSync();
-    };
-    var disc = $("#cloudDisconnect");
-    if (disc) disc.onclick = function () {
-      cloud.key = ""; cloud.bin = ""; cloud.connected = false; saveCloudCfg();
-      $("#cloudKey").value = ""; $("#cloudBin").value = "";
-      cstat("Disconnected. Progress still saves on this device."); badge();
-    };
-
-    document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") flushPush(); });
-    window.addEventListener("pagehide", flushPush);
-
-    if (cloud.connected) cloudSync();
+    function open() { if (window.Account) Account.openModal(); }
+    var cb = $("#cloudBtn"); if (cb) cb.onclick = open;
+    var b = $("#syncBadge");
+    if (b) {
+      b.onclick = open;
+      b.onkeydown = function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } };
+    }
+    badge();
+    if (!window.Account) return;      // account.js missing → local-only
+    acct = Account.attach("csc-cmc", {
+      getLocal: payload,
+      merge: merge,
+      setLocal: setLocal,
+      onStatus: function (s) { status = s; badge(); }
+    });
+    Account.onAuthChange(badge);
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", wire);

@@ -80,7 +80,7 @@
           <p>Signed in as <strong id="acctEmailShown"></strong></p>
           <button class="link" type="button" id="acctLogout">Log out</button>
         </div>
-        <p style="margin-top:6px">Your CCRN progress syncs automatically on every device where you’re signed in.</p>
+        <p style="margin-top:6px">Your CCRN and CSC/CMC progress syncs automatically on every device where you’re signed in.</p>
         <p class="acct-msg" id="acctMsgIn"></p>
       </div>
     </section>
@@ -99,7 +99,7 @@
       <span class="go">Open CSC / CMC &rarr;</span>
     </a>
 
-    <p class="foot">Sign in once on each device and every CCRN app syncs through your account. CSC/CMC still uses ☁ Cloud sync inside the app for now. Bookmark this page or Add to Home Screen for quick access.</p>
+    <p class="foot">Sign in once on each device and every CCRN and CSC/CMC app syncs through your account. Bookmark this page or Add to Home Screen for quick access.</p>
   </div>
 
 <script src="account.js"></script>
@@ -148,7 +148,7 @@
         return;
       }
       el("acctPw").value = "";
-      say("acctMsgIn", "Signed in. Open any CCRN app and your progress will sync.", "ok");
+      say("acctMsgIn", "Signed in. Open any app and your progress will sync.", "ok");
     }).catch(function(err){
       btn.disabled = false;
       say("acctMsg", (err && err.message) || "Something went wrong. Try again.", "err");
