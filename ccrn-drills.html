@@ -109,7 +109,7 @@
   <div class="toprow">
     <a href="ccrn.html">← All apps</a>
     <span style="display:flex; align-items:center; gap:10px">
-      <span class="syncbadge off" id="syncBadge"><span class="sb-dot"></span><span id="syncBadgeTxt">Cloud off</span></span>
+      <span class="syncbadge off" id="syncBadge" role="button" tabindex="0" style="cursor:pointer" title="Account &amp; sync"><span class="sb-dot"></span><span id="syncBadgeTxt">Sign in to sync</span></span>
       <button id="themeBtn" class="themetoggle" type="button" aria-label="Toggle dark mode">🌙 Dark</button>
     </span>
   </div>
@@ -123,32 +123,9 @@
     </div>
     <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-top:14px">
       <span id="storeStatus" style="font-size:12.5px; color:var(--ink-faint)">Checking storage…</span>
-      <button class="cloudlink" id="cloudBtn" type="button">☁ Cloud sync</button>
+      <button class="cloudlink" id="cloudBtn" type="button">☁ Account &amp; sync</button>
     </div>
     <p class="tip" id="homeTip"></p>
-  </div>
-
-  <!-- CLOUD MODAL -->
-  <div id="cloudModal" class="modal hide">
-    <div class="card" style="max-width:480px; width:100%; max-height:90vh; overflow:auto">
-      <p style="font-weight:600; font-size:15px; margin:0 0 8px">☁ Cloud sync</p>
-      <p style="font-size:13px; color:var(--ink-soft); margin-top:0; line-height:1.55">
-        Saves your drill review data to the same <b>jsonbin.io</b> account as your other CCRN apps so it syncs across devices.
-        Use the <i>same Master Key</i> you used there. First device: paste the key, leave Bin ID blank, tap Connect — you'll get a Bin ID. Other device: paste the same key <i>and</i> that Bin ID.
-      </p>
-      <label style="font-size:12px; color:var(--ink-faint); display:block; margin:10px 0 3px">jsonbin Master Key</label>
-      <input id="cloudKey" type="password" autocomplete="off" placeholder="$2a$10$…">
-      <label style="font-size:12px; color:var(--ink-faint); display:block; margin:10px 0 3px">Bin ID <span style="opacity:.7">(blank on first device)</span></label>
-      <input id="cloudBin" type="text" autocomplete="off" placeholder="e.g. 6650a1b2ac…">
-      <p id="cloudStatus" style="font-size:12.5px; color:var(--ink-soft); margin:12px 0 0; min-height:18px"></p>
-      <div class="btn-row" style="margin-top:14px; flex-wrap:wrap">
-        <button class="btn btn-primary" id="cloudConnect" type="button">Connect</button>
-        <button class="btn btn-ghost" id="cloudSyncNow" type="button">Sync now</button>
-        <button class="btn btn-ghost" id="cloudDisconnect" type="button">Disconnect</button>
-        <button class="btn btn-ghost" id="cloudClose" type="button">Close</button>
-      </div>
-      <p style="font-size:11.5px; color:var(--ink-faint); margin:14px 0 0; line-height:1.5">This drill data uses its own bin, separate from your recall and exam bins, but the same Master Key.</p>
-    </div>
   </div>
 
   <!-- DRILL -->
@@ -182,6 +159,7 @@
   </div>
 </div>
 
+<script src="account.js"></script>
 <script>
 /* ---------------- Verified content (sourced from Barron's CCRN) ---------------- */
 const SETS = [
@@ -291,11 +269,18 @@ let misses = {};
 try{ const r=localStorage.getItem(MISS_KEY); if(r) misses=JSON.parse(r)||{}; }catch(e){}
 let localTs = 0;
 try{ const t=parseInt(localStorage.getItem(MISS_KEY+":ts")||"0",10); if(t) localTs=t; }catch(e){}
+let adopting = false, acct = null, acctStatus = "off";   // Study Hub account sync (account.js)
+/* Per-item edit times, so clearing a miss on one device isn't undone by the other. */
+const MTS_LS = MISS_KEY + ":itemTs";
+let missTs = {}; try{ missTs = JSON.parse(localStorage.getItem(MTS_LS)||"{}")||{}; }catch(e){ missTs={}; }
+let prevMisses = JSON.parse(JSON.stringify(misses));
+function stampMisses(){ if(!window.Account) return; Account.stampChanges(missTs, prevMisses, misses); prevMisses = Account.clone(misses); try{ localStorage.setItem(MTS_LS, JSON.stringify(missTs)); }catch(e){} }
 function pkey(setId, prompt){ return setId+"||"+prompt; }
 function saveMisses(){
   localTs = Date.now();
   try{ localStorage.setItem(MISS_KEY, JSON.stringify(misses)); localStorage.setItem(MISS_KEY+":ts", String(localTs)); }catch(e){}
-  if(cloud.connected && !adopting && typeof schedulePush==="function") schedulePush();
+  if(!adopting) stampMisses();
+  if(acct && !adopting) acct.changed();
 }
 function missCountForSet(setId){
   const s=SETS.find(x=>x.id===setId); if(!s) return 0;
@@ -462,65 +447,6 @@ $("#againBtn").onclick=()=>{
 };
 $("#nextBtn").onclick=()=>{ nextRound(); };
 
-/* ---------------- Cloud sync (jsonbin, shared key, own bin) ---------------- */
-const CLOUD_KEY_LS = "ccrn-sync-key";        // shared with the other CCRN apps on this browser
-const CLOUD_BIN_LS = "ccrn-sync-drills-bin"; // separate bin for drill data
-const JB_BASE = "https://api.jsonbin.io/v3/b";
-let cloud = { key:"", bin:"", connected:false };
-let pushTimer=null, adopting=false, cloudSaveState="", savedRevertTimer=null;
-
-function loadCloudCfg(){
-  try{ cloud.key=localStorage.getItem(CLOUD_KEY_LS)||""; cloud.bin=localStorage.getItem(CLOUD_BIN_LS)||""; }catch(e){}
-  cloud.connected = !!(cloud.key && cloud.bin);
-}
-function saveCloudCfg(){
-  try{
-    if(cloud.key) localStorage.setItem(CLOUD_KEY_LS, cloud.key); else localStorage.removeItem(CLOUD_KEY_LS);
-    if(cloud.bin) localStorage.setItem(CLOUD_BIN_LS, cloud.bin); else localStorage.removeItem(CLOUD_BIN_LS);
-  }catch(e){}
-  cloud.connected = !!(cloud.key && cloud.bin);
-}
-function cstat(msg){ const el=$("#cloudStatus"); if(el) el.textContent=msg; }
-function footerStatus(){
-  const st=$("#storeStatus");
-  if(st){ st.textContent = "Saved on this device" + (cloud.connected ? " · ☁ " + (cloudSaveState==="saving"?"saving…":cloudSaveState==="error"?"save failed — will retry":cloudSaveState==="saved"?"saved ✓":"cloud on") : ""); }
-  const b=$("#syncBadge"), t=$("#syncBadgeTxt");
-  if(b&&t){
-    b.classList.remove("off","saved","saving","error");
-    if(!cloud.connected){ b.classList.add("off"); t.textContent="Cloud off"; }
-    else if(cloudSaveState==="saving"){ b.classList.add("saving"); t.textContent="Saving…"; }
-    else if(cloudSaveState==="error"){ b.classList.add("error"); t.textContent="Save failed"; }
-    else if(cloudSaveState==="saved"){ b.classList.add("saved"); t.textContent="Saved"; }
-    else { b.classList.add("saved"); t.textContent="Synced"; }
-  }
-}
-function jbHeaders(){ return { "Content-Type":"application/json", "X-Master-Key":cloud.key, "X-Bin-Versioning":"false" }; }
-async function cloudCreateBin(){
-  const body=JSON.stringify({ misses, updatedAt: localTs||Date.now() });
-  const r=await fetch(JB_BASE,{ method:"POST", headers:{...jbHeaders(),"X-Bin-Name":"ccrn-drills","X-Bin-Private":"true"}, body });
-  if(!r.ok) throw new Error("HTTP "+r.status);
-  const j=await r.json(); const id=j&&j.metadata&&j.metadata.id; if(!id) throw new Error("no bin id returned"); return id;
-}
-async function cloudPull(){
-  const r=await fetch(JB_BASE+"/"+encodeURIComponent(cloud.bin)+"/latest",{ method:"GET", headers:jbHeaders() });
-  if(!r.ok) throw new Error("HTTP "+r.status);
-  const j=await r.json(); return (j&&j.record)?j.record:null;
-}
-async function cloudPush(opts){
-  opts=opts||{};
-  cloudSaveState="saving"; footerStatus();
-  const body=JSON.stringify({ misses, updatedAt: localTs||Date.now() });
-  const init={ method:"PUT", headers:jbHeaders(), body };
-  if(opts.keepalive) init.keepalive=true;
-  try{
-    const r=await fetch(JB_BASE+"/"+encodeURIComponent(cloud.bin), init);
-    if(!r.ok) throw new Error("HTTP "+r.status);
-  }catch(e){ cloudSaveState="error"; footerStatus(); throw e; }
-  cloudSaveState="saved"; footerStatus();
-  if(savedRevertTimer) clearTimeout(savedRevertTimer);
-  savedRevertTimer=setTimeout(()=>{ cloudSaveState=""; footerStatus(); }, 2500);
-  return true;
-}
 /* Union-merge misses: keep the higher count per item so a miss flagged on
    either device is never lost when syncing (matches the other apps). */
 function mergeMisses(local, remote){
@@ -530,62 +456,47 @@ function mergeMisses(local, remote){
   keys.forEach(k=>{ const v=Math.max((local&&local[k])||0,(remote&&remote[k])||0); if(v>0) out[k]=v; });
   return out;
 }
-async function cloudSync(){
-  if(!cloud.connected) return;
-  cstat("Syncing…");
-  try{
-    const rec=await cloudPull();
-    const before=JSON.stringify(misses);
-    if(rec && rec.misses && typeof rec.misses==="object"){
-      adopting=true;
-      misses=mergeMisses(misses, rec.misses);
-      localTs=Date.now();
-      try{ localStorage.setItem(MISS_KEY, JSON.stringify(misses)); localStorage.setItem(MISS_KEY+":ts", String(localTs)); }catch(e){}
-      adopting=false;
-      await cloudPush();
-      cstat(before!==JSON.stringify(misses) ? "Synced ✓ review data merged across your devices." : "Already up to date ✓");
-    } else {
-      await cloudPush();
-      cstat("Pushed this device's drill data to the cloud ✓");
-    }
-    renderHome(); footerStatus();
-  }catch(e){ cstat("Sync failed: "+friendlyErr(e)); }
-}
-function schedulePush(){ if(pushTimer) clearTimeout(pushTimer); pushTimer=setTimeout(()=>{ pushTimer=null; cloudPush().catch(()=>{}); }, 1200); }
-function flushPush(){ if(pushTimer){ clearTimeout(pushTimer); pushTimer=null; } if(cloud.connected) cloudPush({keepalive:true}).catch(()=>{}); }
-function friendlyErr(e){
-  const m=(e&&e.message)||"";
-  if(m.indexOf("401")>-1||m.indexOf("403")>-1) return "key not accepted — check the Master Key.";
-  if(m.indexOf("404")>-1) return "bin not found — check the Bin ID.";
-  if(m.indexOf("429")>-1) return "rate limited — wait a few seconds and try again.";
-  if(m.toLowerCase().indexOf("failed to fetch")>-1||m.toLowerCase().indexOf("networkerror")>-1)
-    return "couldn't reach the network. If you're in the Claude viewer, open the file in your browser instead.";
-  return m||"unknown error.";
-}
-function openCloud(){
-  $("#cloudKey").value=cloud.key||""; $("#cloudBin").value=cloud.bin||"";
-  cstat(cloud.connected ? "Connected. Bin ID: "+cloud.bin : "Not connected yet.");
-  $("#cloudModal").classList.remove("hide");
-}
-$("#cloudBtn").onclick=openCloud;
-$("#cloudClose").onclick=()=>$("#cloudModal").classList.add("hide");
-$("#cloudModal").onclick=(e)=>{ if(e.target===$("#cloudModal")) $("#cloudModal").classList.add("hide"); };
-$("#cloudConnect").onclick=async()=>{
-  const key=$("#cloudKey").value.trim(), bin=$("#cloudBin").value.trim();
-  if(!key){ cstat("Paste your jsonbin Master Key first."); return; }
-  cloud.key=key;
-  if(bin){ cloud.bin=bin; cloud.connected=true; saveCloudCfg(); cstat("Connecting…"); await cloudSync(); footerStatus(); }
-  else{
-    cstat("Creating a new cloud bin…");
-    try{ const id=await cloudCreateBin(); cloud.bin=id; cloud.connected=true; saveCloudCfg(); $("#cloudBin").value=id;
-      cstat("Connected ✓  Your Bin ID is: "+id+"  — paste this (with your key) on your other device."); footerStatus();
-    }catch(e){ cloud.connected=false; cstat("Couldn't connect: "+friendlyErr(e)); }
+/* ---------------- Sync status + Study Hub account (account.js → Supabase) ---------------- */
+function footerStatus(){
+  const signedIn = !!(window.Account && Account.user());
+  const st=$("#storeStatus");
+  if(st){ st.textContent = "Saved on this device" + (signedIn ? " · ☁ " + (acctStatus==="saving"?"saving to your account…":acctStatus==="error"?"account save failed — will retry":"synced to your account") : ""); }
+  const b=$("#syncBadge"), t=$("#syncBadgeTxt");
+  if(b&&t){
+    b.classList.remove("off","saved","saving","error");
+    if(!signedIn){ b.classList.add("off"); t.textContent="Sign in to sync"; }
+    else if(acctStatus==="saving"){ b.classList.add("saving"); t.textContent="Saving…"; }
+    else if(acctStatus==="error"){ b.classList.add("error"); t.textContent="Save failed"; }
+    else if(acctStatus==="saved"){ b.classList.add("saved"); t.textContent="Saved"; }
+    else { b.classList.add("saved"); t.textContent="Synced"; }
   }
-};
-$("#cloudSyncNow").onclick=async()=>{ if(!cloud.connected){ cstat("Connect first."); return; } await cloudSync(); };
-$("#cloudDisconnect").onclick=()=>{ cloud.key=""; cloud.bin=""; cloud.connected=false; saveCloudCfg(); $("#cloudKey").value=""; $("#cloudBin").value=""; cstat("Disconnected. Drill data still saves on this device."); footerStatus(); };
-document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden"){ flushPush(); } });
-window.addEventListener("pagehide", ()=>{ flushPush(); });
+}
+function attachAccount(){
+  if(!window.Account) return;          // account.js missing → local-only
+  acct = Account.attach("ccrn-drills", {
+    getLocal: ()=>({ misses, missTs }),
+    merge: (local, remote)=>{
+      remote = remote || {};
+      // Per item: the newer edit wins; with no edit times, the original max-merge decides.
+      const m = Account.mergeStamped(local.misses, local.missTs, remote.misses, remote.missTs,
+                                     (a,b)=>Math.max(a||0, b||0));
+      return { misses: m.map, missTs: m.ts };
+    },
+    setLocal: (m)=>{
+      adopting = true;
+      misses = m.misses || {}; missTs = m.missTs || {}; prevMisses = Account.clone(misses);
+      localTs = Date.now();
+      try{ localStorage.setItem(MISS_KEY, JSON.stringify(misses)); localStorage.setItem(MISS_KEY+":ts", String(localTs)); localStorage.setItem(MTS_LS, JSON.stringify(missTs)); }catch(e){}
+      adopting = false;
+      if(!$("#home").classList.contains("hide")) renderHome();
+    },
+    onStatus: (s)=>{ acctStatus = s; footerStatus(); }
+  });
+  Account.onAuthChange(()=>footerStatus());
+}
+$("#cloudBtn").onclick=()=>{ if(window.Account) Account.openModal(); };
+$("#syncBadge").onclick=()=>{ if(window.Account) Account.openModal(); };
+$("#syncBadge").onkeydown=(e)=>{ if((e.key==="Enter"||e.key===" ") && window.Account){ e.preventDefault(); Account.openModal(); } };
 
 /* ---------------- Theme toggle ---------------- */
 function currentTheme(){ let t=null; try{t=localStorage.getItem('ccrn-theme');}catch(e){} if(t==='dark'||t==='light')return t; return (window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'; }
@@ -595,10 +506,9 @@ $("#themeBtn").onclick=()=>applyTheme(currentTheme()==='dark'?'light':'dark');
 updateThemeBtn();
 
 /* ---------------- Init ---------------- */
-loadCloudCfg();
+attachAccount();
 footerStatus();
 renderHome(); show("home");
-if(cloud.connected){ cloudSync(); }
 </script>
 </body>
 </html>

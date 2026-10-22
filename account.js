@@ -164,6 +164,43 @@
       .then(function () { return client ? client.auth.signOut() : null; });
   }
 
+  // ---------- per-item edit times ----------
+  // Union/max merges can't express "I un-starred this" or "this went back to box 1":
+  // the other copy always wins it back. Recording when each item last changed lets
+  // the newer edit win. Items with no recorded time (older data) fall back to the
+  // app's original merge, so nothing already saved behaves differently.
+  function clone(o) { return o == null ? o : JSON.parse(JSON.stringify(o)); }
+
+  // Compare two snapshots of a map; stamp every key whose value changed (incl. removed).
+  function stampChanges(tsMap, before, after) {
+    var now = Date.now(), seen = {};
+    before = before || {}; after = after || {};
+    Object.keys(before).concat(Object.keys(after)).forEach(function (k) {
+      if (seen[k]) return; seen[k] = 1;
+      if (JSON.stringify(before[k]) !== JSON.stringify(after[k])) tsMap[k] = now;
+    });
+    return tsMap;
+  }
+
+  // Merge two maps item by item: the side edited more recently wins that item;
+  // if neither side has a newer edit, tie(localValue, remoteValue, key) decides.
+  function mergeStamped(lMap, lTs, rMap, rTs, tie) {
+    lMap = lMap || {}; rMap = rMap || {}; lTs = lTs || {}; rTs = rTs || {};
+    var out = {}, ts = {}, seen = {};
+    [lMap, rMap, lTs, rTs].forEach(function (m) {
+      Object.keys(m).forEach(function (k) {
+        if (seen[k]) return; seen[k] = 1;
+        var lt = lTs[k] || 0, rt = rTs[k] || 0, v;
+        if (lt > rt) v = lMap[k];
+        else if (rt > lt) v = rMap[k];
+        else v = tie(lMap[k], rMap[k], k);
+        if (v != null && v !== false && v !== 0) out[k] = v;
+        if (lt || rt) ts[k] = Math.max(lt, rt);
+      });
+    });
+    return { map: out, ts: ts };
+  }
+
   // ---------- data ----------
   function pull(app) {
     var uid = currentUserId();
@@ -478,6 +515,9 @@
 
   global.Account = {
     init: init,
+    clone: clone,
+    stampChanges: stampChanges,
+    mergeStamped: mergeStamped,
     configured: configured,
     onAuthChange: onAuthChange,
     signUp: signUp,

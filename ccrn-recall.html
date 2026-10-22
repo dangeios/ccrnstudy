@@ -168,7 +168,7 @@
       <span class="sub">Adaptive review from your missed questions · Adult CCRN</span>
     </div>
     <span style="display:flex; align-items:center; gap:10px">
-      <span class="syncbadge off" id="syncBadge" role="button" tabindex="0" style="cursor:pointer" title="Account &amp; sync"><span class="sb-dot"></span><span id="syncBadgeTxt">Cloud off</span></span>
+      <span class="syncbadge off" id="syncBadge" role="button" tabindex="0" style="cursor:pointer" title="Account &amp; sync"><span class="sb-dot"></span><span id="syncBadgeTxt">Sign in to sync</span></span>
       <span class="pulse"><span class="dot"></span> <span id="pulseTxt">Loading…</span></span>
     </span>
   </div>
@@ -207,7 +207,6 @@
       <span class="mini" id="storeStatus" style="color:var(--ink-faint)">Checking storage…</span>
       <span style="display:flex; gap:14px; flex-wrap:wrap">
         <button class="mini" id="cloudBtn" style="color:var(--teal)">☁ Account &amp; sync</button>
-        <button class="mini" id="legacyCloudBtn">Old jsonbin sync</button>
         <button class="mini" id="exportBtn">Export progress</button>
         <button class="mini" id="importBtn">Import progress</button>
         <button class="mini" id="resetBtn">Reset all progress</button>
@@ -225,32 +224,6 @@
         <button class="btn btn-primary" id="syncAction">Copy</button>
         <button class="btn btn-ghost" id="syncClose">Close</button>
       </div>
-    </div>
-  </div>
-
-  <!-- CLOUD MODAL -->
-  <div id="cloudModal" class="hide" style="position:fixed; inset:0; background:rgba(20,30,45,.45); display:flex; align-items:center; justify-content:center; padding:20px; z-index:50">
-    <div class="card pad" style="max-width:480px; width:100%; max-height:90vh; overflow:auto">
-      <p class="sectitle" style="margin-top:0">☁ Cloud sync</p>
-      <p style="font-size:13px; color:var(--ink-soft); margin-top:0; line-height:1.55">
-        Saves your progress to your own free <b>jsonbin.io</b> account so it persists and syncs across devices.
-        First device: paste your key, leave Bin ID blank, tap Connect — you'll get a Bin ID.
-        Other device: paste the same key <i>and</i> that Bin ID.
-      </p>
-      <label style="font-size:12px; color:var(--ink-faint); display:block; margin:10px 0 3px">jsonbin Master Key</label>
-      <input id="cloudKey" type="password" autocomplete="off" placeholder="$2a$10$…" style="width:100%; font-family:ui-monospace,Menlo,monospace; font-size:12px; border:1px solid var(--line); border-radius:9px; padding:9px; background:var(--panel); color:var(--ink)">
-      <label style="font-size:12px; color:var(--ink-faint); display:block; margin:10px 0 3px">Bin ID <span style="opacity:.7">(blank on first device)</span></label>
-      <input id="cloudBin" type="text" autocomplete="off" placeholder="e.g. 6650a1b2ac…" style="width:100%; font-family:ui-monospace,Menlo,monospace; font-size:12px; border:1px solid var(--line); border-radius:9px; padding:9px; background:var(--panel); color:var(--ink)">
-      <p id="cloudStatus" style="font-size:12.5px; color:var(--ink-soft); margin:12px 0 0; min-height:18px"></p>
-      <div class="btn-row" style="margin-top:14px; flex-wrap:wrap">
-        <button class="btn btn-primary" id="cloudConnect">Connect</button>
-        <button class="btn btn-ghost" id="cloudSyncNow">Sync now</button>
-        <button class="btn btn-ghost" id="cloudDisconnect">Disconnect</button>
-        <button class="btn btn-ghost" id="cloudClose">Close</button>
-      </div>
-      <p style="font-size:11.5px; color:var(--ink-faint); margin:14px 0 0; line-height:1.5">
-        Your key stays in this browser only. Treat it like a password. Newest device wins on conflict, so sync after studying before switching devices.
-      </p>
     </div>
   </div>
 
@@ -1315,14 +1288,17 @@ let favorites = {};         // id -> true (starred questions)
 let session = { current:null, lastId:null, size:10, count:0, status:"mix", queue:[], qIndex:0 };
 
 const TS_LS = STORE_KEY + ":ts";          // local last-updated timestamp
-const CLOUD_KEY_LS = "ccrn-sync-key";     // jsonbin master key (this browser only)
-const CLOUD_BIN_LS = "ccrn-sync-bin";     // jsonbin bin id
-const JB_BASE = "https://api.jsonbin.io/v3/b";
 let localTs = 0;
-let cloud = { key:"", bin:"", connected:false };
-let pushTimer = null, adopting = false;
-let cloudSaveState = "", savedRevertTimer = null;
+let adopting = false;
 let acct = null, acctStatus = "off";   // Study Hub account sync (account.js)
+const RESET_LS = STORE_KEY + ":resetAt";  // when progress was last reset (synced, so a reset reaches every device)
+let resetAt = 0;
+/* Per-question / per-favorite edit times, so a demotion or an un-star on one
+   device isn't undone by the other device's older copy. */
+const PTS_LS = STORE_KEY + ":itemTs", FTS_LS = FAV_KEY + ":ts";
+let progressTs = {}, favTs = {}, prevProgress = {}, prevFav = {};
+function stampProgress(){ if(!window.Account) return; Account.stampChanges(progressTs, prevProgress, progress); prevProgress = Account.clone(progress); try{ window.localStorage.setItem(PTS_LS, JSON.stringify(progressTs)); }catch(e){} }
+function stampFav(){ if(!window.Account) return; Account.stampChanges(favTs, prevFav, favorites); prevFav = Account.clone(favorites); try{ window.localStorage.setItem(FTS_LS, JSON.stringify(favTs)); }catch(e){} }
 
 function blank(){ return {box:START_BOX, seen:false, correct:0, wrong:0, mastered:false}; }
 function P(id){ if(!progress[id]) progress[id]=blank(); return progress[id]; }
@@ -1360,14 +1336,18 @@ async function loadProgress(){
               : canCloud ? "your Claude account (saved)"
               : "this session only — won't persist";
   try{ const t = parseInt(window.localStorage.getItem(TS_LS)||"0",10); if(t) localTs = t; }catch(e){}
+  try{ resetAt = parseInt(window.localStorage.getItem(RESET_LS)||"0",10) || 0; }catch(e){}
   try{ const fav = window.localStorage.getItem(FAV_KEY); if(fav){ const f=JSON.parse(fav); if(f && typeof f==="object") favorites=f; } }catch(e){}
   QUESTIONS.forEach(q=>{ if(!progress[q.id]) progress[q.id]=blank(); });
+  try{ progressTs = JSON.parse(window.localStorage.getItem(PTS_LS)||"{}")||{}; }catch(e){ progressTs={}; }
+  try{ favTs = JSON.parse(window.localStorage.getItem(FTS_LS)||"{}")||{}; }catch(e){ favTs={}; }
+  prevProgress = JSON.parse(JSON.stringify(progress)); prevFav = JSON.parse(JSON.stringify(favorites));
 }
 function isFav(id){ return !!favorites[id]; }
 function saveFavorites(){
   try{ window.localStorage.setItem(FAV_KEY, JSON.stringify(favorites)); }catch(e){}
   try{ if(canCloud) window.storage.set(FAV_KEY, JSON.stringify(favorites), false); }catch(e){}
-  if(cloud.connected && !adopting && typeof schedulePush==="function") schedulePush();
+  if(!adopting) stampFav();
   if(acct && !adopting) acct.changed();
 }
 function toggleFav(id){
@@ -1381,7 +1361,7 @@ function saveProgress(){
   if(canLocal){ try{ window.localStorage.setItem(STORE_KEY, blob); window.localStorage.setItem(TS_LS, String(localTs)); }catch(e){ canLocal=false; } }
   if(canCloud){ try{ window.storage.set(STORE_KEY, blob, false); }catch(e){ canCloud=false; } }
   try{ writeDomainStats(); }catch(e){}
-  if(cloud.connected && !adopting && typeof schedulePush==="function") schedulePush();
+  if(!adopting) stampProgress();
   if(acct && !adopting) acct.changed();
 }
 /* Shared (same-origin) summary the practice-exam app can read to target weak domains. */
@@ -1393,6 +1373,8 @@ function writeDomainStats(){
   try{ window.localStorage.setItem("ccrn-recall-domainstats", JSON.stringify({stats:out, ts:Date.now()})); }catch(e){}
 }
 async function resetProgress(){
+  resetAt = Date.now();
+  try{ window.localStorage.setItem(RESET_LS, String(resetAt)); }catch(e){}
   progress = {};
   QUESTIONS.forEach(q=> progress[q.id]=blank());
   if(canLocal){ try{ window.localStorage.removeItem(STORE_KEY); }catch(e){} }
@@ -1400,8 +1382,8 @@ async function resetProgress(){
   saveProgress();
 }
 /* Belt-and-suspenders: save locally AND push to the cloud when hidden or closed. */
-document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState==="hidden"){ saveProgress(); flushPush(); } });
-window.addEventListener("pagehide", ()=>{ saveProgress(); flushPush(); });
+document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState==="hidden"){ saveProgress(); } });
+window.addEventListener("pagehide", ()=>{ saveProgress(); });
 
 function grade(id, isCorrect){
   const p = P(id); p.seen = true;
@@ -1663,7 +1645,10 @@ $("#reviewBtn").onclick=renderMastered;
 $("#backBtn").onclick=()=>{ renderDashboard(); show("dashboard"); };
 $("#doneBtn").onclick=()=>{ renderDashboard(); show("dashboard"); };
 $("#resetBtn").onclick=async()=>{
-  if(confirm("Reset all progress? Every concept goes back to “not started.”")){
+  const everywhere = !!(window.Account && Account.user());
+  if(confirm(everywhere
+      ? "Reset all progress on every device? Every concept goes back to “not started” here and on your other devices when they next sync. Favorites are kept."
+      : "Reset all progress? Every concept goes back to “not started.”")){
     await resetProgress(); renderDashboard();
   }
 };
@@ -1721,21 +1706,19 @@ document.addEventListener("keydown",e=>{
   }
 });
 
-/* ---------- Cloud sync (jsonbin.io) ---------- */
-function loadCloudCfg(){
-  try{
-    cloud.key = window.localStorage.getItem(CLOUD_KEY_LS) || "";
-    cloud.bin = window.localStorage.getItem(CLOUD_BIN_LS) || "";
-  }catch(e){ cloud.key=""; cloud.bin=""; }
-  cloud.connected = !!(cloud.key && cloud.bin);
+/* Merge two progress maps, keeping the most-advanced state per question.
+   Study progress only moves forward, so this guarantees switching devices
+   never loses mastery — independent of clocks or which device syncs first. */
+function mergeEntry(a, b){
+  a = a || blank(); b = b || blank();
+  const mastered = !!(a.mastered || b.mastered);
+  let box = Math.max(a.box||START_BOX, b.box||START_BOX);
+  if(mastered) box = MASTER_BOX;
+  return { box, seen: !!(a.seen || b.seen),
+    correct: Math.max(a.correct||0, b.correct||0),
+    wrong: Math.max(a.wrong||0, b.wrong||0), mastered };
 }
-function saveCloudCfg(){
-  try{
-    if(cloud.key) window.localStorage.setItem(CLOUD_KEY_LS, cloud.key); else window.localStorage.removeItem(CLOUD_KEY_LS);
-    if(cloud.bin) window.localStorage.setItem(CLOUD_BIN_LS, cloud.bin); else window.localStorage.removeItem(CLOUD_BIN_LS);
-  }catch(e){}
-}
-function cstat(msg){ const el=document.getElementById("cloudStatus"); if(el) el.textContent = msg; }
+/* ---------- Sync status ---------- */
 function footerStatus(){
   const st=document.getElementById("storeStatus");
   const signedIn = !!(window.Account && Account.user());
@@ -1745,11 +1728,6 @@ function footerStatus(){
       tail = " · ☁ " + (acctStatus==="saving" ? "saving to your account…"
                        : acctStatus==="error" ? "account save failed — will retry"
                        : "synced to your account");
-    } else if(cloud.connected){
-      tail = " · ☁ " + (cloudSaveState==="saving" ? "saving…"
-                       : cloudSaveState==="saved" ? "saved ✓"
-                       : cloudSaveState==="error" ? "save failed — will retry"
-                       : "cloud on (auto-saving)");
     }
     st.textContent = "Saving to: " + storeStatus + tail;
   }
@@ -1763,195 +1741,49 @@ function footerStatus(){
       else if(acctStatus==="saved"){ b.classList.add("saved"); t.textContent="Saved"; }
       else { b.classList.add("saved"); t.textContent="Synced"; }
     }
-    else if(!cloud.connected){ b.classList.add("off"); t.textContent="Sign in to sync"; }
-    else if(cloudSaveState==="saving"){ b.classList.add("saving"); t.textContent="Saving…"; }
-    else if(cloudSaveState==="error"){ b.classList.add("error"); t.textContent="Save failed"; }
-    else if(cloudSaveState==="saved"){ b.classList.add("saved"); t.textContent="Saved"; }
-    else { b.classList.add("saved"); t.textContent="Synced"; }
+    else { b.classList.add("off"); t.textContent="Sign in to sync"; }
   }
 }
-function jbHeaders(){ return { "Content-Type":"application/json", "X-Master-Key":cloud.key, "X-Bin-Versioning":"false" }; }
-
-async function cloudCreateBin(){
-  const body = JSON.stringify({ progress, favorites, updatedAt: localTs || Date.now() });
-  const r = await fetch(JB_BASE, { method:"POST", headers:{...jbHeaders(), "X-Bin-Name":"ccrn-progress", "X-Bin-Private":"true"}, body });
-  if(!r.ok) throw new Error("HTTP "+r.status);
-  const j = await r.json();
-  const id = j && j.metadata && j.metadata.id;
-  if(!id) throw new Error("no bin id returned");
-  return id;
-}
-async function cloudPull(){
-  const r = await fetch(JB_BASE+"/"+encodeURIComponent(cloud.bin)+"/latest", { method:"GET", headers: jbHeaders() });
-  if(!r.ok) throw new Error("HTTP "+r.status);
-  const j = await r.json();
-  return (j && j.record) ? j.record : null;
-}
-async function cloudPush(opts){
-  opts = opts || {};
-  cloudSaveState = "saving"; if(typeof footerStatus==="function") footerStatus();
-  const body = JSON.stringify({ progress, favorites, updatedAt: localTs || Date.now() });
-  const init = { method:"PUT", headers: jbHeaders(), body };
-  if(opts.keepalive) init.keepalive = true;   // lets the save finish even as the page closes
-  try{
-    const r = await fetch(JB_BASE+"/"+encodeURIComponent(cloud.bin), init);
-    if(!r.ok) throw new Error("HTTP "+r.status);
-  }catch(e){
-    cloudSaveState = "error"; if(typeof footerStatus==="function") footerStatus();
-    throw e;
-  }
-  cloudSaveState = "saved"; if(typeof footerStatus==="function") footerStatus();
-  if(savedRevertTimer) clearTimeout(savedRevertTimer);
-  savedRevertTimer = setTimeout(()=>{ cloudSaveState=""; if(typeof footerStatus==="function") footerStatus(); }, 2500);
-  return true;
-}
-function adoptRemote(rec){
-  adopting = true;
-  progress = {};
-  QUESTIONS.forEach(q=>{ progress[q.id] = (rec.progress && rec.progress[q.id]) ? rec.progress[q.id] : blank(); });
-  localTs = rec.updatedAt || Date.now();
-  const blob = JSON.stringify(progress);
-  if(canLocal){ try{ window.localStorage.setItem(STORE_KEY, blob); window.localStorage.setItem(TS_LS, String(localTs)); }catch(e){} }
-  adopting = false;
-}
-/* Merge two progress maps, keeping the most-advanced state per question.
-   Study progress only moves forward, so this guarantees switching devices
-   never loses mastery — independent of clocks or which device syncs first. */
-function mergeEntry(a, b){
-  a = a || blank(); b = b || blank();
-  const mastered = !!(a.mastered || b.mastered);
-  let box = Math.max(a.box||START_BOX, b.box||START_BOX);
-  if(mastered) box = MASTER_BOX;
-  return { box, seen: !!(a.seen || b.seen),
-    correct: Math.max(a.correct||0, b.correct||0),
-    wrong: Math.max(a.wrong||0, b.wrong||0), mastered };
-}
-function mergeProgress(local, remote){
-  const out={}, ids=new Set();
-  QUESTIONS.forEach(q=>ids.add(q.id));
-  Object.keys(local||{}).forEach(k=>ids.add(k));
-  Object.keys(remote||{}).forEach(k=>ids.add(k));
-  ids.forEach(id=>{ out[id]=mergeEntry(local&&local[id], remote&&remote[id]); });
-  return out;
-}
-async function cloudSync(){
-  if(!cloud.connected) return;
-  cstat("Syncing…");
-  try{
-    const rec = await cloudPull();
-    const remoteProg = rec && rec.progress ? rec.progress : null;
-    const before = JSON.stringify(progress);
-    // Merge favorites as a union across devices
-    if(rec && rec.favorites && typeof rec.favorites==="object"){
-      let favChanged=false;
-      Object.keys(rec.favorites).forEach(id=>{ if(rec.favorites[id] && !favorites[id]){ favorites[id]=true; favChanged=true; } });
-      if(favChanged){ try{ window.localStorage.setItem(FAV_KEY, JSON.stringify(favorites)); }catch(e){} }
-    }
-    if(remoteProg){
-      adopting = true;
-      progress = mergeProgress(progress, remoteProg);
-      QUESTIONS.forEach(q=>{ if(!progress[q.id]) progress[q.id]=blank(); });
-      localTs = Date.now();
-      const blob = JSON.stringify(progress);
-      if(canLocal){ try{ window.localStorage.setItem(STORE_KEY, blob); window.localStorage.setItem(TS_LS, String(localTs)); }catch(e){} }
-      adopting = false;
-      await cloudPush();      // push the merged union so every device converges
-      cstat(before!==JSON.stringify(progress) ? "Synced ✓ progress merged across your devices." : "Already up to date ✓");
-    } else {
-      await cloudPush();      // nothing in the cloud yet — seed it from this device
-      cstat("Pushed this device's progress to the cloud ✓");
-    }
-    footerStatus();
-  }catch(e){
-    cstat("Sync failed: " + friendlyErr(e));
-  }
-}
-function schedulePush(){
-  if(pushTimer) clearTimeout(pushTimer);
-  pushTimer = setTimeout(()=>{ pushTimer=null; cloudPush().catch(()=>{}); }, 1200);
-}
-/* Push right now (used on close/hide). keepalive lets the request complete
-   even if the tab is closing. Also flushes any pending debounced push. */
-function flushPush(){
-  if(pushTimer){ clearTimeout(pushTimer); pushTimer=null; }
-  if(cloud.connected){ cloudPush({keepalive:true}).catch(()=>{}); }
-}
-function friendlyErr(e){
-  const m = (e && e.message) || "";
-  if(m.indexOf("401")>-1 || m.indexOf("403")>-1) return "key not accepted — check the Master Key.";
-  if(m.indexOf("404")>-1) return "bin not found — check the Bin ID.";
-  if(m.indexOf("429")>-1) return "rate limited — wait a few seconds and try again.";
-  if(m.toLowerCase().indexOf("failed to fetch")>-1 || m.toLowerCase().indexOf("networkerror")>-1)
-    return "couldn't reach the network. If you're in the Claude viewer, open the file in your browser instead.";
-  return m || "unknown error.";
-}
-
-/* Cloud modal wiring */
-function openCloud(){
-  document.getElementById("cloudKey").value = cloud.key || "";
-  document.getElementById("cloudBin").value = cloud.bin || "";
-  cstat(cloud.connected ? "Connected. Bin ID: " + cloud.bin : "Not connected yet.");
-  document.getElementById("cloudModal").classList.remove("hide");
-}
-$("#cloudBtn").onclick = ()=>{ if(window.Account) Account.openModal(); else openCloud(); };
-$("#legacyCloudBtn").onclick = openCloud;
+$("#cloudBtn").onclick = ()=>{ if(window.Account) Account.openModal(); };
 $("#syncBadge").onclick = ()=>{ if(window.Account) Account.openModal(); };
 $("#syncBadge").onkeydown = (e)=>{ if((e.key==="Enter"||e.key===" ") && window.Account){ e.preventDefault(); Account.openModal(); } };
-$("#cloudClose").onclick = ()=> document.getElementById("cloudModal").classList.add("hide");
-$("#cloudModal").onclick = (e)=>{ if(e.target===document.getElementById("cloudModal")) document.getElementById("cloudModal").classList.add("hide"); };
-$("#cloudConnect").onclick = async ()=>{
-  const key = document.getElementById("cloudKey").value.trim();
-  const bin = document.getElementById("cloudBin").value.trim();
-  if(!key){ cstat("Paste your jsonbin Master Key first."); return; }
-  cloud.key = key;
-  if(bin){
-    cloud.bin = bin; cloud.connected = true; saveCloudCfg();
-    cstat("Connecting…");
-    await cloudSync(); renderDashboard(); footerStatus();
-  } else {
-    cstat("Creating a new cloud bin…");
-    try{
-      const id = await cloudCreateBin();
-      cloud.bin = id; cloud.connected = true; saveCloudCfg();
-      document.getElementById("cloudBin").value = id;
-      cstat("Connected ✓  Your Bin ID is: " + id + "  — paste this (with your key) on your other device.");
-      footerStatus();
-    }catch(e){ cloud.connected=false; cstat("Couldn't connect: " + friendlyErr(e)); }
-  }
-};
-$("#cloudSyncNow").onclick = async ()=>{
-  if(!cloud.connected){ cstat("Connect first."); return; }
-  await cloudSync(); renderDashboard();
-};
-$("#cloudDisconnect").onclick = ()=>{
-  cloud.key=""; cloud.bin=""; cloud.connected=false; saveCloudCfg();
-  document.getElementById("cloudKey").value=""; document.getElementById("cloudBin").value="";
-  cstat("Disconnected. Progress still saves on this device.");
-  footerStatus();
-};
 
 /* ---------- Study Hub account sync (account.js → Supabase) ----------
-   Same payload as the jsonbin version ({progress, favorites}) and the SAME
-   mergeProgress / favorites-union logic — only the transport is new. */
+   Payload: progress + favorites (with per-item edit times) + last reset time. */
 function attachAccount(){
   if(!window.Account) return;          // account.js missing → local-only, as before
   acct = Account.attach("ccrn-recall", {
-    getLocal: ()=>({ progress, favorites }),
+    getLocal: ()=>({ progress, progressTs, favorites, favTs, resetAt }),
     merge: (local, remote)=>{
-      const fav = Object.assign({}, local.favorites||{});
-      Object.keys((remote && remote.favorites)||{}).forEach(id=>{ if(remote.favorites[id]) fav[id]=true; });
-      return { progress: mergeProgress(local.progress, remote && remote.progress), favorites: fav };
+      remote = remote || {};
+      // A reset wins over any progress recorded before it, on either side.
+      const lr = local.resetAt||0, rr = remote.resetAt||0, R = Math.max(lr, rr);
+      const lOk = lr >= R, rOk = rr >= R;
+      // Per question: the newer edit wins; with no edit times, the original mergeEntry decides.
+      const p = Account.mergeStamped(lOk?local.progress:{}, lOk?local.progressTs:{},
+                                     rOk?remote.progress:{}, rOk?remote.progressTs:{},
+                                     (a,b)=>mergeEntry(a,b));
+      const f = Account.mergeStamped(local.favorites, local.favTs, remote.favorites, remote.favTs,
+                                     (a,b)=>!!(a||b) || null);
+      return { progress: p.map, progressTs: p.ts, favorites: f.map, favTs: f.ts, resetAt: R };
     },
     setLocal: (merged)=>{
       adopting = true;
       progress = merged.progress || {};
       QUESTIONS.forEach(q=>{ if(!progress[q.id]) progress[q.id]=blank(); });
       favorites = merged.favorites || {};
+      progressTs = merged.progressTs || {};
+      favTs = merged.favTs || {};
+      resetAt = merged.resetAt || 0;
+      prevProgress = Account.clone(progress); prevFav = Account.clone(favorites);
       localTs = Date.now();
       if(canLocal){ try{
         window.localStorage.setItem(STORE_KEY, JSON.stringify(progress));
         window.localStorage.setItem(TS_LS, String(localTs));
         window.localStorage.setItem(FAV_KEY, JSON.stringify(favorites));
+        window.localStorage.setItem(RESET_LS, String(resetAt));
+        window.localStorage.setItem(PTS_LS, JSON.stringify(progressTs));
+        window.localStorage.setItem(FTS_LS, JSON.stringify(favTs));
       }catch(e){} }
       try{ writeDomainStats(); }catch(e){}
       adopting = false;
@@ -1981,12 +1813,10 @@ updateThemeBtn();
 (async function init(){
   await loadProgress();
   try{ writeDomainStats(); }catch(e){}
-  loadCloudCfg();
   attachAccount();
   footerStatus();
   renderDashboard();
   show("dashboard");
-  if(cloud.connected){ cloudSync().then(()=>{ renderDashboard(); }); }
 })();
 </script>
 </body>

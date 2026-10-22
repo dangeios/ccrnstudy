@@ -110,7 +110,7 @@
   <div class="toprow">
     <a href="ccrn.html">← All apps</a>
     <span style="display:flex; align-items:center; gap:10px">
-      <span class="syncbadge off" id="syncBadge"><span class="sb-dot"></span><span id="syncBadgeTxt">Cloud off</span></span>
+      <span class="syncbadge off" id="syncBadge" role="button" tabindex="0" style="cursor:pointer" title="Account &amp; sync"><span class="sb-dot"></span><span id="syncBadgeTxt">Sign in to sync</span></span>
       <button id="themeBtn" class="themetoggle" type="button">🌙 Dark</button>
     </span>
   </div>
@@ -122,7 +122,7 @@
     <div class="card"><div id="mockList"></div></div>
     <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-top:14px">
       <span id="storeStatus" style="font-size:12.5px; color:var(--ink-faint)"></span>
-      <button class="cloudlink" id="cloudBtn" type="button">☁ Cloud sync</button>
+      <button class="cloudlink" id="cloudBtn" type="button">☁ Account &amp; sync</button>
     </div>
     <p class="tip">Passing on the real exam is roughly 70%. These mocks mirror the blueprint weighting (cardiovascular and professional caring are the heaviest). Your best score per exam is saved and synced.</p>
   </div>
@@ -177,29 +177,9 @@
     <div class="btn-row"><button class="btn btn-ghost" id="revHome" type="button">Home</button></div>
   </div>
 
-  <!-- CLOUD MODAL -->
-  <div id="cloudModal" class="modal hide">
-    <div class="card" style="max-width:480px; width:100%; max-height:90vh; overflow:auto">
-      <p style="font-weight:600; font-size:15px; margin:0 0 8px">☁ Cloud sync</p>
-      <p style="font-size:13px; color:var(--ink-soft); margin-top:0; line-height:1.55">
-        Saves your mock-exam scores to the same <b>jsonbin.io</b> account as your other CCRN apps. Use the <i>same Master Key</i>. First device: paste the key, leave Bin ID blank, Connect — you'll get a Bin ID. Other device: paste the same key <i>and</i> that Bin ID.
-      </p>
-      <label style="font-size:12px; color:var(--ink-faint); display:block; margin:10px 0 3px">jsonbin Master Key</label>
-      <input id="cloudKey" type="password" autocomplete="off" placeholder="$2a$10$…">
-      <label style="font-size:12px; color:var(--ink-faint); display:block; margin:10px 0 3px">Bin ID <span style="opacity:.7">(blank on first device)</span></label>
-      <input id="cloudBin" type="text" autocomplete="off" placeholder="e.g. 6650a1b2ac…">
-      <p id="cloudStatus" style="font-size:12.5px; color:var(--ink-soft); margin:12px 0 0; min-height:18px"></p>
-      <div class="btn-row" style="margin-top:14px; flex-wrap:wrap">
-        <button class="btn btn-primary" id="cloudConnect" type="button">Connect</button>
-        <button class="btn btn-ghost" id="cloudSyncNow" type="button">Sync now</button>
-        <button class="btn btn-ghost" id="cloudDisconnect" type="button">Disconnect</button>
-        <button class="btn btn-ghost" id="cloudClose" type="button">Close</button>
-      </div>
-      <p style="font-size:11.5px; color:var(--ink-faint); margin:14px 0 0; line-height:1.5">Mock scores use their own bin, separate from your other apps, but the same Master Key.</p>
-    </div>
-  </div>
 </div>
 
+<script src="account.js"></script>
 <script>
 /* ===== Mock exam data: 3 variations, blueprint-weighted, grounded in Barron's ===== */
 const EXAMS = [
@@ -3159,10 +3139,11 @@ const HIST_KEY="ccrn-mock-history";
 let history=[];
 try{ const r=localStorage.getItem(HIST_KEY); if(r) history=JSON.parse(r)||[]; }catch(e){}
 let localTs=0; try{ localTs=parseInt(localStorage.getItem(HIST_KEY+":ts")||"0",10)||0; }catch(e){}
+let adopting=false, acct=null, acctStatus="off";   // Study Hub account sync (account.js)
 function saveHistory(){
   localTs=Date.now();
   try{ localStorage.setItem(HIST_KEY, JSON.stringify(history)); localStorage.setItem(HIST_KEY+":ts", String(localTs)); }catch(e){}
-  if(cloud.connected && !adopting && typeof schedulePush==="function") schedulePush();
+  if(acct && !adopting) acct.changed();
 }
 function bestFor(id){ const hs=history.filter(h=>h.variation===id); return hs.length? Math.max(...hs.map(h=>h.pct)) : null; }
 
@@ -3174,11 +3155,17 @@ const MISSED_KEY="ccrn-mock-missed";
 const MASTERY_GOAL=2;
 let missed={};
 try{ const r=localStorage.getItem(MISSED_KEY); if(r){ const m=JSON.parse(r); if(m&&typeof m==="object") missed=m; } }catch(e){}
+/* Per-question edit times, so re-test progress on one device isn't undone by the other. */
+const MTS_LS=MISSED_KEY+":itemTs";
+let missedTs={}; try{ missedTs=JSON.parse(localStorage.getItem(MTS_LS)||"{}")||{}; }catch(e){ missedTs={}; }
+let prevMissed=JSON.parse(JSON.stringify(missed));
+function stampMissed(){ if(!window.Account) return; Account.stampChanges(missedTs, prevMissed, missed); prevMissed=Account.clone(missed); try{ localStorage.setItem(MTS_LS, JSON.stringify(missedTs)); }catch(e){} }
 function qkey(q){ let h=0; const s="k"+(q.s||""); for(let i=0;i<s.length;i++){ h=(h*31+s.charCodeAt(i))|0; } return "q"+(h>>>0).toString(36); }
 function saveMissed(){
   localTs=Date.now();
   try{ localStorage.setItem(MISSED_KEY, JSON.stringify(missed)); localStorage.setItem(HIST_KEY+":ts", String(localTs)); }catch(e){}
-  if(cloud.connected && !adopting && typeof schedulePush==="function") schedulePush();
+  if(!adopting) stampMissed();
+  if(acct && !adopting) acct.changed();
 }
 // Update the bank for one answered question. src = {exam, idx} of the ORIGINAL mock.
 function recordResult(q, ok, src){
@@ -3374,45 +3361,6 @@ const BARRON_CH={
 };
 function barronRef(d){ return "Barron's CCRN — "+(BARRON_CH[d]||"see the matching body-system chapter"); }
 
-/* ===== Cloud sync (jsonbin, shared key, own bin) ===== */
-const CLOUD_KEY_LS="ccrn-sync-key", CLOUD_BIN_LS="ccrn-sync-mock-bin", JB_BASE="https://api.jsonbin.io/v3/b";
-let cloud={key:"",bin:"",connected:false};
-let pushTimer=null, adopting=false, cloudSaveState="", savedRevertTimer=null;
-function loadCloudCfg(){ try{ cloud.key=localStorage.getItem(CLOUD_KEY_LS)||""; cloud.bin=localStorage.getItem(CLOUD_BIN_LS)||""; }catch(e){} cloud.connected=!!(cloud.key&&cloud.bin); }
-function saveCloudCfg(){ try{ if(cloud.key)localStorage.setItem(CLOUD_KEY_LS,cloud.key); else localStorage.removeItem(CLOUD_KEY_LS); if(cloud.bin)localStorage.setItem(CLOUD_BIN_LS,cloud.bin); else localStorage.removeItem(CLOUD_BIN_LS); }catch(e){} cloud.connected=!!(cloud.key&&cloud.bin); }
-function cstat(m){ const el=$("#cloudStatus"); if(el) el.textContent=m; }
-function footerStatus(){
-  const st=$("#storeStatus");
-  if(st) st.textContent = (history.length? history.length+" attempt"+(history.length===1?"":"s")+" saved" : "No attempts yet") + (cloud.connected? " · ☁ "+(cloudSaveState==="saving"?"saving…":cloudSaveState==="error"?"save failed":cloudSaveState==="saved"?"saved ✓":"cloud on") : "");
-  const b=$("#syncBadge"), t=$("#syncBadgeTxt");
-  if(b&&t){ b.classList.remove("off","saved","saving","error");
-    if(!cloud.connected){ b.classList.add("off"); t.textContent="Cloud off"; }
-    else if(cloudSaveState==="saving"){ b.classList.add("saving"); t.textContent="Saving…"; }
-    else if(cloudSaveState==="error"){ b.classList.add("error"); t.textContent="Save failed"; }
-    else if(cloudSaveState==="saved"){ b.classList.add("saved"); t.textContent="Saved"; }
-    else { b.classList.add("saved"); t.textContent="Synced"; }
-  }
-}
-function jbHeaders(){ return {"Content-Type":"application/json","X-Master-Key":cloud.key,"X-Bin-Versioning":"false"}; }
-async function cloudCreateBin(){
-  const body=JSON.stringify({history, missed, updatedAt:localTs||Date.now()});
-  const r=await fetch(JB_BASE,{method:"POST",headers:{...jbHeaders(),"X-Bin-Name":"ccrn-mock","X-Bin-Private":"true"},body});
-  if(!r.ok) throw new Error("HTTP "+r.status);
-  const j=await r.json(); const id=j&&j.metadata&&j.metadata.id; if(!id) throw new Error("no bin id"); return id;
-}
-async function cloudPull(){ const r=await fetch(JB_BASE+"/"+encodeURIComponent(cloud.bin)+"/latest",{headers:jbHeaders()}); if(!r.ok) throw new Error("HTTP "+r.status); const j=await r.json(); return (j&&j.record)?j.record:null; }
-async function cloudPush(opts){
-  opts=opts||{};
-  cloudSaveState="saving"; footerStatus();
-  const body=JSON.stringify({history, missed, updatedAt:localTs||Date.now()});
-  const init={method:"PUT",headers:jbHeaders(),body}; if(opts.keepalive) init.keepalive=true;
-  try{ const r=await fetch(JB_BASE+"/"+encodeURIComponent(cloud.bin),init); if(!r.ok) throw new Error("HTTP "+r.status); }
-  catch(e){ cloudSaveState="error"; footerStatus(); throw e; }
-  cloudSaveState="saved"; footerStatus();
-  if(savedRevertTimer) clearTimeout(savedRevertTimer);
-  savedRevertTimer=setTimeout(()=>{ cloudSaveState=""; footerStatus(); },2500);
-  return true;
-}
 /* Merge attempt histories append-only, de-duped by ts */
 function mergeHistories(a,b){
   const seen=new Set(), out=[];
@@ -3435,47 +3383,49 @@ function mergeMissed(a,b){
   });
   return out;
 }
-async function cloudSync(){
-  if(!cloud.connected) return;
-  cstat("Syncing…");
-  try{
-    const rec=await cloudPull();
-    const remote = rec && Array.isArray(rec.history) ? rec.history : [];
-    const merged = mergeHistories(history, remote);
-    const histChanged = merged.length!==history.length;
-    // merge missed bank
-    let missChanged=false;
-    if(rec && rec.missed && typeof rec.missed==="object"){
-      const before=JSON.stringify(missed);
-      missed=mergeMissed(missed, rec.missed);
-      missChanged = before!==JSON.stringify(missed);
-    }
-    adopting=true; history=merged;
-    try{ localStorage.setItem(HIST_KEY, JSON.stringify(history)); localStorage.setItem(MISSED_KEY, JSON.stringify(missed)); localStorage.setItem(HIST_KEY+":ts", String(Date.now())); }catch(e){}
-    adopting=false;
-    await cloudPush();
-    cstat((histChanged||missChanged)?"Synced ✓ scores and missed questions merged across your devices.":"Already up to date ✓");
-    renderHome(); footerStatus();
-  }catch(e){ cstat("Sync failed: "+friendlyErr(e)); }
+/* ===== Sync status + Study Hub account (account.js → Supabase) ===== */
+function footerStatus(){
+  const signedIn = !!(window.Account && Account.user());
+  const st=$("#storeStatus");
+  if(st) st.textContent = (history.length? history.length+" attempt"+(history.length===1?"":"s")+" saved" : "No attempts yet") + (signedIn? " · ☁ "+(acctStatus==="saving"?"saving to your account…":acctStatus==="error"?"account save failed — will retry":"synced to your account") : "");
+  const b=$("#syncBadge"), t=$("#syncBadgeTxt");
+  if(b&&t){ b.classList.remove("off","saved","saving","error");
+    if(!signedIn){ b.classList.add("off"); t.textContent="Sign in to sync"; }
+    else if(acctStatus==="saving"){ b.classList.add("saving"); t.textContent="Saving…"; }
+    else if(acctStatus==="error"){ b.classList.add("error"); t.textContent="Save failed"; }
+    else if(acctStatus==="saved"){ b.classList.add("saved"); t.textContent="Saved"; }
+    else { b.classList.add("saved"); t.textContent="Synced"; }
+  }
 }
-function schedulePush(){ if(pushTimer)clearTimeout(pushTimer); pushTimer=setTimeout(()=>{ pushTimer=null; cloudPush().catch(()=>{}); },1200); }
-function flushPush(){ if(pushTimer){ clearTimeout(pushTimer); pushTimer=null; } if(cloud.connected) cloudPush({keepalive:true}).catch(()=>{}); }
-function friendlyErr(e){ const m=(e&&e.message)||""; if(m.indexOf("401")>-1||m.indexOf("403")>-1)return "key not accepted — check the Master Key."; if(m.indexOf("404")>-1)return "bin not found — check the Bin ID."; if(m.indexOf("429")>-1)return "rate limited — wait a few seconds."; if(m.toLowerCase().indexOf("failed to fetch")>-1)return "couldn't reach the network. Open the file in your browser, not the Claude viewer."; return m||"unknown error."; }
-function openCloud(){ $("#cloudKey").value=cloud.key||""; $("#cloudBin").value=cloud.bin||""; cstat(cloud.connected?"Connected. Bin ID: "+cloud.bin:"Not connected yet."); $("#cloudModal").classList.remove("hide"); }
-$("#cloudBtn").onclick=openCloud;
-$("#cloudClose").onclick=()=>$("#cloudModal").classList.add("hide");
-$("#cloudModal").onclick=(e)=>{ if(e.target===$("#cloudModal")) $("#cloudModal").classList.add("hide"); };
-$("#cloudConnect").onclick=async()=>{
-  const key=$("#cloudKey").value.trim(), bin=$("#cloudBin").value.trim();
-  if(!key){ cstat("Paste your jsonbin Master Key first."); return; }
-  cloud.key=key;
-  if(bin){ cloud.bin=bin; cloud.connected=true; saveCloudCfg(); cstat("Connecting…"); await cloudSync(); footerStatus(); }
-  else{ cstat("Creating a new cloud bin…"); try{ const id=await cloudCreateBin(); cloud.bin=id; cloud.connected=true; saveCloudCfg(); $("#cloudBin").value=id; cstat("Connected ✓  Bin ID: "+id+"  — paste this (with your key) on your other device."); footerStatus(); }catch(e){ cloud.connected=false; cstat("Couldn't connect: "+friendlyErr(e)); } }
-};
-$("#cloudSyncNow").onclick=async()=>{ if(!cloud.connected){ cstat("Connect first."); return; } await cloudSync(); };
-$("#cloudDisconnect").onclick=()=>{ cloud.key=""; cloud.bin=""; cloud.connected=false; saveCloudCfg(); $("#cloudKey").value=""; $("#cloudBin").value=""; cstat("Disconnected. Scores still save on this device."); footerStatus(); };
-document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden") flushPush(); });
-window.addEventListener("pagehide", flushPush);
+function attachAccount(){
+  if(!window.Account) return;          // account.js missing → local-only
+  acct = Account.attach("ccrn-mock", {
+    getLocal: ()=>({ history, missed, missedTs }),
+    merge: (local, remote)=>{
+      remote = remote || {};
+      // Per question: the newer edit wins; with no edit times, the original mergeMissed decides.
+      const m = Account.mergeStamped(local.missed, local.missedTs, remote.missed, remote.missedTs,
+        (x,y,k)=>{ const o={}, p={}; if(x) o[k]=x; if(y) p[k]=y; return mergeMissed(o,p)[k]; });
+      return { history: mergeHistories(local.history, remote.history), missed: m.map, missedTs: m.ts };
+    },
+    setLocal: (m)=>{
+      adopting = true;
+      history = Array.isArray(m.history) ? m.history : [];
+      missed = m.missed || {}; missedTs = m.missedTs || {}; prevMissed = Account.clone(missed);
+      try{
+        localStorage.setItem(HIST_KEY, JSON.stringify(history)); localStorage.setItem(MISSED_KEY, JSON.stringify(missed));
+        localStorage.setItem(MTS_LS, JSON.stringify(missedTs)); localStorage.setItem(HIST_KEY+":ts", String(Date.now()));
+      }catch(e){}
+      adopting = false;
+      if(!$("#home").classList.contains("hide")) renderHome();
+    },
+    onStatus: (s)=>{ acctStatus = s; footerStatus(); }
+  });
+  Account.onAuthChange(()=>footerStatus());
+}
+$("#cloudBtn").onclick=()=>{ if(window.Account) Account.openModal(); };
+$("#syncBadge").onclick=()=>{ if(window.Account) Account.openModal(); };
+$("#syncBadge").onkeydown=(e)=>{ if((e.key==="Enter"||e.key===" ") && window.Account){ e.preventDefault(); Account.openModal(); } };
 
 /* ---------- Theme ---------- */
 function currentTheme(){ let t=null; try{t=localStorage.getItem('ccrn-theme');}catch(e){} if(t==='dark'||t==='light')return t; return (window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'; }
@@ -3485,8 +3435,7 @@ $("#themeBtn").onclick=()=>applyTheme(currentTheme()==='dark'?'light':'dark');
 updateThemeBtn();
 
 /* ---------- Init ---------- */
-loadCloudCfg(); renderHome(); show("home"); footerStatus();
-if(cloud.connected) cloudSync();
+attachAccount(); renderHome(); show("home"); footerStatus();
 </script>
 </body>
 </html>

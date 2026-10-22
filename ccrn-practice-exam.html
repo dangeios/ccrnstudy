@@ -121,7 +121,7 @@
       <span class="sub" id="storeStatus" style="font-size:12.5px; color:var(--soft)">Checking storage…</span>
       <span style="display:flex; gap:14px; flex-wrap:wrap">
         <button class="linkbtn" id="histBtn">History</button>
-        <button class="linkbtn" id="cloudBtn" style="color:var(--teal)">☁ Cloud sync</button>
+        <button class="linkbtn" id="cloudBtn" style="color:var(--teal)">☁ Account &amp; sync</button>
       </span>
     </div>
     <div id="histPanel" class="hide" style="margin-top:14px"></div>
@@ -160,33 +160,9 @@
     </div>
   </div>
 
-  <!-- CLOUD MODAL -->
-  <div id="cloudModal" class="hide" style="position:fixed; inset:0; background:rgba(20,30,45,.45); display:flex; align-items:center; justify-content:center; padding:20px; z-index:50">
-    <div class="card" style="max-width:480px; width:100%; max-height:90vh; overflow:auto">
-      <div class="sectitle" style="margin-top:0">☁ Cloud sync</div>
-      <p style="font-size:13px; color:var(--soft); margin-top:6px; line-height:1.55">
-        Saves your exam-score history to your own free <b>jsonbin.io</b> account so it persists and syncs across devices.
-        First device: paste your key, leave Bin ID blank, tap Connect — you'll get a Bin ID.
-        Other device: paste the same key <i>and</i> that Bin ID.
-      </p>
-      <label style="font-size:12px; color:var(--soft); display:block; margin:10px 0 3px">jsonbin Master Key</label>
-      <input id="cloudKey" type="password" autocomplete="off" placeholder="$2a$10$…" style="width:100%; font-family:ui-monospace,Menlo,monospace; font-size:12px; border:1px solid var(--line); border-radius:9px; padding:9px; background:var(--card); color:var(--ink)">
-      <label style="font-size:12px; color:var(--soft); display:block; margin:10px 0 3px">Bin ID <span style="opacity:.7">(blank on first device)</span></label>
-      <input id="cloudBin" type="text" autocomplete="off" placeholder="e.g. 6650a1b2ac…" style="width:100%; font-family:ui-monospace,Menlo,monospace; font-size:12px; border:1px solid var(--line); border-radius:9px; padding:9px; background:var(--card); color:var(--ink)">
-      <p id="cloudStatus" style="font-size:12.5px; color:var(--soft); margin:12px 0 0; min-height:18px"></p>
-      <div class="row" style="margin-top:14px; gap:8px; flex-wrap:wrap">
-        <button class="btn btn-primary" id="cloudConnect">Connect</button>
-        <button class="btn btn-ghost" id="cloudSyncNow">Sync now</button>
-        <button class="btn btn-ghost" id="cloudDisconnect">Disconnect</button>
-        <button class="btn btn-ghost" id="cloudClose">Close</button>
-      </div>
-      <p style="font-size:11.5px; color:var(--soft); opacity:.85; margin:14px 0 0; line-height:1.5">
-        Your key stays in this browser only. Treat it like a password. Use it in a regular browser (Safari/Chrome) — the in-app viewer blocks cloud access.
-      </p>
-    </div>
-  </div>
 </div>
 
+<script src="account.js"></script>
 <script>
 const QUESTIONS = [
  {d:"Cardiovascular", c:"Aortic dissection → aggressive SBP <120 in minutes",
@@ -773,7 +749,7 @@ function qhash(str){ let h=0; const s=String(str); for(let i=0;i<s.length;i++){ 
 function qkey(q){ return qhash(q.s); }
 function loadFav(){ try{ const r=localStorage.getItem(FAV_KEY); if(r){ const f=JSON.parse(r); if(f&&typeof f==="object") examFav=f; } }catch(e){} }
 function isFav(q){ return !!examFav[qkey(q)]; }
-function saveFav(){ try{ localStorage.setItem(FAV_KEY, JSON.stringify(examFav)); }catch(e){} if(cloud.connected && !adopting && typeof schedulePush==="function") schedulePush(); }
+function saveFav(){ try{ localStorage.setItem(FAV_KEY, JSON.stringify(examFav)); }catch(e){} if(!adopting) stampFav(); if(acct && !adopting) acct.changed(); }
 function toggleFav(q){ const k=qkey(q); if(examFav[k]) delete examFav[k]; else examFav[k]=true; saveFav(); return !!examFav[k]; }
 
 /* Barron's CCRN (Juarez, 2022) chapter map — accurate chapter-level references
@@ -797,12 +773,14 @@ function barronRef(d){ return "Barron's CCRN — " + (BARRON_CH[d] || "see the m
 /* ---------- Score history + persistence ---------- */
 const HIST_KEY = "ccrn-exam-history-v1";
 const TS_LS = HIST_KEY + ":ts";
-const CLOUD_KEY_LS = "ccrn-sync-key";          // shared with recall app on same browser
-const CLOUD_BIN_LS = "ccrn-sync-exam-bin";     // separate bin from the recall app
-const JB_BASE = "https://api.jsonbin.io/v3/b";
 let history = [];           // [{ts, pct, correct, total, byDom}]
 let canLocal = false, canCloud = false, storeStatus = "this session only — won't persist";
-let localTs = 0, cloud = { key:"", bin:"", connected:false }, pushTimer = null, adopting = false;
+let localTs = 0, adopting = false;
+let acct = null, acctStatus = "off";      // Study Hub account sync (account.js)
+/* Per-favorite edit times, so an un-star on one device isn't undone by the other. */
+const FTS_LS = FAV_KEY + ":ts";
+let favTs = {}, prevFav = {};
+function stampFav(){ if(!window.Account) return; Account.stampChanges(favTs, prevFav, examFav); prevFav = Account.clone(examFav); try{ localStorage.setItem(FTS_LS, JSON.stringify(favTs)); }catch(e){} }
 
 function probeLocal(){ try{ const k=HIST_KEY+":probe"; window.localStorage.setItem(k,"1"); const ok=window.localStorage.getItem(k)==="1"; window.localStorage.removeItem(k); return ok; }catch(e){ return false; } }
 function loadHistory(){
@@ -819,7 +797,7 @@ function saveHistory(){
   const blob = JSON.stringify(history);
   if(canLocal){ try{ window.localStorage.setItem(HIST_KEY, blob); window.localStorage.setItem(TS_LS, String(localTs)); }catch(e){ canLocal=false; } }
   if(canCloud){ try{ window.storage.set(HIST_KEY, blob, false); }catch(e){ canCloud=false; } }
-  if(cloud.connected && !adopting) schedulePush();
+  if(acct && !adopting) acct.changed();
 }
 function mergeHistories(a, b){
   const seen={}, out=[];
@@ -828,67 +806,38 @@ function mergeHistories(a, b){
   return out;
 }
 
-/* ---------- Cloud sync (jsonbin.io) ---------- */
-function loadCloudCfg(){
-  try{ cloud.key=window.localStorage.getItem(CLOUD_KEY_LS)||""; cloud.bin=window.localStorage.getItem(CLOUD_BIN_LS)||""; }catch(e){ cloud.key=""; cloud.bin=""; }
-  cloud.connected = !!(cloud.key && cloud.bin);
+/* ---------- Sync status + Study Hub account (account.js → Supabase) ---------- */
+function signedIn(){ return !!(window.Account && Account.user()); }
+function footerStatus(){
+  const st=$("#storeStatus"); if(!st) return;
+  let tail = "";
+  if(signedIn()) tail = " · ☁ " + (acctStatus==="saving" ? "saving to your account…" : acctStatus==="error" ? "account save failed — will retry" : "synced to your account");
+  else tail = " · sign in to sync";
+  st.textContent = "Saving to: " + storeStatus + tail;
 }
-function saveCloudCfg(){
-  try{
-    if(cloud.key) window.localStorage.setItem(CLOUD_KEY_LS, cloud.key); else window.localStorage.removeItem(CLOUD_KEY_LS);
-    if(cloud.bin) window.localStorage.setItem(CLOUD_BIN_LS, cloud.bin); else window.localStorage.removeItem(CLOUD_BIN_LS);
-  }catch(e){}
-}
-function cstat(m){ const el=$("#cloudStatus"); if(el) el.textContent=m; }
-function footerStatus(){ const st=$("#storeStatus"); if(st) st.textContent="Saving to: "+storeStatus+(cloud.connected?" · ☁ cloud on":""); }
-function jbHeaders(){ return { "Content-Type":"application/json", "X-Master-Key":cloud.key, "X-Bin-Versioning":"false" }; }
-function friendlyErr(e){
-  const m=(e&&e.message)||"";
-  if(m.indexOf("401")>-1||m.indexOf("403")>-1) return "key not accepted — check the Master Key.";
-  if(m.indexOf("404")>-1) return "bin not found — check the Bin ID.";
-  if(m.indexOf("429")>-1) return "rate limited — wait a few seconds and retry.";
-  if(m.toLowerCase().indexOf("failed to fetch")>-1||m.toLowerCase().indexOf("networkerror")>-1) return "couldn't reach the network. If you're in the Claude viewer, open the file in your browser instead.";
-  return m||"unknown error.";
-}
-async function cloudCreateBin(){
-  const body=JSON.stringify({history, favorites:examFav, updatedAt: localTs||Date.now()});
-  const r=await fetch(JB_BASE,{method:"POST",headers:{...jbHeaders(),"X-Bin-Name":"ccrn-exam-history","X-Bin-Private":"true"},body});
-  if(!r.ok) throw new Error("HTTP "+r.status);
-  const j=await r.json(); const id=j&&j.metadata&&j.metadata.id; if(!id) throw new Error("no bin id"); return id;
-}
-async function cloudPull(){
-  const r=await fetch(JB_BASE+"/"+encodeURIComponent(cloud.bin)+"/latest",{method:"GET",headers:jbHeaders()});
-  if(!r.ok) throw new Error("HTTP "+r.status);
-  const j=await r.json(); return (j&&j.record)?j.record:null;
-}
-async function cloudPush(){
-  const body=JSON.stringify({history, favorites:examFav, updatedAt: localTs||Date.now()});
-  const r=await fetch(JB_BASE+"/"+encodeURIComponent(cloud.bin),{method:"PUT",headers:jbHeaders(),body});
-  if(!r.ok) throw new Error("HTTP "+r.status); return true;
-}
-function schedulePush(){ if(pushTimer) clearTimeout(pushTimer); pushTimer=setTimeout(()=>{ cloudPush().catch(()=>{}); }, 2500); }
-async function cloudSync(){
-  if(!cloud.connected) return;
-  cstat("Syncing…");
-  try{
-    const rec=await cloudPull();
-    const remoteHist = rec && Array.isArray(rec.history) ? rec.history : [];
-    const merged = mergeHistories(history, remoteHist);
-    const changed = merged.length !== history.length;
-    adopting = true; history = merged;
-    // Merge favorites as a union across devices
-    if(rec && rec.favorites && typeof rec.favorites==="object"){
-      let favChanged=false;
-      Object.keys(rec.favorites).forEach(k=>{ if(rec.favorites[k] && !examFav[k]){ examFav[k]=true; favChanged=true; } });
-      if(favChanged){ try{ localStorage.setItem(FAV_KEY, JSON.stringify(examFav)); }catch(e){} }
-    }
-    const blob=JSON.stringify(history);
-    if(canLocal){ try{ window.localStorage.setItem(HIST_KEY,blob); window.localStorage.setItem(TS_LS,String(Date.now())); }catch(e){} }
-    adopting = false;
-    await cloudPush();                  // push the merged set back so both sides match
-    cstat(changed ? "Synced ✓ merged attempts from both devices." : "Already up to date ✓");
-    renderHist(); footerStatus();
-  }catch(e){ cstat("Sync failed: "+friendlyErr(e)); }
+function attachAccount(){
+  if(!window.Account) return;          // account.js missing → local-only
+  acct = Account.attach("ccrn-exam", {
+    getLocal: ()=>({ history, favorites: examFav, favTs }),
+    merge: (local, remote)=>{
+      remote = remote || {};
+      const f = Account.mergeStamped(local.favorites, local.favTs, remote.favorites, remote.favTs, (a,b)=>!!(a||b) || null);
+      return { history: mergeHistories(local.history, remote.history), favorites: f.map, favTs: f.ts };
+    },
+    setLocal: (m)=>{
+      adopting = true;
+      history = Array.isArray(m.history) ? m.history : [];
+      examFav = m.favorites || {}; favTs = m.favTs || {}; prevFav = Account.clone(examFav);
+      try{
+        localStorage.setItem(HIST_KEY, JSON.stringify(history)); localStorage.setItem(TS_LS, String(Date.now()));
+        localStorage.setItem(FAV_KEY, JSON.stringify(examFav)); localStorage.setItem(FTS_LS, JSON.stringify(favTs));
+      }catch(e){}
+      adopting = false;
+      renderHist(); updateFocusNote();
+    },
+    onStatus: (s)=>{ acctStatus = s; footerStatus(); }
+  });
+  Account.onAuthChange(()=>footerStatus());
 }
 
 /* ---------- History UI ---------- */
@@ -1025,7 +974,7 @@ function finish(){
   const attempt={ ts:Date.now(), pct, correct, total:order.length, byDom };
   history.push(attempt); saveHistory(); renderHist();
   const hm=$("#histMini");
-  if(hm){ const best=Math.max.apply(null, history.map(h=>h.pct)); hm.textContent="Attempt saved ✓ · "+history.length+" total · best "+best+"%"+(cloud.connected?" · ☁ synced":(canLocal?" · saved on this device":"")); }
+  if(hm){ const best=Math.max.apply(null, history.map(h=>h.pct)); hm.textContent="Attempt saved ✓ · "+history.length+" total · best "+best+"%"+(signedIn()?" · ☁ syncing to your account":(canLocal?" · saved on this device":"")); }
   show("results");
 }
 $("#qcount").textContent=QUESTIONS.length;
@@ -1034,31 +983,7 @@ $("#topsub").textContent=QUESTIONS.length+" questions · exam mode";
 /* History panel toggle */
 $("#histBtn").onclick=()=>{ const p=$("#histPanel"); renderHist(); p.classList.toggle("hide"); };
 
-/* Cloud modal wiring */
-function openCloud(){
-  $("#cloudKey").value=cloud.key||""; $("#cloudBin").value=cloud.bin||"";
-  cstat(cloud.connected ? "Connected. Bin ID: "+cloud.bin : "Not connected yet.");
-  $("#cloudModal").classList.remove("hide");
-}
-$("#cloudBtn").onclick=openCloud;
-$("#cloudClose").onclick=()=>$("#cloudModal").classList.add("hide");
-$("#cloudModal").onclick=(e)=>{ if(e.target===$("#cloudModal")) $("#cloudModal").classList.add("hide"); };
-$("#cloudConnect").onclick=async()=>{
-  const key=$("#cloudKey").value.trim(), bin=$("#cloudBin").value.trim();
-  if(!key){ cstat("Paste your jsonbin Master Key first."); return; }
-  cloud.key=key;
-  if(bin){
-    cloud.bin=bin; cloud.connected=true; saveCloudCfg();
-    cstat("Connecting…"); await cloudSync();
-  } else {
-    cstat("Creating a new cloud bin…");
-    try{ const id=await cloudCreateBin(); cloud.bin=id; cloud.connected=true; saveCloudCfg(); $("#cloudBin").value=id;
-      cstat("Connected ✓ Your Bin ID is: "+id+" — paste this (with your key) on your other device."); footerStatus();
-    }catch(e){ cloud.connected=false; cstat("Couldn't connect: "+friendlyErr(e)); }
-  }
-};
-$("#cloudSyncNow").onclick=async()=>{ if(!cloud.connected){ cstat("Connect first."); return; } await cloudSync(); };
-$("#cloudDisconnect").onclick=()=>{ cloud.key=""; cloud.bin=""; cloud.connected=false; saveCloudCfg(); $("#cloudKey").value=""; $("#cloudBin").value=""; cstat("Disconnected. History still saves on this device."); footerStatus(); };
+$("#cloudBtn").onclick=()=>{ if(window.Account) Account.openModal(); };
 
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden") saveHistory(); });
 window.addEventListener("pagehide", saveHistory);
@@ -1114,10 +1039,12 @@ $("#themeBtn").onclick=()=>applyTheme(currentTheme()==='dark'?'light':'dark');
 updateThemeBtn();
 
 (function initExam(){
-  loadHistory(); loadCloudCfg(); loadMisses(); loadExamCfg(); loadFav();
+  loadHistory(); loadMisses(); loadExamCfg(); loadFav();
+  try{ favTs = JSON.parse(localStorage.getItem(FTS_LS)||"{}")||{}; }catch(e){ favTs={}; }
+  prevFav = JSON.parse(JSON.stringify(examFav));
+  attachAccount();
   renderHist(); footerStatus();
   renderCountSel(); renderFocusSel(); updateFocusNote();
-  if(cloud.connected){ cloudSync(); }
 })();
 
 </script>

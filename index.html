@@ -26,13 +26,64 @@
   .go{display:inline-block; margin-top:12px; color:var(--teal); font-size:13.5px; font-weight:600}
   .dot{font-size:14px; color:var(--teal)}
   .foot{color:var(--soft); font-size:12.5px; margin-top:24px; line-height:1.7; opacity:.9}
+  /* account */
+  .acct{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px 24px; margin-bottom:28px}
+  .acct h2{font-family:"Newsreader",serif; font-weight:500; font-size:21px; margin:0 0 4px}
+  .acct p{color:var(--soft); font-size:14px; line-height:1.55; margin:0}
+  .acct form{margin-top:16px; display:grid; gap:10px}
+  .acct label{font-size:12.5px; font-weight:600; color:var(--ink); display:block; margin-bottom:4px}
+  .acct input{width:100%; font:inherit; font-size:15px; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:var(--paper); color:var(--ink)}
+  .acct input:focus{outline:2px solid var(--teal); outline-offset:1px; border-color:var(--teal)}
+  .acct-row{display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-top:4px}
+  .acct .primary{font:inherit; font-size:14px; font-weight:600; border:0; border-radius:10px; padding:10px 18px; background:var(--teal); color:#fff; cursor:pointer}
+  .acct .primary[disabled]{opacity:.6; cursor:default}
+  .acct .link{font:inherit; font-size:13.5px; background:none; border:0; padding:0; color:var(--teal); cursor:pointer; font-weight:500}
+  .acct button:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .acct-msg{font-size:13px; min-height:1.2em; margin-top:8px !important}
+  .acct-msg.err{color:#c0392b} .acct-msg.ok{color:var(--teal)}
+  @media (prefers-color-scheme: dark){ .acct-msg.err{color:#ff8a80} .acct .primary{color:#0b1f1a} }
+  .who{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap}
+  .who strong{color:var(--ink); font-weight:600; word-break:break-all}
 </style>
 </head>
 <body>
   <div class="wrap">
     <p class="eyebrow">Study Hub</p>
     <h1>Choose your certification track</h1>
-    <p class="lead">Two complete study suites in one place. Progress and cloud sync are kept separate for each exam.</p>
+    <p class="lead">Two complete study suites in one place. Progress is kept separately for each exam.</p>
+
+    <section class="acct" id="acct" aria-live="polite">
+      <p id="acctLoading">Checking sign-in…</p>
+
+      <div id="acctOut" hidden>
+        <h2 id="acctTitle">Sign in to sync your progress</h2>
+        <p id="acctLead">Use the same account on your phone and computer and your progress follows you. Without an account, progress stays on this device.</p>
+        <form id="acctForm" novalidate>
+          <div>
+            <label for="acctEmail">Email</label>
+            <input id="acctEmail" type="email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" required>
+          </div>
+          <div>
+            <label for="acctPw" id="acctPwLabel">Password</label>
+            <input id="acctPw" type="password" autocomplete="current-password" minlength="6" required>
+          </div>
+          <div class="acct-row">
+            <button class="primary" type="submit" id="acctSubmit">Log in</button>
+            <button class="link" type="button" id="acctSwitch">New here? Create an account</button>
+          </div>
+        </form>
+        <p class="acct-msg" id="acctMsg"></p>
+      </div>
+
+      <div id="acctIn" hidden>
+        <div class="who">
+          <p>Signed in as <strong id="acctEmailShown"></strong></p>
+          <button class="link" type="button" id="acctLogout">Log out</button>
+        </div>
+        <p style="margin-top:6px">Your CCRN progress syncs automatically on every device where you’re signed in.</p>
+        <p class="acct-msg" id="acctMsgIn"></p>
+      </div>
+    </section>
 
     <a class="card" href="ccrn.html">
       <p class="tag">Adult Critical Care</p>
@@ -48,7 +99,76 @@
       <span class="go">Open CSC / CMC &rarr;</span>
     </a>
 
-    <p class="foot">Open ☁ Cloud sync inside each app to save and sync across your devices. Bookmark this page or Add to Home Screen for quick access.</p>
+    <p class="foot">Sign in once on each device and every CCRN app syncs through your account. CSC/CMC still uses ☁ Cloud sync inside the app for now. Bookmark this page or Add to Home Screen for quick access.</p>
   </div>
+
+<script src="account.js"></script>
+<script>
+(function(){
+  var el = function(id){ return document.getElementById(id); };
+  var box = el("acct");
+  if(!window.Account || !Account.configured()){ box.hidden = true; return; }
+
+  var mode = "in";                       // "in" = log in, "up" = create account
+  function say(id, text, kind){ var m = el(id); m.textContent = text || ""; m.className = "acct-msg" + (kind ? " " + kind : ""); }
+
+  function setMode(m){
+    mode = m;
+    var up = m === "up";
+    el("acctTitle").textContent = up ? "Create your account" : "Sign in to sync your progress";
+    el("acctSubmit").textContent = up ? "Create account" : "Log in";
+    el("acctSwitch").textContent = up ? "Already have an account? Log in" : "New here? Create an account";
+    el("acctPwLabel").textContent = up ? "Password (6+ characters)" : "Password";
+    el("acctPw").setAttribute("autocomplete", up ? "new-password" : "current-password");
+    say("acctMsg", "");
+  }
+
+  function render(user){
+    el("acctLoading").hidden = true;
+    el("acctOut").hidden = !!user;
+    el("acctIn").hidden = !user;
+    if(user) el("acctEmailShown").textContent = user.email || "your account";
+  }
+
+  el("acctSwitch").onclick = function(){ setMode(mode === "in" ? "up" : "in"); el("acctEmail").focus(); };
+
+  el("acctForm").onsubmit = function(e){
+    e.preventDefault();
+    var email = el("acctEmail").value.trim(), pw = el("acctPw").value;
+    if(!email || !pw){ say("acctMsg", "Enter your email and password.", "err"); return; }
+    if(mode === "up" && pw.length < 6){ say("acctMsg", "Use a password with at least 6 characters.", "err"); return; }
+    var btn = el("acctSubmit"); btn.disabled = true;
+    say("acctMsg", mode === "up" ? "Creating your account…" : "Logging in…");
+    var go = mode === "up" ? Account.signUp(email, pw) : Account.signIn(email, pw);
+    go.then(function(r){
+      btn.disabled = false;
+      if(mode === "up" && r && r.needsConfirmation){
+        setMode("in");
+        say("acctMsg", "Account created. Open the confirmation email, then log in here.", "ok");
+        return;
+      }
+      el("acctPw").value = "";
+      say("acctMsgIn", "Signed in. Open any CCRN app and your progress will sync.", "ok");
+    }).catch(function(err){
+      btn.disabled = false;
+      say("acctMsg", (err && err.message) || "Something went wrong. Try again.", "err");
+    });
+  };
+
+  el("acctLogout").onclick = function(){
+    var b = el("acctLogout"); b.disabled = true;
+    Account.signOut().then(function(){
+      b.disabled = false; setMode("in");
+      say("acctMsg", "Logged out. Progress stays saved on this device.", "ok");
+    });
+  };
+
+  Account.onAuthChange(render);
+  Account.init().then(function(ok){
+    if(!ok){ el("acctLoading").textContent = "Can’t reach the sign-in service right now. Your progress is still saved on this device."; return; }
+    render(Account.user());
+  });
+})();
+</script>
 </body>
 </html>
